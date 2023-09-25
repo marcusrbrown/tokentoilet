@@ -1,0 +1,33 @@
+---
+name: CI
+
+'on':
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Checkout Branch
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 💅🏽 Run Prettier
+        uses: creyD/prettier_action@31355f8eef017f8aeba2e0bc09d8502b13dbbad1 # v4.3
+        env:
+          PRETTIER_VERSION: 3.0.3 # renovate: datasource=npm depName=prettier
+        with:
+          prettier_options: --check .
+          prettier_version: ${{ env.PRETTIER_VERSION }}
