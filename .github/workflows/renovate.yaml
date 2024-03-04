@@ -50,7 +50,7 @@ jobs:
 
       - if: steps.should-renovate.outputs.renovate == 'true'
         name: Renovate
-        uses: bfra-me/renovate-action@e50362e72903168e00ff662ba4b05f95849717f1 # v2.8.3
+        uses: bfra-me/renovate-action@81545914065b2a9d6f3d167e728a03f0a7139c49 # v3.13.1
         with:
           print_config: ${{ inputs.print_config || false }}
           renovate_app_id: ${{ secrets.APPLICATION_ID }}
