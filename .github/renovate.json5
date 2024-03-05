@@ -5,7 +5,7 @@
     commands: [
       'npm install -g pnpm@8',
       'pnpm install --frozen-lockfile --ignore-scripts',
-      'git checkout -- .npmrc',
+      '[ -w .npmrc ] && git checkout -- .npmrc',
       'pnpm run format',
     ],
     executionMode: 'branch',
