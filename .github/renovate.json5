@@ -1,6 +1,6 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: ['github>marcusrbrown/renovate-config#v2.4.3'],
+  extends: ['github>marcusrbrown/renovate-config#3.1.1'],
   postUpgradeTasks: {
     commands: [
       'npm install -g pnpm@9.14.4',
