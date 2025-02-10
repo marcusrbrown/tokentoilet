@@ -18,6 +18,7 @@ module.exports = {
       },
       animation: {
         'flow-right': 'flow-right 2s linear infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         'flow-right': {
@@ -28,4 +29,5 @@ module.exports = {
     },
   },
   plugins: [],
+  darkMode: 'class',
 }
