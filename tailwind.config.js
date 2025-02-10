@@ -22,8 +22,8 @@ module.exports = {
       },
       keyframes: {
         'flow-right': {
-          '0%': { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(100%)' },
+          '0%': {transform: 'translateX(0)'},
+          '100%': {transform: 'translateX(100%)'},
         },
       },
     },

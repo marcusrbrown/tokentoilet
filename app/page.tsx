@@ -1,7 +1,7 @@
-import { Droplets, Flame, Wallet } from 'lucide-react'
+import {Droplets, Flame, Wallet} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ThemeToggle } from '@/components/theme-toggle'
+import {ThemeToggle} from '@/components/theme-toggle'
 
 export default function Home() {
   return (
@@ -37,8 +37,8 @@ export default function Home() {
             Unwanted Tokens
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-300">
-            A revolutionary DeFi protocol that helps you dispose of unwanted tokens while contributing to charitable causes.
-            Clean up your wallet with purpose.
+            A revolutionary DeFi protocol that helps you dispose of unwanted tokens while contributing to charitable
+            causes. Clean up your wallet with purpose.
           </p>
 
           <div className="mt-10 flex items-center justify-center gap-4">
@@ -85,9 +85,7 @@ export default function Home() {
                 <Flame className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="mb-2 text-xl font-semibold">Gas Efficient</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Optimized contracts for minimal gas consumption
-              </p>
+              <p className="text-gray-600 dark:text-gray-400">Optimized contracts for minimal gas consumption</p>
             </div>
           </div>
         </div>
