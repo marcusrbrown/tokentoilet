@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Toilet Base -->
+  <rect x="60" y="120" width="80" height="40" rx="5" fill="#E5E7EB" />
+
+  <!-- Toilet Bowl -->
+  <path d="M70 80 h60 a20 20 0 0 1 20 20 v20 h-100 v-20 a20 20 0 0 1 20 -20" fill="#F3F4F6" />
+
+  <!-- Toilet Seat -->
+  <path d="M65 75 h70 a5 5 0 0 1 5 5 v5 h-80 v-5 a5 5 0 0 1 5 -5" fill="#D1D5DB" />
+
+  <!-- Water Level -->
+  <path d="M75 100 h50 v15 h-50 v-15" fill="#93C5FD" opacity="0.5" />
+
+  <!-- Toilet Paper -->
+  <rect x="150" y="90" width="20" height="25" rx="2" fill="#F3F4F6" />
+  <circle cx="160" cy="102.5" r="8" fill="#E5E7EB" />
+</svg>
