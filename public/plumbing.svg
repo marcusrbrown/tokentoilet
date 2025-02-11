@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="100" viewBox="0 0 800 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main Pipe -->
+  <path d="M50 50 h700" stroke="#EF4444" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Vertical Connections -->
+  <path d="M150 10 v40" stroke="#EF4444" stroke-width="8" stroke-linecap="round" />
+  <path d="M400 10 v40" stroke="#EF4444" stroke-width="8" stroke-linecap="round" />
+  <path d="M650 10 v40" stroke="#EF4444" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Joints -->
+  <circle cx="150" cy="50" r="8" fill="#DC2626" />
+  <circle cx="400" cy="50" r="8" fill="#DC2626" />
+  <circle cx="650" cy="50" r="8" fill="#DC2626" />
+
+  <!-- Decorative Elements -->
+  <rect x="125" y="0" width="50" height="15" rx="5" fill="#9CA3AF" />
+  <rect x="375" y="0" width="50" height="15" rx="5" fill="#9CA3AF" />
+  <rect x="625" y="0" width="50" height="15" rx="5" fill="#9CA3AF" />
+
+  <!-- Flow Indicators -->
+  <circle cx="200" cy="50" r="3" fill="#DC2626" />
+  <circle cx="220" cy="50" r="3" fill="#DC2626" />
+  <circle cx="240" cy="50" r="3" fill="#DC2626" />
+</svg>
