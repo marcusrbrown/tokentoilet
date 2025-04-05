@@ -13,8 +13,8 @@
   "dependencies": {
     "@tanstack/react-query": "^5.66.0",
     "@types/node": "22.13.17",
-    "@types/react": "19.0.12",
-    "@types/react-dom": "19.0.4",
+    "@types/react": "19.0.14",
+    "@types/react-dom": "19.0.6",
     "@web3modal/wagmi": "^5.1.11",
     "autoprefixer": "10.4.21",
     "eslint": "9.23.0",
