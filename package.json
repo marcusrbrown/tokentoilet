@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "bootstrap": "pnpm install --prefer-offline --loglevel warn",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
