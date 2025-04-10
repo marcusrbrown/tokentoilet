@@ -1,3 +1,5 @@
 * text=auto eol=lf
 
 next-env.d.ts text linguist-vendored
+
+*.mdc text linguist-language=Markdown
