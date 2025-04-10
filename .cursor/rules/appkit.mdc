@@ -1,0 +1,252 @@
+---
+description: Provides comprehensive best practices for developing Web3 applications using AppKit, covering code structure, security, performance, testing, and common pitfalls.
+globs: **/*.js,**/*.jsx,**/*.ts,**/*.tsx
+alwaysApply: false
+---
+# AppKit Web3 Best Practices
+
+This document outlines best practices for developing Web3 applications using AppKit. It covers various aspects, including code organization, common patterns, performance, security, testing, common pitfalls, and tooling.
+
+## 1. Code Organization and Structure
+
+### Directory Structure
+
+A well-organized directory structure improves code maintainability and scalability.
+
+
+my-app/
+  src/
+    components/
+      WalletConnectButton/
+        WalletConnectButton.jsx
+        WalletConnectButton.module.css
+        index.js # optional: for easy imports
+      ...
+    hooks/
+      useWallet.js
+      ...
+    contexts/
+      Web3Context.js
+      ...
+    utils/
+      addressUtils.js
+      ...
+    services/
+      api.js # Handles API interactions related to blockchain data
+      ...
+    App.jsx
+    index.js
+  public/
+    ...
+  .env # Store your API keys and project IDs
+  package.json
+  webpack.config.js (or vite.config.js, etc.)
+  README.md
+
+
+**Explanation:**
+
+*   `components`: Reusable UI elements.
+*   `hooks`: Custom React hooks for managing state and logic.
+*   `contexts`: React contexts for global state management.
+*   `utils`: Utility functions (e.g., address formatting).
+*   `services`: Services for interacting with APIs and blockchain data.
+
+### File Naming Conventions
+
+*   **Components:** kebab-case (e.g., `wallet-connect-button.tsx`).
+*   **Hooks:** `use` prefix (e.g., `use-wallet.ts`).
+*   **Contexts:** kebab-case (e.g., `web3-context.js`).
+*   **Utilities:** kebab-case (e.g., `address-utils.js`).
+*   **Styles:** ComponentName.module.css or ComponentName.scss (CSS Modules are preferred).
+
+### Module Organization
+
+*   **ES Modules:** Use ES modules (`import`/`export`) for modularity.
+*   **Single Responsibility Principle:** Each module should have a clear, single responsibility.
+*   **Avoid Circular Dependencies:** Ensure modules do not depend on each other in a circular fashion.
+
+### Component Architecture
+
+*   **Atomic Design:** Consider using Atomic Design principles for building reusable components:
+    *   Atoms: Basic UI elements (e.g., buttons, inputs).
+    *   Molecules: Combinations of atoms (e.g., a search bar).
+    *   Organisms: Combinations of molecules (e.g., a header).
+    *   Templates: Page-level layouts.
+    *   Pages: Specific instances of templates with content.
+*   **Component Composition:** Favor composition over inheritance.
+*   **Presentational and Container Components:** Separate presentation logic from data fetching and state management.
+
+### Code Splitting
+
+*   **Route-Based Splitting:** Split your application into chunks based on routes using `React.lazy` and `Suspense`.
+*   **Component-Based Splitting:** Split large components into smaller chunks.
+*   **Vendor Splitting:** Separate vendor libraries into a separate chunk to improve caching.
+
+## 2. Common Patterns and Anti-patterns
+
+### Design Patterns
+
+*   **Provider Pattern:** Use React Context to provide access to Web3 providers (e.g., Web3Provider) throughout the application.
+*   **Hook Pattern:** Encapsulate complex logic in custom React hooks (e.g., for managing wallet connections).
+*   **Observer Pattern:** Implement event listeners to react to blockchain events (e.g., `accountsChanged`, `chainChanged`).
+
+### Recommended Approaches
+
+*   **Wallet Connection:** Use AppKit's wallet connection modal to simplify the connection process.
+*   **Smart Contract Interaction:** Create reusable functions or hooks for interacting with smart contracts.
+*   **Event Handling:** Use event listeners to react to blockchain events and update the UI accordingly.
+
+### Anti-patterns
+
+*   **Directly Exposing Private Keys:** Never expose private keys in the client-side code.  Use server-side signing or hardware wallets.
+*   **Hardcoding Contract Addresses:** Store contract addresses in environment variables or configuration files.
+*   **Ignoring Error Handling:** Always handle errors when interacting with the blockchain.
+
+### State Management
+
+*   **React Context:** Use React Context for global state management (e.g., wallet address, network ID).
+*   **Redux/ Zustand:** Consider using Redux or Zustand for more complex state management needs.
+*   **Immutable Data:** Use immutable data structures to prevent unexpected state mutations.
+
+### Error Handling
+
+*   **Try-Catch Blocks:** Use try-catch blocks to handle errors when interacting with the blockchain.
+*   **Error Boundaries:** Use React Error Boundaries to catch errors in components and prevent the entire application from crashing.
+*   **Centralized Error Handling:** Implement a centralized error handling mechanism to log and display errors to the user.
+
+## 3. Performance Considerations
+
+### Optimization Techniques
+
+*   **Memoization:** Use `React.memo` to memoize components and prevent unnecessary re-renders.
+*   **Debouncing/Throttling:** Use debouncing or throttling to limit the frequency of expensive operations (e.g., API calls).
+*   **Virtualization:** Use virtualization for rendering large lists of data.
+
+### Memory Management
+
+*   **Avoid Memory Leaks:** Clean up event listeners and timers when components unmount.
+*   **Optimize Data Structures:** Use efficient data structures (e.g., `Map` instead of `Object`) for storing large amounts of data.
+
+### Rendering Optimization
+
+*   **Reduce Re-renders:** Minimize unnecessary re-renders by using memoization and avoiding state mutations.
+*   **Batch Updates:** Batch state updates to reduce the number of re-renders.
+
+### Bundle Size Optimization
+
+*   **Code Splitting:** Use code splitting to reduce the initial bundle size.
+*   **Tree Shaking:** Use tree shaking to remove unused code from the bundle.
+*   **Minification:** Use minification to reduce the size of the bundle.
+*   **Image Optimization:** Optimize images to reduce their size.
+
+### Lazy Loading
+
+*   **Lazy Load Components:** Use `React.lazy` to lazy load components that are not immediately needed.
+*   **Lazy Load Images:** Use lazy loading for images that are below the fold.
+
+## 4. Security Best Practices
+
+### Common Vulnerabilities
+
+*   **Cross-Site Scripting (XSS):** Prevent XSS attacks by sanitizing user input.
+*   **SQL Injection:** Prevent SQL injection attacks by using parameterized queries.
+*   **Cross-Site Request Forgery (CSRF):** Prevent CSRF attacks by using anti-CSRF tokens.
+*   **Reentrancy Attacks:**  Mitigate reentrancy attacks in smart contracts by following secure coding patterns (Checks-Effects-Interactions pattern).
+
+### Input Validation
+
+*   **Validate User Input:** Always validate user input on both the client and server sides.
+*   **Use Strong Input Validation Libraries:** Use libraries like `validator.js` to validate user input.
+*   **Sanitize User Input:** Sanitize user input to prevent XSS attacks.
+
+### Authentication and Authorization
+
+*   **Use a Secure Authentication Protocol:** Use a secure authentication protocol like OAuth 2.0.
+*   **Store Passwords Securely:** Never store passwords in plain text. Use a strong hashing algorithm like bcrypt.
+*   **Implement Role-Based Access Control (RBAC):** Implement RBAC to control access to resources based on user roles.
+
+### Data Protection
+
+*   **Encrypt Sensitive Data:** Encrypt sensitive data both in transit and at rest.
+*   **Use HTTPS:** Use HTTPS to encrypt communication between the client and server.
+*   **Protect API Keys:** Store API keys securely and never expose them in the client-side code.
+
+### Secure API Communication
+
+*   **Use HTTPS:** Use HTTPS to encrypt communication between the client and server.
+*   **Validate API Responses:** Validate API responses to prevent data injection attacks.
+*   **Rate Limiting:** Implement rate limiting to prevent denial-of-service attacks.
+
+## 5. Testing Approaches
+
+### Unit Testing
+
+*   **Test Individual Components:** Test individual components in isolation.
+*   **Use a Testing Framework:** Use a testing framework like Jest or Mocha.
+*   **Write Clear and Concise Tests:** Write clear and concise tests that are easy to understand.
+
+### Integration Testing
+
+*   **Test Interactions Between Components:** Test how components interact with each other.
+*   **Test API Interactions:** Test how the application interacts with APIs.
+
+### End-to-End Testing
+
+*   **Test the Entire Application:** Test the entire application from end to end.
+*   **Use a Testing Framework:** Use a testing framework like Cypress or Selenium.
+
+### Test Organization
+
+*   **Keep Tests Close to the Code:** Store tests in the same directory as the code they are testing.
+*   **Use Descriptive Test Names:** Use descriptive test names that clearly describe what the test is testing.
+
+### Mocking and Stubbing
+
+*   **Use Mocking to Isolate Components:** Use mocking to isolate components during testing.
+*   **Use Stubbing to Replace Dependencies:** Use stubbing to replace dependencies with controlled values.
+*   **Mock Blockchain Interactions:**  Mock blockchain interactions to create predictable testing environments without relying on live networks.
+
+## 6. Common Pitfalls and Gotchas
+
+*   **Improper Wallet Connection Handling:** Ensure you handle different wallet connection states and errors gracefully.
+*   **Incorrect Chain ID:** Verify the user is connected to the correct chain.
+*   **Gas Estimation Errors:** Handle gas estimation errors when sending transactions.
+*   **Transaction Rejection:** Handle transaction rejection by the user.
+*   **Race Conditions:** Be aware of potential race conditions when interacting with the blockchain.
+
+## 7. Tooling and Environment
+
+### Recommended Development Tools
+
+*   **IDE:** Visual Studio Code, WebStorm
+*   **Package Manager:** npm, yarn, pnpm
+*   **Bundler:** Webpack, Parcel, Vite
+*   **Testing Framework:** Jest, Mocha, Cypress
+*   **Linting:** ESLint
+*   **Formatting:** Prettier
+
+### Build Configuration
+
+*   **Use a Build Tool:** Use a build tool like Webpack or Parcel to bundle your code.
+*   **Configure the Build Tool:** Configure the build tool to optimize the bundle size and performance.
+*   **Use Environment Variables:** Use environment variables to store configuration values.
+
+### Linting and Formatting
+
+*   **Use a Linter:** Use a linter like ESLint to enforce code style and prevent errors.
+*   **Use a Formatter:** Use a formatter like Prettier to automatically format your code.
+*   **Configure the Linter and Formatter:** Configure the linter and formatter to match your project's code style.
+
+### Deployment
+
+*   **Choose a Deployment Platform:** Choose a deployment platform that is suitable for your application (e.g., Vercel, Netlify, AWS).
+*   **Configure the Deployment Platform:** Configure the deployment platform to deploy your application automatically.
+*   **Use HTTPS:** Use HTTPS to encrypt communication between the client and server.
+
+### CI/CD Integration
+
+*   **Use a CI/CD Platform:** Use a CI/CD platform like GitHub Actions or CircleCI to automate the build, test, and deployment process.
+*   **Configure the CI/CD Platform:** Configure the CI/CD platform to run your tests and deploy your application automatically.
+
+By following these best practices, you can build robust, secure, and performant Web3 applications using AppKit.

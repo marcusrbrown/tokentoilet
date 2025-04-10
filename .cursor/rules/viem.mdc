@@ -1,0 +1,216 @@
+---
+description: This rule provides comprehensive best practices and coding standards for the viem Ethereum library, covering code organization, performance, security, testing, and common pitfalls.
+globs: **/*.ts,**/*.tsx,**/*.js,**/*.jsx
+alwaysApply: false
+---
+# viem Best Practices and Coding Standards
+
+This document outlines best practices and coding standards for developing applications and libraries using the viem Ethereum library. Adhering to these guidelines will promote code readability, maintainability, performance, and security.
+
+## 1. Code Organization and Structure
+
+- **Directory Structure:**
+    -   `src/`: Contains the main application or library source code.
+        -   `components/`: Reusable UI components (if applicable).
+        -   `hooks/`: Custom React hooks for interacting with viem and managing blockchain state.
+        -   `utils/`: Utility functions, helpers, and constants.
+        -   `contracts/`: Definitions and ABIs for smart contracts.
+            -   `abis/`: Directory containing ABI files for deployed contracts. File names should match the contract name (e.g., `MyToken.json`).
+            -   `addresses/`: Directory containing addresses of deployed contracts, often keyed by network (e.g., `MyToken.mainnet.json`, `MyToken.goerli.json`).  Consider using a more robust solution like a configuration file or environment variables for managing addresses.
+        -   `types/`:  TypeScript type definitions for blockchain data, contract interactions, and application state.
+        -   `services/`:  Modules for interacting with specific blockchain nodes or services (e.g., RPC providers, indexers).
+    -   `test/`: Contains unit, integration, and end-to-end tests.
+    -   `config/`: Configuration files for the application (e.g., `wagmi.config.ts`, eslint config, etc.).
+    - `scripts/`:  Deployment and utility scripts, often using viem to interact with the blockchain.
+
+- **File Naming Conventions:**
+    -   Use descriptive and consistent file names.
+    -   Component files: `MyComponent.tsx` or `my-component.tsx`.
+    -   Hook files: `useMyHook.ts`.
+    -   Utility files: `stringUtils.ts`, `addressUtils.ts`.
+    -   Contract ABI files: `MyContract.json`.
+    -   Contract Address files: `MyContract.mainnet.json`
+
+- **Module Organization:**
+    -   Group related functions, components, and types into modules.
+    -   Use clear and concise module names.
+    -   Avoid circular dependencies between modules.
+    -   Favor small, focused modules over large, monolithic ones.
+
+- **Component Architecture:**
+    -   Follow a component-based architecture (if applicable).
+    -   Separate concerns between presentation and logic (e.g., using the container/presentational pattern).
+    -   Use functional components with hooks for managing state and side effects.
+    -   Keep components small and reusable.
+
+- **Code Splitting:**
+    -   Use dynamic imports (`import()`) to split the code into smaller chunks.
+    -   Leverage React.lazy and Suspense for lazy loading components (if applicable).
+    -   Split code based on routes or features to improve initial load time.
+
+## 2. Common Patterns and Anti-patterns
+
+- **Design Patterns:**
+    -   **Provider Pattern:**  Use viem's `createPublicClient` and `createWalletClient` to create clients that are passed down through the component tree using React Context or a similar mechanism. This centralizes configuration and improves testability.
+    -   **Hook Composition:** Create custom hooks that encapsulate complex blockchain interactions using viem actions and other hooks.  This promotes reusability and reduces boilerplate.
+    -   **Factory Pattern:** Use factory functions to create instances of viem clients or other blockchain-related objects with specific configurations.
+
+- **Recommended Approaches:**
+    -   **Smart Contract Interaction:** Use `viem`'s contract interaction APIs (`readContract`, `writeContract`, `estimateContractGas`) for type-safe smart contract interactions.
+    -   **Event Handling:**  Use `getLogs` and `watchContractEvent`  to listen to blockchain events and update application state accordingly.
+    -   **Data Fetching:** Leverage libraries like TanStack Query (React Query) or SWR to manage data fetching, caching, and state synchronization.
+
+- **Anti-patterns and Code Smells:**
+    -   **Directly using private keys in the codebase:** Store private keys securely, preferably using environment variables or dedicated key management solutions. Never commit private keys to version control.
+    -   **Hardcoding RPC URLs:** Use environment variables or configuration files to manage RPC URLs, allowing for easy switching between networks and providers.
+    -   **Ignoring error handling:** Always handle potential errors when interacting with the blockchain, especially when sending transactions.
+    -   **Performing computationally intensive operations in the UI thread:**  Move heavy computations to background threads or workers to avoid blocking the UI.
+    -   **Over-fetching data:** Only fetch the data that is needed to render the UI or perform a specific action.
+
+- **State Management:**
+    -   **Local Component State:** Use `useState` for simple, component-specific state.
+    -   **Context API:** Use `useContext` to share state between components without prop drilling.
+    -   **Global State Management:**  Use libraries like Zustand, Redux, or Jotai for managing more complex application state, especially when interacting with data fetched from the blockchain and shared across components.  Consider leveraging TanStack Query's caching capabilities to minimize redundant blockchain requests.
+
+- **Error Handling:**
+    -   Wrap viem functions in `try...catch` blocks to handle potential errors.
+    -   Display user-friendly error messages to the user.
+    -   Implement retry mechanisms for transient errors (e.g., network issues).
+    -   Log errors for debugging purposes.
+
+## 3. Performance Considerations
+
+- **Optimization Techniques:**
+    -   **Tree-shaking:**  Use viem's tree-shakable modules (e.g., `viem/actions`) to reduce bundle size.  Import only the specific functions that you need.
+    -   **Code Caching:** Cache frequently accessed data using libraries like TanStack Query or custom caching mechanisms.
+    -   **Batch Requests:** Use the `multicall` action to batch multiple read calls into a single request, reducing network overhead.
+    -   **Efficient Data Structures:** Use appropriate data structures (e.g., Maps, Sets) for storing and manipulating blockchain data.
+    -   **Provider Optimization:**  Select the most performant RPC provider for your needs.  Consider using a load balancer to distribute requests across multiple providers.
+
+- **Memory Management:**
+    -   Avoid creating unnecessary objects or variables.
+    -   Release resources when they are no longer needed.
+    -   Use weak references to avoid memory leaks.
+
+- **Rendering Optimization (if applicable):**
+    -   Use React.memo to prevent unnecessary re-renders of components.
+    -   Virtualize large lists to improve rendering performance.
+
+- **Bundle Size Optimization:**
+    -   Use a bundler like Webpack, Parcel, or Rollup to optimize the bundle size.
+    -   Remove unused code using tree-shaking and dead code elimination.
+    -   Compress the bundle using gzip or Brotli.
+    -   Analyze the bundle size using tools like webpack-bundle-analyzer.
+
+- **Lazy Loading:**
+    -   Use dynamic imports to load code on demand.
+    -   Leverage React.lazy and Suspense for lazy loading components.
+
+## 4. Security Best Practices
+
+- **Common Vulnerabilities:**
+    -   **Private Key Exposure:** Never commit private keys to version control or store them insecurely.
+    -   **RPC Endpoint Security:**  Protect your RPC endpoint from unauthorized access.
+    -   **Cross-Site Scripting (XSS):** Sanitize user inputs to prevent XSS attacks.
+    -   **Denial of Service (DoS):**  Implement rate limiting and other measures to prevent DoS attacks.
+
+- **Input Validation:**
+    -   Validate all user inputs to prevent malicious data from being processed.
+    -   Use type checking to ensure that data is in the expected format.
+    -   Sanitize inputs to remove potentially harmful characters.
+
+- **Authentication and Authorization:**
+    -   Use secure authentication mechanisms to verify the identity of users.
+    -   Implement authorization rules to control access to sensitive resources.
+
+- **Data Protection:**
+    -   Encrypt sensitive data at rest and in transit.
+    -   Use HTTPS to secure communication between the client and the server.
+    -   Store data securely in a database or other storage system.
+
+- **Secure API Communication:**
+    -   Use HTTPS to secure communication with the Ethereum network.
+    -   Implement rate limiting to prevent abuse of the API.
+    -   Monitor API usage for suspicious activity.
+
+## 5. Testing Approaches
+
+- **Unit Testing:**
+    -   Test individual functions and components in isolation.
+    -   Use mocking and stubbing to isolate dependencies.
+    -   Write tests for all critical functionality.
+    -   Use a testing framework like Jest or Mocha.
+
+- **Integration Testing:**
+    -   Test the interaction between different modules or components.
+    -   Test the integration with external services (e.g., RPC providers).
+    -   Use a testing framework like Jest or Mocha.
+
+- **End-to-End Testing:**
+    -   Test the entire application from start to finish.
+    -   Simulate user interactions to ensure that the application is working as expected.
+    -   Use a testing framework like Cypress or Playwright.
+
+- **Test Organization:**
+    -   Organize tests into separate directories for unit, integration, and end-to-end tests.
+    -   Use descriptive test names.
+    -   Write clear and concise test cases.
+
+- **Mocking and Stubbing:**
+    -   Use mocking and stubbing to isolate dependencies and simulate different scenarios.
+    -   Use libraries like `viem/test` and `ganache` to create local Ethereum test environments.
+    -  Mock `viem` actions to control the behavior of blockchain interactions during testing. This is crucial for testing error conditions and edge cases.
+
+## 6. Common Pitfalls and Gotchas
+
+- **Frequent Mistakes:**
+    -   **Incorrect ABI usage:** Ensure you have the correct ABI for the contract you are interacting with. Typos or version mismatches can lead to unexpected errors.
+    -   **Gas estimation errors:**  Accurately estimate gas costs before sending transactions.  Insufficient gas can cause transactions to fail.
+    -   **Incorrect chain ID:**  Verify that you are connected to the correct chain ID.
+    -   **Not handling reverted transactions:**  Properly handle reverted transactions and display informative error messages to the user.
+
+- **Edge Cases:**
+    -   **Forked chains:**  Be aware of the differences between different forks of Ethereum.
+    -   **Gas price fluctuations:** Handle gas price fluctuations gracefully.
+    -   **Network congestion:**  Implement retry mechanisms for transactions that fail due to network congestion.
+    -   **Different wallet implementations:**  Be aware of the differences between different wallet implementations.
+
+- **Version-Specific Issues:**
+    -   Refer to the viem documentation and release notes for information on version-specific issues.
+
+- **Compatibility Concerns:**
+    -   Ensure that viem is compatible with other libraries and tools that you are using.
+
+- **Debugging:**
+    -   Use the viem debugger to step through code and inspect variables.
+    -   Use logging to track the execution of code.
+    -   Use browser developer tools to inspect network requests and responses.
+
+## 7. Tooling and Environment
+
+- **Recommended Development Tools:**
+    -   Node.js and npm or yarn
+    -   TypeScript
+    -   Visual Studio Code or other code editor
+    -   Hardhat or Foundry for local development and testing
+    -   Ganache for a local Ethereum blockchain
+
+- **Build Configuration:**
+    -   Use a build tool like Webpack, Parcel, or Rollup to bundle the code.
+    -   Configure TypeScript to generate type definitions.
+    -   Optimize the build for production.
+
+- **Linting and Formatting:**
+    -   Use ESLint and Prettier to enforce code style and prevent errors.
+    -   Configure linting and formatting rules to match your project's coding standards.
+
+- **Deployment:**
+    -   Deploy the application to a hosting platform like Vercel, Netlify, or AWS.
+    -   Use a CDN to deliver static assets.
+    -   Monitor the application for errors and performance issues.
+
+- **CI/CD Integration:**
+    -   Integrate continuous integration and continuous deployment (CI/CD) pipelines to automate the build, test, and deployment process.
+    -   Use tools like GitHub Actions, CircleCI, or Jenkins to implement CI/CD pipelines.
+
+By following these best practices, you can build reliable, maintainable, and secure applications using the viem Ethereum library.
