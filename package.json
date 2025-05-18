@@ -27,7 +27,7 @@
     "prettier": "3.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "tailwindcss": "4.1.6",
+    "tailwindcss": "4.1.7",
     "typescript": "5.8.3",
     "viem": "^2.23.0",
     "wagmi": "^2.14.11"
