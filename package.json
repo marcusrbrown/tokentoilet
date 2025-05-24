@@ -14,7 +14,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.66.0",
     "@types/node": "22.15.21",
-    "@types/react": "19.1.4",
+    "@types/react": "19.1.5",
     "@types/react-dom": "19.1.5",
     "@web3modal/wagmi": "^5.1.11",
     "autoprefixer": "10.4.21",
