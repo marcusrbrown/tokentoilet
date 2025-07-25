@@ -1,7 +1,6 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: ['github>marcusrbrown/renovate-config#4.1.1'],
-  automergeType: 'pr',
+  extends: ['github>marcusrbrown/renovate-config#4.2.0'],
   packageRules: [
     {
       description: 'Automerge minor updates of `lucide-react` once a month.',
@@ -16,6 +15,4 @@
     commands: ['pnpm run bootstrap', 'pnpm run format'],
     executionMode: 'branch',
   },
-  prCreation: 'not-pending',
-  rebaseWhen: 'behind-base-branch',
 }
