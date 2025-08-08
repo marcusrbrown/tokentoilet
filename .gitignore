@@ -36,3 +36,22 @@ next-env.d.ts
 
 # ???
 legacy.md
+
+# SpecStory
+.specstory/
+
+# SpecStory explanation file
+.specstory/.what-is-this.md
+
+# AI-related files
+# Ignore the entire .ai directory but keep specific subdirectories
+!.ai/
+.ai/*
+!.ai/analysis/
+!.ai/analysis/*
+!.ai/docs/
+!.ai/docs/*
+!.ai/notes/
+!.ai/notes/*
+!.ai/plan/
+!.ai/plan/*
