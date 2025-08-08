@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.css": "tailwindcss",
+        "llms.txt": "markdown"
+    },
+
+    "markdown.validate.referenceLinks.enabled": "ignore",
+
+    "typescript.tsdk": "node_modules/typescript/lib"
+}

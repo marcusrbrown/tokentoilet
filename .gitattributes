@@ -3,3 +3,6 @@
 next-env.d.ts text linguist-vendored
 
 *.mdc text linguist-language=YAML
+*.json linguist-language=JSON-with-Comments
+
+llms.txt text linguist-language=Markdown
