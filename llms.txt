@@ -2,7 +2,7 @@
 
 > A Web3 solution for cleaning up your digital wallet while supporting charitable causes. This DeFi application provides a fun, gamified way to dispose of unwanted tokens (ERC-20, ERC-721) while contributing to charity through a "token fountain" mechanism.
 
-Token Toilet is built with Next.js 14, TypeScript, and Tailwind CSS, featuring Web3 wallet integration through Wagmi and Web3Modal. The project combines token disposal with charitable giving, creating an entertaining way to clean up crypto wallets while generating value for good causes.
+Token Toilet is built with Next.js 15, TypeScript, and Tailwind CSS, featuring Web3 wallet integration through Wagmi and Web3Modal. The project combines token disposal with charitable giving, creating an entertaining way to clean up crypto wallets while generating value for good causes.
 
 ## Documentation
 
