@@ -1,6 +1,5 @@
 import {createConfig, http} from 'wagmi'
-import {mainnet, sepolia} from 'wagmi/chains'
-import {type Chain} from 'wagmi/chains'
+import {mainnet, sepolia, type Chain} from 'wagmi/chains'
 
 // You can get a project ID at https://cloud.walletconnect.com
 export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ''

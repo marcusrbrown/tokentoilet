@@ -1,4 +1,10 @@
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - sharp
+  - simple-git-hooks
   - unrs-resolver
+
+overrides:
+  jiti: <2.2.0
+
+shamefullyHoist: true

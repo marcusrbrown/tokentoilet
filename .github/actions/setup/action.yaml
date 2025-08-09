@@ -1,0 +1,89 @@
+---
+name: Setup Project
+description: Setup Node.js, pnpm, and install dependencies
+
+inputs:
+  node-version:
+    description: Node.js version to setup
+    required: false
+    default: '22'
+  install-dependencies:
+    description: Whether to install dependencies
+    required: false
+    default: 'true'
+  cache-key-suffix:
+    description: Additional suffix for cache keys
+    required: false
+    default: ''
+
+outputs:
+  node-version:
+    description: The Node.js version that was setup
+    value: ${{ steps.setup-node.outputs.node-version }}
+  cache-hit:
+    description: Whether pnpm cache was hit
+    value: ${{ steps.setup-pnpm.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      id: setup-pnpm
+      uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      with:
+        run_install: false
+
+    - name: Setup Node.js
+      id: setup-node
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
+
+    - id: cache-config
+      name: Configure cache
+      run: |
+        pnpm_store_path="$(pnpm store path --silent)"
+        if [ -z "pnpm_store_path" ]; then
+          echo "Failed to get pnpm store path"
+          exit 1
+        fi
+        mkdir -p "pnpm_store_path" || exit 1
+        echo "path=$pnpm_store_path" >> $GITHUB_OUTPUT
+        year_month=$(date -u '+%Y%m')
+        base_key="${{ runner.os }}-pnpm-cache-v${year_month}${{ inputs.cache-key-suffix && '-' }}${{ inputs.cache-key-suffix }}"
+        echo "key=${base_key}-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
+        echo "restore-keys=${base_key}-" >> $GITHUB_OUTPUT
+        echo "nextjs-key=${{ runner.os }}-nextjs-cache${{ inputs.cache-key-suffix && '-' }}${{ inputs.cache-key-suffix }}-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
+      shell: 'bash -Eeuo pipefail {0}'
+
+    - name: Setup pnpm cache
+      uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      with:
+        key: ${{ steps.cache-config.outputs.key }}
+        path: ${{ steps.cache-config.outputs.path }}
+        restore-keys: ${{ steps.cache-config.outputs.restore-keys }}
+
+    - name: Install dependencies
+      if: inputs.install-dependencies == 'true'
+      shell: bash
+      run: pnpm install --prefer-offline --loglevel warn
+
+    - name: Verify installation
+      if: inputs.install-dependencies == 'true'
+      shell: bash
+      run: |
+        echo "Node.js version: $(node --version)"
+        echo "pnpm version: $(pnpm --version)"
+        echo "Dependencies installed successfully"
+
+    - id: cache-nextjs
+      name: Setup Next.js related caches
+      uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      with:
+        key: ${{ steps.cache-config.outputs.nextjs-key }}
+        path: |
+          .next/cache
+          .cache
+          **/tsconfig.tsbuildinfo

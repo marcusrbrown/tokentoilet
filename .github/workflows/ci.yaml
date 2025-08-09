@@ -1,9 +1,10 @@
 ---
 name: CI
 
-'on':
+on:
   pull_request:
   push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -14,8 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Lint
+  check:
+    name: Check
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Checkout Branch
@@ -23,10 +24,11 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: 💅🏽 Run Prettier
-        uses: creyD/prettier_action@31355f8eef017f8aeba2e0bc09d8502b13dbbad1 # v4.3
-        env:
-          PRETTIER_VERSION: 3.6.2 # renovate: datasource=npm depName=prettier
-        with:
-          prettier_options: --check .
-          prettier_version: ${{ env.PRETTIER_VERSION }}
+      - name: Setup pnpm
+        uses: ./.github/actions/setup
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
