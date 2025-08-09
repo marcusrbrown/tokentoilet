@@ -1,6 +1,6 @@
 # Token Toilet - AI Agent Instructions
 
-Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 14 App Router + TypeScript + Wagmi + Web3Modal.
+Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi + Web3Modal.
 
 ## Architecture Overview
 
