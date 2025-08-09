@@ -1,6 +1,6 @@
 # Token Toilet - AI Agent Instructions
 
-Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi + Web3Modal.
+Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi v2 + Web3Modal.
 
 ## Architecture Overview
 
@@ -13,6 +13,7 @@ Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while s
 - `/components/web3/` - Web3-specific components (wallet, transactions)
 - `/hooks/` - Custom React hooks (wallet abstraction)
 - `/lib/web3/` - Web3 configuration and utilities
+- `/lib/design-tokens/` - Centralized design system with violet branding
 
 ## Key Patterns
 
@@ -23,6 +24,15 @@ import { useWallet } from '@/hooks/use-wallet'
 
 // Web3Modal integration via useWeb3Modal from @web3modal/wagmi/react
 // Custom error handling in wallet connection flows
+```
+
+### Design Tokens System
+```tsx
+// Import centralized design tokens for consistent theming
+import {violetPalette, semanticColors, glassMorphism} from '@/lib/design-tokens'
+
+// Use semantic color system for Web3 states
+import {web3States} from '@/lib/design-tokens/colors'
 ```
 
 ### Component Structure
@@ -42,8 +52,12 @@ import { useWallet } from '@/hooks/use-wallet'
 pnpm dev          # Start development server
 pnpm build        # Production build
 pnpm lint         # ESLint check
-pnpm format       # Prettier formatting
+pnpm fix          # Auto-fix lint issues
 ```
+
+**Project Scripts**:
+- `pnpm bootstrap` - Install dependencies with optimized settings
+- Git hooks with lint-staged automatically format code on commit
 
 **Key Files for Web3 Features**:
 - `lib/web3/config.ts` - Chain and wallet configuration
@@ -68,6 +82,7 @@ pnpm format       # Prettier formatting
 - Dark mode support via `dark:` classes
 - Gradient backgrounds: `from-violet-50 to-blue-50`
 - Glass morphism: `bg-white/80 backdrop-blur-md`
+- Centralized design tokens in `/lib/design-tokens/` with semantic color system
 
 ### Smart Contract Integration (Planned)
 - Contract interaction patterns will follow Wagmi's `useContract` hooks

@@ -19,9 +19,9 @@ Token Toilet is built with Next.js 15, TypeScript, and Tailwind CSS, featuring W
 
 - [Package Dependencies](package.json): Project dependencies, scripts, and technology stack definition
 - [TypeScript Configuration](tsconfig.json): TypeScript compiler settings and path mappings
-- [Next.js Configuration](next.config.js): Next.js framework configuration and build settings
-- [Tailwind Configuration](tailwind.config.js): Tailwind CSS styling framework configuration
+- [Next.js Configuration](next.config.ts): Next.js framework configuration and build settings
+- [Tailwind Configuration](tailwind.config.ts): Tailwind CSS styling framework configuration
 
 ## Optional
 
-- [PostCSS Configuration](postcss.config.js): CSS processing configuration for Tailwind CSS integration
+- [PostCSS Configuration](postcss.config.mjs): CSS processing configuration for Tailwind CSS integration
