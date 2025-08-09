@@ -4,12 +4,25 @@
   "private": true,
   "scripts": {
     "bootstrap": "pnpm install --prefer-offline --loglevel warn",
-    "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "dev": "next dev",
+    "fix": "next lint --fix",
     "lint": "next lint",
-    "fix": "next lint --fix"
+    "prepare": "simple-git-hooks",
+    "start": "next start"
   },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm exec lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,js,jsx,tsx,css,md,json,toml,yaml,yml}": [
+      "eslint --fix"
+    ],
+    "package.json": [
+      "pnpx sort-package-json"
+    ]
+  },
+  "prettier": "@bfra.me/prettier-config/120-proof",
   "dependencies": {
     "@tanstack/react-query": "^5.66.0",
     "@web3modal/wagmi": "^5.1.11",
@@ -40,17 +53,5 @@
     "typescript": "5.8.3",
     "viem": "^2.23.0"
   },
-  "simple-git-hooks": {
-    "pre-commit": "pnpm exec lint-staged"
-  },
-  "lint-staged": {
-    "*.{ts,js,jsx,tsx,css,md,json,toml,yaml,yml}": [
-      "pnpm fix"
-    ],
-    "package.json": [
-      "pnpx sort-package-json"
-    ]
-  },
-  "packageManager": "pnpm@10.14.0",
-  "prettier": "@bfra.me/prettier-config/120-proof"
+  "packageManager": "pnpm@10.14.0"
 }
