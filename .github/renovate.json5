@@ -12,7 +12,7 @@
     },
   ],
   postUpgradeTasks: {
-    commands: ['pnpm run bootstrap', 'pnpm run format'],
+    commands: ['pnpm install', 'pnpm run fix'],
     executionMode: 'branch',
   },
 }

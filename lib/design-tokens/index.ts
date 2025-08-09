@@ -7,88 +7,88 @@
  * semantic color system.
  */
 
+import {
+  delays,
+  durations,
+  keyframes,
+  loadingAnimations,
+  pageTransitions,
+  timingFunctions,
+  web3Animations,
+} from './animations'
 // Import all design token modules
 import {
-  violetPalette,
-  web3States,
+  addressColors,
   glassMorphism,
   gradients,
   semanticColors,
-  addressColors,
+  violetPalette,
+  web3States,
+  type SemanticColor,
   type VioletShade,
   type Web3State,
-  type SemanticColor,
 } from './colors'
-import {baseSpacing, glassSpacing, web3Spacing, sectionSpacing, gridSpacing, zIndex} from './spacing'
 import {
+  baseShadows,
+  effectShadows,
+  elevation,
+  glassShadows,
+  interactionShadows,
+  web3Shadows,
+  type BaseShadow,
+} from './shadows'
+import {baseSpacing, glassSpacing, gridSpacing, sectionSpacing, web3Spacing, zIndex} from './spacing'
+import {
+  componentTypography,
   fontFamilies,
   fontSizes,
   fontWeights,
+  headings,
   letterSpacing,
   web3Typography,
-  componentTypography,
-  headings,
 } from './typography'
-import {
-  baseShadows,
-  glassShadows,
-  elevation,
-  web3Shadows,
-  interactionShadows,
-  effectShadows,
-  type BaseShadow,
-} from './shadows'
-import {
-  timingFunctions,
-  durations,
-  delays,
-  keyframes,
-  web3Animations,
-  loadingAnimations,
-  pageTransitions,
-} from './animations'
 
+export {type AnimationToken, type Delay, type Duration, type TimingFunction} from './animations'
 // Re-export all design token modules and types
-export {type ColorToken, type VioletShade, type Web3State, type SemanticColor} from './colors'
-export {type SpacingToken, type BaseSpacing, type GlassBlur, type GlassRadius} from './spacing'
-export {type TypographyToken, type FontSize, type FontWeight, type LetterSpacing} from './typography'
-export {type ShadowToken, type BaseShadow, type GlassShadow, type ElevationLevel} from './shadows'
-export {type AnimationToken, type Duration, type TimingFunction, type Delay} from './animations'
+export {type ColorToken, type SemanticColor, type VioletShade, type Web3State} from './colors'
+export {type BaseShadow, type ElevationLevel, type GlassShadow, type ShadowToken} from './shadows'
+export {type BaseSpacing, type GlassBlur, type GlassRadius, type SpacingToken} from './spacing'
+export {type FontSize, type FontWeight, type LetterSpacing, type TypographyToken} from './typography'
 
 // Re-export specific commonly used tokens for convenience
 export {
-  violetPalette,
-  web3States,
-  glassMorphism,
-  gradients,
-  semanticColors,
   addressColors,
+  baseShadows,
   baseSpacing,
-  glassSpacing,
-  web3Spacing,
-  sectionSpacing,
-  gridSpacing,
-  zIndex,
+  componentTypography,
+  delays,
+  durations,
+  effectShadows,
+  elevation,
   fontFamilies,
   fontSizes,
   fontWeights,
-  letterSpacing,
-  web3Typography,
-  componentTypography,
-  headings,
-  baseShadows,
+  glassMorphism,
   glassShadows,
-  elevation,
-  web3Shadows,
+  glassSpacing,
+  gradients,
+  gridSpacing,
+  headings,
   interactionShadows,
-  effectShadows,
-  timingFunctions,
-  durations,
-  delays,
   keyframes,
-  web3Animations,
+  letterSpacing,
   loadingAnimations,
   pageTransitions,
+  sectionSpacing,
+  semanticColors,
+  timingFunctions,
+  violetPalette,
+  web3Animations,
+  web3Shadows,
+  web3Spacing,
+  web3States,
+  web3Typography,
+  zIndex,
 }
 
 // Consolidated design token object for easy access
@@ -113,7 +113,7 @@ export const designTokens = {
     fontFamily: fontFamilies,
     fontSize: fontSizes,
     fontWeight: fontWeights,
-    letterSpacing: letterSpacing,
+    letterSpacing,
     web3: web3Typography,
     component: componentTypography,
     heading: headings,

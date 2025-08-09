@@ -383,7 +383,7 @@ export const typography = {
   fontFamily: fontFamilies,
   fontSize: fontSizes,
   fontWeight: fontWeights,
-  letterSpacing: letterSpacing,
+  letterSpacing,
   web3: web3Typography,
   component: componentTypography,
   heading: headings,

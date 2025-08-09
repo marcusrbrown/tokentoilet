@@ -1,7 +1,7 @@
 'use client'
 
-import {Wallet} from 'lucide-react'
 import {useWallet} from '@/hooks/use-wallet'
+import {Wallet} from 'lucide-react'
 
 export function WalletButton() {
   const {address, isConnected, connect, disconnect} = useWallet()
