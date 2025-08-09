@@ -1,4 +1,5 @@
 import type {Config} from 'tailwindcss'
+import colors from 'tailwindcss/colors'
 import {
   violetPalette,
   semanticColors,
@@ -29,6 +30,9 @@ export default {
     extend: {
       // Extended color palette with violet brand and semantic colors
       colors: {
+        // Include default Tailwind colors
+        ...colors,
+
         // Keep existing CSS custom property colors for compatibility
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -38,7 +42,7 @@ export default {
         },
         border: 'hsl(var(--border))',
 
-        // Add violet brand palette
+        // Override/add violet brand palette
         violet: violetPalette,
 
         // Add semantic color system
