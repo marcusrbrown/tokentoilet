@@ -1,13 +1,9 @@
 'use client'
 
-import {wagmiConfig, web3ModalConfig} from '@/lib/web3/config'
+import {wagmiConfig} from '@/lib/web3/config'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
-import {createWeb3Modal} from '@web3modal/wagmi/react'
 import {type ReactNode} from 'react'
 import {WagmiProvider} from 'wagmi'
-
-// Create Web3Modal
-createWeb3Modal(web3ModalConfig)
 
 // Create QueryClient
 const queryClient = new QueryClient()
