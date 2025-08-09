@@ -1,12 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   :root {
     /* Original CSS custom properties for compatibility */
     --background: 204 100% 97%;
     --foreground: 222.2 84% 4.9%;
+    --border: 214.3 31.8% 91.4%;
     --primary: 47.9 95.8% 53.1%;
     --primary-foreground: 26 83.3% 14.1%;
 
@@ -121,6 +120,7 @@
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 84% 4.9%;
 
