@@ -78,11 +78,19 @@ pnpm fix          # Auto-fix lint issues
 - Next-themes for theme persistence
 
 ### Styling Patterns
-- Tailwind with violet primary color (`bg-violet-500`, `text-violet-600`)
-- Dark mode support via `dark:` classes
-- Gradient backgrounds: `from-violet-50 to-blue-50`
-- Glass morphism: `bg-white/80 backdrop-blur-md`
-- Centralized design tokens in `/lib/design-tokens/` with semantic color system
+- **Tailwind CSS v4**: Uses CSS-first approach with `@import "tailwindcss"` in `app/globals.css`
+- **Primary Colors**: Violet branding (`bg-violet-500`, `text-violet-600`, `border-violet-300`)
+- **Dark Mode**: Support via `dark:` classes and CSS custom properties
+- **Gradient Backgrounds**: `from-violet-50 to-blue-50`, `from-violet-400 to-blue-600`
+- **Glass Morphism**: `bg-white/80 backdrop-blur-md` for glass container effects
+- **Centralized Design System**: `/lib/design-tokens/` with semantic color system
+
+#### Tailwind v4 Best Practices
+- Use standard Tailwind utilities instead of custom CSS variables when possible
+- CSS custom properties defined in `:root` for theme variables
+- Avoid `@apply` directives - use component classes or utility combinations
+- CSS imports: `@import "tailwindcss"` (not the legacy `@tailwind base;` directives)
+- Build process: PostCSS with `@tailwindcss/postcss` plugin
 
 ### Smart Contract Integration (Planned)
 - Contract interaction patterns will follow Wagmi's `useContract` hooks
