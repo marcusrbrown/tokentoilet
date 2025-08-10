@@ -1,7 +1,25 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Theme colors that reference CSS custom properties */
+  --color-background: var(--background-color);
+  --color-foreground: var(--foreground-color);
+  --color-border: var(--border-color);
+  --color-primary: var(--primary-color);
+  --color-primary-foreground: var(--primary-foreground-color);
+}
+
 @layer base {
   :root {
+    /* Theme color variables - Light mode defaults */
+    --background-color: hsl(204 100% 97%);
+    --foreground-color: hsl(222.2 84% 4.9%);
+    --border-color: hsl(214.3 31.8% 91.4%);
+    --primary-color: hsl(47.9 95.8% 53.1%);
+    --primary-foreground-color: hsl(26 83.3% 14.1%);
+
     /* Original CSS custom properties for compatibility */
     --background: 204 100% 97%;
     --foreground: 222.2 84% 4.9%;
@@ -118,6 +136,14 @@
 
   /* Dark mode overrides */
   .dark {
+    /* Override theme colors for dark mode - these override @theme variables */
+    --background-color: hsl(222.2 84% 4.9%);
+    --foreground-color: hsl(210 40% 98%);
+    --border-color: hsl(217.2 32.6% 17.5%);
+    --primary-color: hsl(217.2 91.2% 59.8%);
+    --primary-foreground-color: hsl(222.2 84% 4.9%);
+
+    /* Keep CSS variables in sync for compatibility */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
@@ -135,7 +161,54 @@
   }
 }
 
-@layer base {
+@layer components {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+
+  /* Enhanced focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-violet-600 ring-offset-2 ring-offset-background;
+  }
+
+  /* Improved text rendering */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-gray-500;
+  }
+
+  /* Base element styles */
   * {
     border-color: hsl(var(--border));
   }
@@ -232,12 +305,19 @@
   }
 
   .btn-secondary {
-    @apply glass-container;
+    @apply backdrop-blur-md;
     @apply text-gray-700 dark:text-gray-300 font-medium;
     @apply px-4 py-2 rounded-lg;
     @apply transition-all duration-150;
     @apply hover:shadow-md active:shadow-lg;
     @apply focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2;
+    background: var(--glass-light-primary);
+    border: 1px solid var(--glass-light-border);
+  }
+
+  .dark .btn-secondary {
+    background: var(--glass-dark-primary);
+    border-color: var(--glass-dark-border);
   }
 
   .btn-ghost {
@@ -250,10 +330,17 @@
 
   /* Card components */
   .card {
-    @apply glass-container;
+    @apply backdrop-blur-md;
     @apply rounded-2xl p-6;
     @apply shadow-sm hover:shadow-md;
     @apply transition-all duration-300;
+    background: var(--glass-light-primary);
+    border: 1px solid var(--glass-light-border);
+  }
+
+  .dark .card {
+    background: var(--glass-dark-primary);
+    border-color: var(--glass-dark-border);
   }
 
   .card-hover {
