@@ -35,7 +35,7 @@
     "wagmi": "^2.14.11"
   },
   "devDependencies": {
-    "@bfra.me/eslint-config": "^0.25.1",
+    "@bfra.me/eslint-config": "^0.28.0",
     "@bfra.me/prettier-config": "^0.16.0",
     "@next/eslint-plugin-next": "^15.4.6",
     "@tailwindcss/postcss": "^4.1.11",
