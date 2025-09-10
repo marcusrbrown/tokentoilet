@@ -2,7 +2,7 @@
 goal: Migrate Token Toilet from Tailwind CSS v3 to v4 using CSS-first configuration approach
 version: 1.0
 date_created: 2025-08-08
-last_updated: 2025-08-08
+last_updated: 2025-09-10
 owner: Marcus R. Brown
 status: 'In Progress'
 tags: ['upgrade', 'tailwind', 'css', 'design-system', 'migration']
@@ -47,17 +47,7 @@ This implementation plan details the systematic migration of Token Toilet's Next
 | TASK-004 | Audit all @apply usage throughout CSS files using grep | ✅ | 2025-08-10 |
 | TASK-005 | Verify Tailwind v4 packages are correctly installed (v4.1.11) | ✅ | 2025-08-10 |
 
-### Implementation Phase 2: CSS Import Migration
-
-- GOAL-002: Update CSS imports to Tailwind v4 format
-
-| Task | Description | Completed | Date |
-|------|-------------|-----------|------|
-| TASK-006 | Replace @tailwind base; @tailwind components; @tailwind utilities; with @import "tailwindcss"; in globals.css | |  |
-| TASK-007 | Verify PostCSS configuration uses @tailwindcss/postcss plugin | |  |
-| TASK-008 | Test basic build process works with new import structure | |  |
-
-### Implementation Phase 3: Theme Configuration Migration
+### Implementation Phase 2: Theme Configuration Migration
 
 - GOAL-003: Convert tailwind.config.ts design tokens to CSS @theme blocks
 
@@ -75,26 +65,26 @@ This implementation plan details the systematic migration of Token Toilet's Next
 | TASK-018 | Create @theme block for animation durations and timing functions (--duration-*, --timing-*) | ✅ | 2025-09-10 |
 | TASK-019 | Create @theme block for backdrop blur values (--blur-*) | ✅ | 2025-09-10 |
 
-### Implementation Phase 4: Component Style Conversion
+### Implementation Phase 3: Component Style Conversion
 
 - GOAL-004: Replace all @apply directives with standard CSS properties
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-020 | Convert .glass-container utility to standard CSS properties using backdrop-filter | |  |
-| TASK-021 | Convert .btn-primary styles from @apply to standard CSS properties | |  |
-| TASK-022 | Convert .btn-secondary styles from @apply to standard CSS properties | |  |
-| TASK-023 | Convert .btn-ghost styles from @apply to standard CSS properties | |  |
-| TASK-024 | Convert .card component styles from @apply to standard CSS properties | |  |
-| TASK-025 | Convert form component styles (.form-input, .form-label, .form-error) from @apply | |  |
-| TASK-026 | Convert navigation styles (.nav-link) from @apply to standard CSS properties | |  |
-| TASK-027 | Convert Web3 status indicators (.status-*) from @apply to standard CSS properties | |  |
-| TASK-028 | Convert address display styles (.address-display) from @apply to standard CSS properties | |  |
-| TASK-029 | Convert loading states (.loading-spinner, .loading-skeleton) from @apply | |  |
-| TASK-030 | Convert gradient text utilities (.text-gradient) from @apply to standard CSS | |  |
-| TASK-031 | Convert base styles (body, focus styles) from @apply to standard CSS properties | |  |
+| TASK-020 | Convert .glass-container utility to standard CSS properties using backdrop-filter | ✅ | 2025-09-10 |
+| TASK-021 | Convert .btn-primary styles from @apply to standard CSS properties | ✅ | 2025-09-10 |
+| TASK-022 | Convert .btn-secondary styles from @apply to standard CSS properties | ✅ | 2025-09-10 |
+| TASK-023 | Convert .btn-ghost styles from @apply to standard CSS properties | ✅ | 2025-09-10 |
+| TASK-024 | Convert .card component styles from @apply to standard CSS properties | ✅ | 2025-09-10 |
+| TASK-025 | Convert form component styles (.form-input, .form-label, .form-error) from @apply | ✅ | 2025-09-10 |
+| TASK-026 | Convert navigation styles (.nav-link) from @apply to standard CSS properties | ✅ | 2025-09-10 |
+| TASK-027 | Convert Web3 status indicators (.status-*) from @apply to standard CSS properties | ✅ | 2025-09-10 |
+| TASK-028 | Convert address display styles (.address-display) from @apply to standard CSS properties | ✅ | 2025-09-10 |
+| TASK-029 | Convert loading states (.loading-spinner, .loading-skeleton) from @apply | ✅ | 2025-09-10 |
+| TASK-030 | Convert gradient text utilities (.text-gradient) from @apply to standard CSS | ✅ | 2025-09-10 |
+| TASK-031 | Convert base styles (body, focus styles) from @apply to standard CSS properties | ✅ | 2025-09-10 |
 
-### Implementation Phase 5: Animation and Keyframe Migration
+### Implementation Phase 4: Animation and Keyframe Migration
 
 - GOAL-005: Migrate custom animations and keyframes to CSS-first approach
 
@@ -105,7 +95,7 @@ This implementation plan details the systematic migration of Token Toilet's Next
 | TASK-034 | Create CSS keyframes for loading animations (pulse-subtle, spin-slow, bounce-gentle) | |  |
 | TASK-035 | Convert animation utilities to use new keyframes and timing functions | |  |
 
-### Implementation Phase 6: Testing and Validation
+### Implementation Phase 5: Testing and Validation
 
 - GOAL-006: Validate migration maintains visual and functional parity
 
@@ -122,7 +112,7 @@ This implementation plan details the systematic migration of Token Toilet's Next
 | TASK-044 | Verify no build warnings in development and production builds | |  |
 | TASK-045 | Verify no console errors in browser during theme switching | |  |
 
-### Implementation Phase 7: Cleanup and Documentation
+### Implementation Phase 6: Cleanup and Documentation
 
 - GOAL-007: Remove legacy configuration and update documentation
 
