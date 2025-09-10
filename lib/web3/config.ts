@@ -3,7 +3,7 @@ import {arbitrum, mainnet, polygon, type AppKitNetwork} from '@reown/appkit/netw
 import {createAppKit} from '@reown/appkit/react'
 
 // You can get a project ID at https://cloud.walletconnect.com
-export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ''
+export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? ''
 
 // Define the networks for multi-chain support
 export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, polygon, arbitrum]
