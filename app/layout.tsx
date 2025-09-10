@@ -1,5 +1,5 @@
+import type {Metadata} from 'next/types'
 import {Inter} from 'next/font/google'
-import {type Metadata} from 'next/types'
 import {Providers} from './providers'
 import './globals.css'
 
