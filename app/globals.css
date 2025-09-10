@@ -3,6 +3,110 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  /* Violet Brand Palette */
+  --color-violet-50: #f5f3ff;
+  --color-violet-100: #ede9fe;
+  --color-violet-200: #ddd6fe;
+  --color-violet-300: #c4b5fd;
+  --color-violet-400: #a78bfa;
+  --color-violet-500: #8b5cf6;
+  --color-violet-600: #7c3aed;
+  --color-violet-700: #6d28d9;
+  --color-violet-800: #5b21b7;
+  --color-violet-900: #4c1d95;
+  --color-violet-950: #2e1065;
+
+  /* Web3 State Colors */
+  --color-web3-connected: #10b981;
+  --color-web3-connecting: #f59e0b;
+  --color-web3-disconnected: #ef4444;
+  --color-web3-error: #dc2626;
+  --color-web3-pending: #f59e0b;
+  --color-web3-confirmed: #10b981;
+  --color-web3-failed: #ef4444;
+  --color-web3-mainnet: #627eea;
+  --color-web3-testnet: #fbbf24;
+  --color-web3-polygon: #8247e5;
+  --color-web3-arbitrum: #28a0f0;
+  --color-web3-optimism: #ff0420;
+
+  /* Glass Morphism Colors */
+  --color-glass-light-primary: rgb(255 255 255 / 0.8);
+  --color-glass-light-secondary: rgb(255 255 255 / 0.6);
+  --color-glass-light-tertiary: rgb(255 255 255 / 0.4);
+  --color-glass-light-border: rgb(255 255 255 / 0.2);
+  --color-glass-dark-primary: rgb(17 24 39 / 0.8);
+  --color-glass-dark-secondary: rgb(31 41 55 / 0.8);
+  --color-glass-dark-tertiary: rgb(55 65 81 / 0.6);
+  --color-glass-dark-border: rgb(75 85 99 / 0.2);
+
+  /* Semantic Colors */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Spacing Tokens */
+  --spacing-glass-xs: 0.75rem;
+  --spacing-glass-sm: 1rem;
+  --spacing-glass-md: 1.5rem;
+  --spacing-glass-lg: 2rem;
+  --spacing-glass-xl: 3rem;
+  --spacing-glass-2xl: 4rem;
+
+  /* Border Radius Tokens */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+
+  /* Shadow Tokens */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-glass-light: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-glass-dark: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-violet-glow: 0 0 20px rgb(124 58 237 / 0.3), 0 0 40px rgb(124 58 237 / 0.15);
+
+  /* Backdrop Blur Tokens */
+  --blur-sm: 4px;
+  --blur-md: 12px;
+  --blur-lg: 16px;
+  --blur-xl: 24px;
+  --blur-2xl: 40px;
+  --blur-3xl: 64px;
+
+  /* Animation Duration Tokens */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 750ms;
+  --duration-slowest: 1000ms;
+
+  /* Animation Timing Functions */
+  --timing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --timing-wallet: cubic-bezier(0.4, 0, 0.6, 1);
+  --timing-transaction: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --timing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Z-Index Scale */
+  --z-hide: -1;
+  --z-base: 0;
+  --z-docked: 10;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-banner: 1200;
+  --z-overlay: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-skip-link: 1600;
+  --z-toast: 1700;
+  --z-tooltip: 1800;
+
   /* Theme colors that reference CSS custom properties */
   --color-background: var(--background-color);
   --color-foreground: var(--foreground-color);
@@ -26,112 +130,6 @@
     --border: 214.3 31.8% 91.4%;
     --primary: 47.9 95.8% 53.1%;
     --primary-foreground: 26 83.3% 14.1%;
-
-    /* Design Token CSS Custom Properties */
-
-    /* Violet Brand Palette */
-    --color-violet-50: #f5f3ff;
-    --color-violet-100: #ede9fe;
-    --color-violet-200: #ddd6fe;
-    --color-violet-300: #c4b5fd;
-    --color-violet-400: #a78bfa;
-    --color-violet-500: #8b5cf6;
-    --color-violet-600: #7c3aed;
-    --color-violet-700: #6d28d9;
-    --color-violet-800: #5b21b7;
-    --color-violet-900: #4c1d95;
-    --color-violet-950: #2e1065;
-
-    /* Web3 State Colors */
-    --color-web3-connected: #10b981;
-    --color-web3-connecting: #f59e0b;
-    --color-web3-disconnected: #ef4444;
-    --color-web3-error: #dc2626;
-    --color-web3-pending: #f59e0b;
-    --color-web3-confirmed: #10b981;
-    --color-web3-failed: #ef4444;
-    --color-web3-mainnet: #627eea;
-    --color-web3-testnet: #fbbf24;
-    --color-web3-polygon: #8247e5;
-    --color-web3-arbitrum: #28a0f0;
-    --color-web3-optimism: #ff0420;
-
-    /* Glass Morphism Backgrounds */
-    --glass-light-primary: rgb(255 255 255 / 0.8);
-    --glass-light-secondary: rgb(255 255 255 / 0.6);
-    --glass-light-tertiary: rgb(255 255 255 / 0.4);
-    --glass-light-border: rgb(255 255 255 / 0.2);
-    --glass-dark-primary: rgb(17 24 39 / 0.8);
-    --glass-dark-secondary: rgb(31 41 55 / 0.8);
-    --glass-dark-tertiary: rgb(55 65 81 / 0.6);
-    --glass-dark-border: rgb(75 85 99 / 0.2);
-
-    /* Semantic Colors */
-    --color-success: #22c55e;
-    --color-warning: #f59e0b;
-    --color-error: #ef4444;
-    --color-info: #3b82f6;
-
-    /* Spacing Tokens */
-    --spacing-glass-xs: 0.75rem;
-    --spacing-glass-sm: 1rem;
-    --spacing-glass-md: 1.5rem;
-    --spacing-glass-lg: 2rem;
-    --spacing-glass-xl: 3rem;
-    --spacing-glass-2xl: 4rem;
-
-    /* Border Radius Tokens */
-    --radius-sm: 0.25rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
-    --radius-2xl: 1.5rem;
-    --radius-3xl: 2rem;
-
-    /* Shadow Tokens */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-    --shadow-glass-light: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-glass-dark: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-violet-glow: 0 0 20px rgb(124 58 237 / 0.3), 0 0 40px rgb(124 58 237 / 0.15);
-
-    /* Backdrop Blur Tokens */
-    --blur-sm: 4px;
-    --blur-md: 12px;
-    --blur-lg: 16px;
-    --blur-xl: 24px;
-    --blur-2xl: 40px;
-    --blur-3xl: 64px;
-
-    /* Animation Duration Tokens */
-    --duration-fast: 150ms;
-    --duration-normal: 300ms;
-    --duration-slow: 500ms;
-    --duration-slower: 750ms;
-    --duration-slowest: 1000ms;
-
-    /* Animation Timing Functions */
-    --timing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-    --timing-wallet: cubic-bezier(0.4, 0, 0.6, 1);
-    --timing-transaction: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --timing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
-    /* Z-Index Scale */
-    --z-hide: -1;
-    --z-base: 0;
-    --z-docked: 10;
-    --z-dropdown: 1000;
-    --z-sticky: 1100;
-    --z-banner: 1200;
-    --z-overlay: 1300;
-    --z-modal: 1400;
-    --z-popover: 1500;
-    --z-skip-link: 1600;
-    --z-toast: 1700;
-    --z-tooltip: 1800;
   }
 
   /* Dark mode overrides */
@@ -311,13 +309,13 @@
     @apply transition-all duration-150;
     @apply hover:shadow-md active:shadow-lg;
     @apply focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2;
-    background: var(--glass-light-primary);
-    border: 1px solid var(--glass-light-border);
+    background: var(--color-glass-light-primary);
+    border: 1px solid var(--color-glass-light-border);
   }
 
   .dark .btn-secondary {
-    background: var(--glass-dark-primary);
-    border-color: var(--glass-dark-border);
+    background: var(--color-glass-dark-primary);
+    border-color: var(--color-glass-dark-border);
   }
 
   .btn-ghost {
@@ -334,13 +332,13 @@
     @apply rounded-2xl p-6;
     @apply shadow-sm hover:shadow-md;
     @apply transition-all duration-300;
-    background: var(--glass-light-primary);
-    border: 1px solid var(--glass-light-border);
+    background: var(--color-glass-light-primary);
+    border: 1px solid var(--color-glass-light-border);
   }
 
   .dark .card {
-    background: var(--glass-dark-primary);
-    border-color: var(--glass-dark-border);
+    background: var(--color-glass-dark-primary);
+    border-color: var(--color-glass-dark-border);
   }
 
   .card-hover {
