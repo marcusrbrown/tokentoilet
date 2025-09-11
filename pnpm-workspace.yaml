@@ -1,6 +1,7 @@
 onlyBuiltDependencies:
   - '@reown/appkit'
   - '@tailwindcss/oxide'
+  - esbuild
   - sharp
   - simple-git-hooks
   - unrs-resolver
