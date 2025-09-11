@@ -6,8 +6,8 @@
     "bootstrap": "pnpm install --prefer-offline --loglevel warn",
     "build": "next build",
     "dev": "next dev",
-    "fix": "next lint --fix",
-    "lint": "next lint",
+    "fix": "eslint --fix",
+    "lint": "eslint",
     "prepare": "simple-git-hooks",
     "start": "next start"
   },
@@ -37,6 +37,7 @@
   "devDependencies": {
     "@bfra.me/eslint-config": "^0.28.0",
     "@bfra.me/prettier-config": "^0.16.0",
+    "@eslint/eslintrc": "^3.3.1",
     "@next/eslint-plugin-next": "^15.4.6",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "22.18.0",
@@ -44,6 +45,7 @@
     "@types/react-dom": "19.1.9",
     "autoprefixer": "10.4.21",
     "eslint": "9.35.0",
+    "eslint-config-next": "15.5.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "lint-staged": "^16.1.5",
