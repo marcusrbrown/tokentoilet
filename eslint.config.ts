@@ -34,6 +34,7 @@ export default defineConfig(
       ...normalizeRules(pluginNext.configs.recommended.rules),
       ...normalizeRules(pluginNext.configs['core-web-vitals'].rules),
       '@next/next/no-img-element': 'error',
+      '@typescript-eslint/no-use-before-define': 'off',
       // Next.js build says 'node:process' is not handled by plugins
       'node/prefer-global/process': 'off',
     },
