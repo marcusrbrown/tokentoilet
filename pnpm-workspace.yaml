@@ -1,4 +1,5 @@
 onlyBuiltDependencies:
+  - '@reown/appkit'
   - '@tailwindcss/oxide'
   - sharp
   - simple-git-hooks
