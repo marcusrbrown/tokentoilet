@@ -79,7 +79,7 @@ This implementation plan outlines the migration from deprecated `@web3modal/wagm
 | TASK-012 | Add Polygon mainnet configuration with RPC endpoint | ✅ | 2025-09-10 |
 | TASK-013 | Add Arbitrum One configuration with RPC endpoint | ✅ | 2025-09-10 |
 | TASK-014 | Implement network validation in useWallet hook | ✅ | 2025-09-10 |
-| TASK-015 | Add error handling for unsupported networks | | |
+| TASK-015 | Add error handling for unsupported networks | ✅ | 2025-09-10 |
 | TASK-016 | Test network switching between Ethereum, Polygon, and Arbitrum | | |
 
 ### Implementation Phase 4: Testing and Validation
