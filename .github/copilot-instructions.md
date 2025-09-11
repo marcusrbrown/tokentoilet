@@ -80,17 +80,54 @@ pnpm fix          # Auto-fix lint issues
 ### Styling Patterns
 - **Tailwind CSS v4**: Uses CSS-first approach with `@import "tailwindcss"` in `app/globals.css`
 - **Primary Colors**: Violet branding (`bg-violet-500`, `text-violet-600`, `border-violet-300`)
-- **Dark Mode**: Support via `dark:` classes and CSS custom properties
+- **Dark Mode**: Support via `dark:` classes and CSS custom properties with custom variant `@custom-variant dark (&:where(.dark, .dark *))`
 - **Gradient Backgrounds**: `from-violet-50 to-blue-50`, `from-violet-400 to-blue-600`
-- **Glass Morphism**: `bg-white/80 backdrop-blur-md` for glass container effects
-- **Centralized Design System**: `/lib/design-tokens/` with semantic color system
+- **Glass Morphism**: Complete glass container utilities with backdrop-filter support
+- **Centralized Design System**: Complete migration from `/lib/design-tokens/` to CSS `@theme` blocks
 
-#### Tailwind v4 Best Practices
-- Use standard Tailwind utilities instead of custom CSS variables when possible
-- CSS custom properties defined in `:root` for theme variables
-- Avoid `@apply` directives - use component classes or utility combinations
-- CSS imports: `@import "tailwindcss"` (not the legacy `@tailwind base;` directives)
-- Build process: PostCSS with `@tailwindcss/postcss` plugin
+#### Tailwind v4 Migration Completed (2025-09-10)
+**✅ Configuration Approach**:
+- **NO `tailwind.config.ts`** - Fully converted to CSS-first using `@theme` blocks in `app/globals.css`
+- **CSS Variables**: All design tokens converted to CSS custom properties (`--color-violet-*`, `--spacing-*`, etc.)
+- **Zero @apply**: All 64+ `@apply` directives eliminated - use component classes or utility combinations
+- **Single Import**: `@import "tailwindcss"` replaces legacy `@tailwind base; @tailwind components; @tailwind utilities;`
+
+**🎨 Design Token Architecture**:
+```css
+@theme {
+  /* Violet Brand Palette */
+  --color-violet-50: #f5f3ff;
+  --color-violet-500: #8b5cf6;
+
+  /* Web3 State Colors */
+  --color-web3-connected: #10b981;
+  --color-web3-pending: #f59e0b;
+
+  /* Glass Morphism Colors */
+  --color-glass-light-primary: rgb(255 255 255 / 0.8);
+  --color-glass-dark-primary: rgb(17 24 39 / 0.8);
+
+  /* Spacing, Typography, Shadows, Animations */
+  --spacing-glass-xs: 0.75rem;
+  --font-family-display: ui-serif, Georgia, serif;
+  --shadow-glass-subtle: 0 1px 3px rgb(0 0 0 / 0.1);
+  --duration-fast: 150ms;
+}
+```
+
+**🚫 Anti-Patterns (Avoid)**:
+- Creating new `tailwind.config.ts` files
+- Using `@apply` directives anywhere
+- Legacy `@tailwind` directives
+- JavaScript-based theme configuration
+- Custom CSS that duplicates Tailwind utilities
+
+**✅ Best Practices**:
+- Use CSS `@theme` blocks for design tokens
+- Component-based CSS classes with standard properties
+- CSS custom properties for theme variables
+- Utility-first approach with semantic class combinations
+- Glass morphism via `.glass-container`, `.glass-card`, `.glass-button` classes
 
 ### Smart Contract Integration (Planned)
 - Contract interaction patterns will follow Wagmi's `useContract` hooks
