@@ -1,6 +1,7 @@
 import {WagmiAdapter} from '@reown/appkit-adapter-wagmi'
 import {arbitrum, mainnet, polygon, type AppKitNetwork} from '@reown/appkit/networks'
 import {createAppKit} from '@reown/appkit/react'
+import {http} from 'viem'
 
 // You can get a project ID at https://cloud.walletconnect.com
 export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? ''
@@ -16,11 +17,16 @@ export const metadata = {
   icons: ['/toilet.svg'],
 }
 
-// Create Wagmi Adapter with multi-chain support
+// Create Wagmi Adapter with multi-chain support and custom RPC endpoints
 export const wagmiAdapter = new WagmiAdapter({
   networks,
   projectId,
   ssr: true,
+  transports: {
+    [mainnet.id]: http(), // Use default RPC for Ethereum mainnet
+    [polygon.id]: http('https://polygon-mainnet.g.alchemy.com/v2/demo'), // Polygon mainnet RPC
+    [arbitrum.id]: http('https://arb-mainnet.g.alchemy.com/v2/demo'), // Arbitrum One RPC
+  },
 })
 
 // Create AppKit with custom theming for violet design system
