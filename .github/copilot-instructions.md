@@ -1,13 +1,13 @@
 # Token Toilet - AI Agent Instructions
 
-Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi v2 + Web3Modal.
+Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi v2 + Reown AppKit.
 
 ## Architecture Overview
 
-**Web3 Provider Chain**: `app/layout.tsx` → `app/providers.tsx` → `Web3Provider` (Wagmi + TanStack Query) → `ThemeProvider`
-- All Web3 state flows through Wagmi's provider system
-- Web3Modal handles wallet connections with project-specific theming
-- Configuration centralized in `lib/web3/config.ts`
+**Web3 Provider Chain**: `app/layout.tsx` → `app/providers.tsx` → `Web3Provider` (Wagmi + TanStack Query) → `ThemeSync`
+- All Web3 state flows through Wagmi's provider system via `WagmiAdapter`
+- Reown AppKit (formerly Web3Modal) handles wallet connections with violet theming
+- Configuration centralized in `lib/web3/config.ts` with multi-chain support
 
 **Component Organization**:
 - `/components/web3/` - Web3-specific components (wallet, transactions)
@@ -22,8 +22,23 @@ Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while s
 // Always use the custom useWallet hook for wallet operations
 import { useWallet } from '@/hooks/use-wallet'
 
-// Web3Modal integration via useWeb3Modal from @web3modal/wagmi/react
-// Custom error handling in wallet connection flows
+// Reown AppKit integration via useAppKit from @reown/appkit/react
+// Multi-chain support: Ethereum mainnet, Polygon, Arbitrum
+// Custom error handling with network validation
+```
+
+### Testing Patterns
+```tsx
+// Web3 components require comprehensive mocking
+vi.mock('wagmi', () => ({
+  useAccount: vi.fn(),
+  useChainId: vi.fn(),
+  useDisconnect: vi.fn(),
+  useSwitchChain: vi.fn(),
+}))
+
+// Test different wallet states and error conditions
+// Example: hooks/use-wallet.test.ts, hooks/use-wallet.connection-errors.test.ts
 ```
 
 ### Design Tokens System
@@ -41,8 +56,9 @@ import {web3States} from '@/lib/design-tokens/colors'
 - Address formatting: `${address.slice(0, 6)}...${address.slice(-4)}`
 
 ### Configuration Management
-- Web3Modal project ID from `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
-- Chain configuration supports mainnet + sepolia for development
+- Reown AppKit project ID from `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
+- Multi-chain configuration: Ethereum mainnet, Polygon, Arbitrum
+- Custom RPC endpoints defined in `wagmiAdapter` transports
 - Theming integrated with Tailwind's violet color scheme
 
 ## Development Workflow
@@ -55,14 +71,20 @@ pnpm lint         # ESLint check
 pnpm fix          # Auto-fix lint issues
 ```
 
+**Testing:**
+```bash
+pnpm test         # Run Vitest test suite
+pnpm test:ui      # Run tests with UI
+```
+
 **Project Scripts**:
 - `pnpm bootstrap` - Install dependencies with optimized settings
 - Git hooks with lint-staged automatically format code on commit
 
 **Key Files for Web3 Features**:
-- `lib/web3/config.ts` - Chain and wallet configuration
-- `hooks/use-wallet.ts` - Wallet connection abstraction
-- `components/web3/web3-provider.tsx` - Provider setup
+- `lib/web3/config.ts` - Multi-chain configuration with WagmiAdapter
+- `hooks/use-wallet.ts` - Wallet connection abstraction with error handling
+- `components/web3/web3-provider.tsx` - Provider setup with TanStack Query
 - `components/web3/wallet-button.tsx` - Connection UI component
 
 ## Project-Specific Conventions
@@ -71,6 +93,13 @@ pnpm fix          # Auto-fix lint issues
 - Web3 operations wrapped in try/catch with console.error logging
 - Graceful fallbacks for wallet connection failures
 - No throw on disconnect/connection errors
+
+### Testing Patterns
+- Web3 components require mocked wallet providers in tests
+- Test files use pattern: `component.test.ts` alongside source files
+- Comprehensive wallet state testing: connected, connecting, error states
+- Mock patterns: `vi.mock('wagmi')` and `vi.mock('@reown/appkit/react')`
+- Focus on error boundaries and network validation scenarios
 
 ### State Management
 - Wagmi handles Web3 state (accounts, chains, connections)
