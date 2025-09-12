@@ -10,7 +10,7 @@ const normalizeRules = (rules: Record<string, unknown>): Record<string, unknown>
 export default defineConfig(
   {
     name: 'tokentoilet',
-    ignores: ['.github/copilot-instructions.md', '.github/prompts', 'llms.txt', '.ai/'],
+    ignores: ['.github/copilot-instructions.md', '.github/prompts', 'AGENTS.md', 'llms.txt', '.ai/'],
     typescript: {
       tsconfigPath: './tsconfig.json',
     },
