@@ -6,11 +6,7 @@ import {createPortal} from 'react-dom'
 
 /**
  * Modal backdrop variants using class-variance-authority
- * Provides consistent backdrop styli        const focusableElements = modal.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        )
-        const firstElement = focusableElements[0] as HTMLElement
-        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElementth Web3Modal theming integration
+ * Provides consistent backdrop styling with Web3Modal theming integration
  */
 const modalBackdropVariants = cva(
   [

@@ -72,8 +72,8 @@ This implementation plan establishes a comprehensive design system for Token Toi
 |------|-------------|-----------|------|
 | TASK-009 | Create `components/ui/button.tsx` with variant system and Web3 states | ✅ | 2025-09-12 |
 | TASK-010 | Create `components/ui/card.tsx` with glass morphism effects and elevation levels | ✅ | 2025-09-12 |
-| TASK-011 | Create `components/ui/modal.tsx` with backdrop blur and Web3Modal theming integration | ✅ | 2025-01-03 |
-| TASK-012 | Create `components/ui/input.tsx` with Web3 address validation and formatting | | |
+| TASK-011 | Create `components/ui/modal.tsx` with backdrop blur and Web3Modal theming integration | ✅ | 2025-09-12 |
+| TASK-012 | Create `components/ui/input.tsx` with Web3 address validation and formatting | ✅ | 2025-09-12 |
 | TASK-013 | Create `components/ui/badge.tsx` for connection states and network indicators | | |
 | TASK-014 | Create `components/ui/toast.tsx` for transaction notifications and error handling | | |
 | TASK-015 | Create `components/ui/skeleton.tsx` for loading states during wallet operations | | |
