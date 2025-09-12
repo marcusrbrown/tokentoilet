@@ -1,2 +1,3 @@
 globs:
   - '!.ai/**'
+  - '!AGENTS.md'
