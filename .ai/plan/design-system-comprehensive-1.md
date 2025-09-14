@@ -86,7 +86,7 @@ This implementation plan establishes a comprehensive design system for Token Toi
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-017 | Refactor `components/web3/wallet-button.tsx` to use design system button component | ✅ | 2025-09-13 |
-| TASK-018 | Create `components/ui/address-display.tsx` with formatting utilities and copy functionality | | |
+| TASK-018 | Create `components/ui/address-display.tsx` with formatting utilities and copy functionality | ✅ | 2025-09-13 |
 | TASK-019 | Create `components/ui/network-badge.tsx` for chain identification and switching | | |
 | TASK-020 | Create `components/ui/token-input.tsx` for amount entry with validation | | |
 | TASK-021 | Create `components/ui/transaction-card.tsx` for history and status display | | |
