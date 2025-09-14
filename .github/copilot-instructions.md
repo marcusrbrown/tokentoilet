@@ -7,29 +7,45 @@ Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while s
 **Web3 Provider Chain**: `app/layout.tsx` → `app/providers.tsx` → `Web3Provider` (Wagmi + TanStack Query) → `ThemeSync`
 - All Web3 state flows through Wagmi's provider system via `WagmiAdapter`
 - Reown AppKit (formerly Web3Modal) handles wallet connections with violet theming
-- Configuration centralized in `lib/web3/config.ts` with multi-chain support
+- Configuration centralized in `lib/web3/config.ts` with multi-chain support (Ethereum, Polygon, Arbitrum)
+- `ThemeSync` component bridges Next-themes with Reown AppKit theming
 
 **Component Organization**:
-- `/components/web3/` - Web3-specific components (wallet, transactions)
-- `/hooks/` - Custom React hooks (wallet abstraction)
+- `/components/web3/` - Web3-specific components (wallet, transactions) - always use `'use client'`
+- `/hooks/` - Custom React hooks (wallet abstraction) - `useWallet` is the primary interface
 - `/lib/web3/` - Web3 configuration and utilities
-- `/lib/design-tokens/` - Centralized design system with violet branding
+- `/lib/design-tokens/` - Legacy design tokens (migrated to CSS @theme blocks)
 
 ## Key Patterns
 
 ### Web3 Integration
 ```tsx
-// Always use the custom useWallet hook for wallet operations
+// ALWAYS use the custom useWallet hook - never direct wagmi hooks in components
 import { useWallet } from '@/hooks/use-wallet'
 
 // Reown AppKit integration via useAppKit from @reown/appkit/react
-// Multi-chain support: Ethereum mainnet, Polygon, Arbitrum
-// Custom error handling with network validation
+// Multi-chain support: Ethereum mainnet (1), Polygon (137), Arbitrum (42161)
+// Network validation with detailed error classification and auto-switching
 ```
 
-### Testing Patterns
+### Critical Web3 Error Handling
 ```tsx
-// Web3 components require comprehensive mocking
+// NEVER throw on disconnect/connection errors - use console.error + graceful fallbacks
+connect().catch(error => {
+  console.error('Failed to connect:', error)
+  // Show user-friendly error state
+})
+
+// Network validation returns structured errors with user messages
+const unsupportedNetworkError = getUnsupportedNetworkError()
+if (unsupportedNetworkError) {
+  // Handle with auto-switch option: handleUnsupportedNetwork(true)
+}
+```
+
+### Testing Patterns (Vitest + jsdom)
+```tsx
+// Comprehensive Web3 mocking - REQUIRED for all Web3 components
 vi.mock('wagmi', () => ({
   useAccount: vi.fn(),
   useChainId: vi.fn(),
@@ -37,55 +53,55 @@ vi.mock('wagmi', () => ({
   useSwitchChain: vi.fn(),
 }))
 
-// Test different wallet states and error conditions
-// Example: hooks/use-wallet.test.ts, hooks/use-wallet.connection-errors.test.ts
+vi.mock('@reown/appkit/react', () => ({
+  useAppKit: vi.fn(() => ({ open: vi.fn() })),
+}))
+
+// Test files co-located with source: component.test.ts
+// Focus: wallet states, error boundaries, network validation
 ```
 
-### Design Tokens System
+### Component Structure & Address Formatting
 ```tsx
-// Import centralized design tokens for consistent theming
-import {violetPalette, semanticColors, glassMorphism} from '@/lib/design-tokens'
+// Web3 components use 'use client' directive (client-side only)
+'use client'
 
-// Use semantic color system for Web3 states
-import {web3States} from '@/lib/design-tokens/colors'
+// Consistent address formatting pattern used throughout
+const displayAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
+
+// Error boundaries around all Web3 operations with graceful fallbacks
+// Network info from NETWORK_INFO mapping in useWallet hook
 ```
-
-### Component Structure
-- Web3 components use `'use client'` directive (client-side only)
-- Consistent error boundaries around Web3 operations
-- Address formatting: `${address.slice(0, 6)}...${address.slice(-4)}`
 
 ### Configuration Management
 - Reown AppKit project ID from `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
-- Multi-chain configuration: Ethereum mainnet, Polygon, Arbitrum
-- Custom RPC endpoints defined in `wagmiAdapter` transports
-- Theming integrated with Tailwind's violet color scheme
+- Multi-chain config in `wagmiAdapter` with custom RPC endpoints
+- Supported chains via `SUPPORTED_CHAIN_IDS` const assertion
+- Theming integrated with Tailwind's violet color scheme via CSS custom properties
 
 ## Development Workflow
 
 **Local Development**:
 ```bash
+pnpm bootstrap    # Install dependencies with optimized settings (preferred)
 pnpm dev          # Start development server
 pnpm build        # Production build
 pnpm lint         # ESLint check
 pnpm fix          # Auto-fix lint issues
 ```
 
-**Testing:**
+**Testing**:
 ```bash
 pnpm test         # Run Vitest test suite
 pnpm test:ui      # Run tests with UI
+# Test files: component.test.ts co-located with source files
 ```
 
-**Project Scripts**:
-- `pnpm bootstrap` - Install dependencies with optimized settings
-- Git hooks with lint-staged automatically format code on commit
-
-**Key Files for Web3 Features**:
-- `lib/web3/config.ts` - Multi-chain configuration with WagmiAdapter
-- `hooks/use-wallet.ts` - Wallet connection abstraction with error handling
-- `components/web3/web3-provider.tsx` - Provider setup with TanStack Query
-- `components/web3/wallet-button.tsx` - Connection UI component
+**Key Files**:
+- `lib/web3/config.ts` - WagmiAdapter with multi-chain RPC endpoints
+- `hooks/use-wallet.ts` - Wallet abstraction with NetworkValidationError types
+- `vitest.config.ts` - jsdom environment with @ alias resolution
+- `app/globals.css` - Complete Tailwind v4 configuration via @theme blocks
 
 ## Project-Specific Conventions
 
@@ -157,11 +173,6 @@ pnpm test:ui      # Run tests with UI
 - CSS custom properties for theme variables
 - Utility-first approach with semantic class combinations
 - Glass morphism via `.glass-container`, `.glass-card`, `.glass-button` classes
-
-### Smart Contract Integration (Planned)
-- Contract interaction patterns will follow Wagmi's `useContract` hooks
-- Token disposal functionality in development
-- Multi-chain support (Ethereum mainnet/L2s)
 
 ## Reference Documentation
 - Existing Cursor rules in `.cursor/rules/` for technology-specific guidance
