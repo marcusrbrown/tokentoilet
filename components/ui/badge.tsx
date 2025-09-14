@@ -204,51 +204,61 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, Varian
  * </Badge>
  * ```
  */
-const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-  ({className, variant, size, withIcon, withDot, children, icon, showDot, 'aria-label': ariaLabel, ...props}, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          badgeVariants({
-            variant,
-            size,
-            withIcon: withIcon || Boolean(icon),
-            withDot: withDot || showDot,
-          }),
-          className,
-        )}
-        aria-label={ariaLabel}
-        role="status"
-        {...props}
-      >
-        {(showDot || withDot) && (
-          <div
-            className={cn(
-              'h-2 w-2 rounded-full',
-              // Dot colors based on variant
-              {
-                'bg-green-600 dark:bg-green-400': variant === 'connected' || variant === 'confirmed',
-                'bg-yellow-600 dark:bg-yellow-400': variant === 'connecting' || variant === 'pending',
-                'bg-red-600 dark:bg-red-400': variant === 'disconnected' || variant === 'error' || variant === 'failed',
-                'bg-blue-600 dark:bg-blue-400': variant === 'mainnet',
-                'bg-amber-600 dark:bg-amber-400': variant === 'testnet',
-                'bg-purple-600 dark:bg-purple-400': variant === 'polygon',
-                'bg-sky-600 dark:bg-sky-400': variant === 'arbitrum',
-                'bg-rose-600 dark:bg-rose-400': variant === 'optimism',
-                'bg-violet-600 dark:bg-violet-400': variant === 'violet',
-                'bg-gray-600 dark:bg-gray-400': variant === 'default',
-              },
-            )}
-            aria-hidden="true"
-          />
-        )}
-        {Boolean(icon) && <span aria-hidden="true">{icon}</span>}
-        <span>{children}</span>
-      </div>
-    )
-  },
-)
+const Badge = ({
+  ref,
+  className,
+  variant,
+  size,
+  withIcon,
+  withDot,
+  children,
+  icon,
+  showDot,
+  'aria-label': ariaLabel,
+  ...props
+}: BadgeProps & {ref?: React.RefObject<HTMLDivElement | null>}) => {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        badgeVariants({
+          variant,
+          size,
+          withIcon: withIcon || Boolean(icon),
+          withDot: withDot || showDot,
+        }),
+        className,
+      )}
+      aria-label={ariaLabel}
+      role="status"
+      {...props}
+    >
+      {(showDot || withDot) && (
+        <div
+          className={cn(
+            'h-2 w-2 rounded-full',
+            // Dot colors based on variant
+            {
+              'bg-green-600 dark:bg-green-400': variant === 'connected' || variant === 'confirmed',
+              'bg-yellow-600 dark:bg-yellow-400': variant === 'connecting' || variant === 'pending',
+              'bg-red-600 dark:bg-red-400': variant === 'disconnected' || variant === 'error' || variant === 'failed',
+              'bg-blue-600 dark:bg-blue-400': variant === 'mainnet',
+              'bg-amber-600 dark:bg-amber-400': variant === 'testnet',
+              'bg-purple-600 dark:bg-purple-400': variant === 'polygon',
+              'bg-sky-600 dark:bg-sky-400': variant === 'arbitrum',
+              'bg-rose-600 dark:bg-rose-400': variant === 'optimism',
+              'bg-violet-600 dark:bg-violet-400': variant === 'violet',
+              'bg-gray-600 dark:bg-gray-400': variant === 'default',
+            },
+          )}
+          aria-hidden="true"
+        />
+      )}
+      {Boolean(icon) && <span aria-hidden="true">{icon}</span>}
+      <span>{children}</span>
+    </div>
+  )
+}
 
 Badge.displayName = 'Badge'
 

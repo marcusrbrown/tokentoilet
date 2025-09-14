@@ -233,218 +233,224 @@ export interface ModalProps extends React.HTMLAttributes<HTMLDivElement>, Varian
  * </Modal>
  * ```
  */
-const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
-  (
-    {
-      open,
-      onClose,
-      title,
-      description,
-      closeOnBackdropClick = true,
-      closeOnEscape = true,
-      showCloseButton = true,
-      closeButtonLabel = 'Close',
-      backdropVariant = 'default',
-      variant,
-      size,
-      className,
-      children,
-      container,
-      ...props
-    },
-    _ref,
-  ) => {
-    const modalRef = useRef<HTMLDivElement>(null)
-    const previousActiveElement = useRef<Element | null>(null)
+const Modal = ({
+  ref: _ref,
+  open,
+  onClose,
+  title,
+  description,
+  closeOnBackdropClick = true,
+  closeOnEscape = true,
+  showCloseButton = true,
+  closeButtonLabel = 'Close',
+  backdropVariant = 'default',
+  variant,
+  size,
+  className,
+  children,
+  container,
+  ...props
+}: ModalProps & {ref?: React.RefObject<HTMLDivElement | null>}) => {
+  const modalRef = useRef<HTMLDivElement>(null)
+  const previousActiveElement = useRef<Element | null>(null)
 
-    // Focus management
-    useEffect(() => {
-      if (open) {
-        // Store the previously focused element
-        previousActiveElement.current = document.activeElement
+  // Focus management
+  useEffect(() => {
+    if (open) {
+      // Store the previously focused element
+      previousActiveElement.current = document.activeElement
 
-        // Focus the modal
-        if (modalRef.current) {
-          modalRef.current.focus()
-        }
-      } else if (previousActiveElement.current && 'focus' in previousActiveElement.current) {
-        // Restore focus to the previously focused element
-        ;(previousActiveElement.current as HTMLElement).focus()
+      // Focus the modal
+      if (modalRef.current) {
+        modalRef.current.focus()
       }
-    }, [open]) // Escape key handler
-    useEffect(() => {
-      if (!open || !closeOnEscape) return
+    } else if (previousActiveElement.current && 'focus' in previousActiveElement.current) {
+      // Restore focus to the previously focused element
+      ;(previousActiveElement.current as HTMLElement).focus()
+    }
+  }, [open]) // Escape key handler
+  useEffect(() => {
+    if (!open || !closeOnEscape) return
 
-      const handleEscape = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
-          event.preventDefault()
-          onClose()
-        }
-      }
-
-      document.addEventListener('keydown', handleEscape)
-      return () => document.removeEventListener('keydown', handleEscape)
-    }, [open, closeOnEscape, onClose])
-
-    // Body scroll lock
-    useEffect(() => {
-      if (open) {
-        const originalStyle = window.getComputedStyle(document.body).overflow
-        document.body.style.overflow = 'hidden'
-        return () => {
-          document.body.style.overflow = originalStyle
-        }
-      }
-    }, [open])
-
-    // Backdrop click handler
-    const handleBackdropClick = (event: React.MouseEvent) => {
-      if (closeOnBackdropClick && event.target === event.currentTarget) {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
         onClose()
       }
     }
 
-    // Focus trap handler
-    const handleKeyDown = (event: React.KeyboardEvent) => {
-      if (event.key === 'Tab') {
-        const modal = modalRef.current
-        if (!modal) return
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [open, closeOnEscape, onClose])
 
-        const focusableElements = Array.from(
-          modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
-        )
-        const firstElement = focusableElements[0] as HTMLElement
-        const lastElement = focusableElements.at(-1) as HTMLElement
-
-        if (event.shiftKey) {
-          if (document.activeElement === firstElement) {
-            event.preventDefault()
-            lastElement?.focus()
-          }
-        } else if (document.activeElement === lastElement) {
-          event.preventDefault()
-          firstElement?.focus()
-        }
+  // Body scroll lock
+  useEffect(() => {
+    if (open) {
+      const originalStyle = window.getComputedStyle(document.body).overflow
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = originalStyle
       }
     }
+  }, [open])
 
-    if (!open) return null
+  // Backdrop click handler
+  const handleBackdropClick = (event: React.MouseEvent) => {
+    if (closeOnBackdropClick && event.target === event.currentTarget) {
+      onClose()
+    }
+  }
 
-    const modalContent = (
+  // Focus trap handler
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Tab') {
+      const modal = modalRef.current
+      if (!modal) return
+
+      const focusableElements = Array.from(
+        modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+      )
+      const firstElement = focusableElements[0] as HTMLElement
+      const lastElement = focusableElements.at(-1) as HTMLElement
+
+      if (event.shiftKey) {
+        if (document.activeElement === firstElement) {
+          event.preventDefault()
+          lastElement?.focus()
+        }
+      } else if (document.activeElement === lastElement) {
+        event.preventDefault()
+        firstElement?.focus()
+      }
+    }
+  }
+
+  if (!open) return null
+
+  const modalContent = (
+    <div
+      className={cn(modalBackdropVariants({variant: backdropVariant}))}
+      onClick={handleBackdropClick}
+      role="presentation"
+    >
       <div
-        className={cn(modalBackdropVariants({variant: backdropVariant}))}
-        onClick={handleBackdropClick}
-        role="presentation"
+        ref={modalRef}
+        className={cn(modalContentVariants({variant, size}), className)}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title != null && title.trim() !== '' ? 'modal-title' : undefined}
+        aria-describedby={description != null && description.trim() !== '' ? 'modal-description' : undefined}
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+        {...props}
       >
-        <div
-          ref={modalRef}
-          className={cn(modalContentVariants({variant, size}), className)}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={title != null && title.trim() !== '' ? 'modal-title' : undefined}
-          aria-describedby={description != null && description.trim() !== '' ? 'modal-description' : undefined}
-          tabIndex={-1}
-          onKeyDown={handleKeyDown}
-          {...props}
-        >
-          {/* Close button */}
-          {showCloseButton && (
-            <button
-              type="button"
-              className={cn(
-                closeButtonVariants({
-                  variant: variant === 'web3' ? 'web3' : 'default',
-                }),
-              )}
-              onClick={onClose}
-              aria-label={closeButtonLabel}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
+        {/* Close button */}
+        {showCloseButton && (
+          <button
+            type="button"
+            className={cn(
+              closeButtonVariants({
+                variant: variant === 'web3' ? 'web3' : 'default',
+              }),
+            )}
+            onClick={onClose}
+            aria-label={closeButtonLabel}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
 
-          {/* Hidden title and description for screen readers */}
-          {title != null && title.trim() !== '' && (
-            <h2 id="modal-title" className="sr-only">
-              {title}
-            </h2>
-          )}
-          {description != null && description.trim() !== '' && (
-            <p id="modal-description" className="sr-only">
-              {description}
-            </p>
-          )}
+        {/* Hidden title and description for screen readers */}
+        {title != null && title.trim() !== '' && (
+          <h2 id="modal-title" className="sr-only">
+            {title}
+          </h2>
+        )}
+        {description != null && description.trim() !== '' && (
+          <p id="modal-description" className="sr-only">
+            {description}
+          </p>
+        )}
 
-          {children}
-        </div>
+        {children}
       </div>
-    )
+    </div>
+  )
 
-    // Portal the modal to the specified container or document.body
-    return createPortal(modalContent, container || document.body)
-  },
-)
+  // Portal the modal to the specified container or document.body
+  return createPortal(modalContent, container || document.body)
+}
 Modal.displayName = 'Modal'
 
 /**
  * ModalHeader component for modal titles and descriptions
  * Provides consistent spacing and typography for modal headers
  */
-const ModalHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({className, ...props}, ref) => {
-    return <div ref={ref} className={cn('flex flex-col space-y-2 p-6 pb-0', className)} {...props} />
-  },
-)
+const ModalHeader = ({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {ref?: React.RefObject<HTMLDivElement | null>}) => {
+  return <div ref={ref} className={cn('flex flex-col space-y-2 p-6 pb-0', className)} {...props} />
+}
 ModalHeader.displayName = 'ModalHeader'
 
 /**
  * ModalTitle component for modal titles
  * Uses semantic heading with appropriate typography
  */
-const ModalTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({className, ...props}, ref) => {
-    return (
-      <h2
-        ref={ref}
-        className={cn('text-xl font-semibold leading-tight tracking-tight text-gray-900 dark:text-gray-50', className)}
-        {...props}
-      />
-    )
-  },
-)
+const ModalTitle = ({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLHeadingElement> & {ref?: React.RefObject<HTMLHeadingElement | null>}) => {
+  return (
+    <h2
+      ref={ref}
+      className={cn('text-xl font-semibold leading-tight tracking-tight text-gray-900 dark:text-gray-50', className)}
+      {...props}
+    />
+  )
+}
 ModalTitle.displayName = 'ModalTitle'
 
 /**
  * ModalDescription component for modal descriptions
  * Provides muted text styling for modal subtitles and descriptions
  */
-const ModalDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({className, ...props}, ref) => {
-    return <p ref={ref} className={cn('text-sm text-gray-600 dark:text-gray-400', className)} {...props} />
-  },
-)
+const ModalDescription = ({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement> & {ref?: React.RefObject<HTMLParagraphElement | null>}) => {
+  return <p ref={ref} className={cn('text-sm text-gray-600 dark:text-gray-400', className)} {...props} />
+}
 ModalDescription.displayName = 'ModalDescription'
 
 /**
  * ModalContent component for main modal content
  * Provides consistent padding for modal body content
  */
-const ModalContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({className, ...props}, ref) => {
-    return <div ref={ref} className={cn('p-6', className)} {...props} />
-  },
-)
+const ModalContent = ({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {ref?: React.RefObject<HTMLDivElement | null>}) => {
+  return <div ref={ref} className={cn('p-6', className)} {...props} />
+}
 ModalContent.displayName = 'ModalContent'
 
 /**
  * ModalFooter component for modal actions and footer content
  * Provides consistent spacing for modal footer elements
  */
-const ModalFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({className, ...props}, ref) => {
-    return <div ref={ref} className={cn('flex items-center justify-end space-x-2 p-6 pt-0', className)} {...props} />
-  },
-)
+const ModalFooter = ({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {ref?: React.RefObject<HTMLDivElement | null>}) => {
+  return <div ref={ref} className={cn('flex items-center justify-end space-x-2 p-6 pt-0', className)} {...props} />
+}
 ModalFooter.displayName = 'ModalFooter'
 
 export {Modal, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle}
