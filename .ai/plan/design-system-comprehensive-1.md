@@ -100,7 +100,7 @@ This implementation plan establishes a comprehensive design system for Token Toi
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-025 | Install and configure Storybook 8.x for component development and documentation | | |
+| TASK-025 | Install and configure Storybook 9.x for component development and documentation | | |
 | TASK-026 | Create `docs/design-system/getting-started.md` with installation and usage guide | | |
 | TASK-027 | Create `docs/design-system/design-tokens.md` with token reference and usage examples | | |
 | TASK-028 | Create `docs/design-system/components.md` with component API documentation | | |
@@ -134,8 +134,8 @@ This implementation plan establishes a comprehensive design system for Token Toi
 
 ## 4. Dependencies
 
-- **DEP-001**: `@storybook/react` v8.x - Component development and documentation platform
-- **DEP-002**: `@storybook/nextjs` v8.x - Next.js integration for Storybook
+- **DEP-001**: `@storybook/react` v9.x - Component development and documentation platform
+- **DEP-002**: `@storybook/nextjs` v9.x - Next.js integration for Storybook
 - **DEP-003**: `class-variance-authority` v0.7.x - Type-safe component variant system
 - **DEP-004**: `clsx` v2.x - Conditional className utility
 - **DEP-005**: `tailwind-merge` v2.x - TailwindCSS class merging utility
