@@ -43,8 +43,8 @@ importers:
         version: 2.16.9(@tanstack/query-core@5.87.4)(@tanstack/react-query@5.87.4(react@19.1.1))(@types/react@19.1.12)(bufferutil@4.0.9)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(viem@2.37.6(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
     devDependencies:
       '@bfra.me/eslint-config':
-        specifier: ^0.30.2
-        version: 0.30.3(@eslint-react/eslint-plugin@1.53.1(eslint@9.35.0(jiti@2.1.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@next/eslint-plugin-next@15.5.3)(@typescript-eslint/eslint-plugin@8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(@typescript-eslint/utils@8.43.0(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(eslint-config-prettier@10.1.8(eslint@9.35.0(jiti@2.1.2)))(eslint-import-resolver-node@0.3.9)(eslint-plugin-prettier@5.5.4(eslint-config-prettier@10.1.8(eslint@9.35.0(jiti@2.1.2)))(eslint@9.35.0(jiti@2.1.2))(prettier@3.6.2))(eslint-plugin-react-hooks@5.2.0(eslint@9.35.0(jiti@2.1.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.35.0(jiti@2.1.2)))(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2)
+        specifier: ^0.31.0
+        version: 0.31.0(@eslint-react/eslint-plugin@1.53.1(eslint@9.35.0(jiti@2.1.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@next/eslint-plugin-next@15.5.3)(@typescript-eslint/eslint-plugin@8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(@typescript-eslint/utils@8.43.0(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(eslint-config-prettier@10.1.8(eslint@9.35.0(jiti@2.1.2)))(eslint-import-resolver-node@0.3.9)(eslint-plugin-prettier@5.5.4(eslint-config-prettier@10.1.8(eslint@9.35.0(jiti@2.1.2)))(eslint@9.35.0(jiti@2.1.2))(prettier@3.6.2))(eslint-plugin-react-hooks@5.2.0(eslint@9.35.0(jiti@2.1.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.35.0(jiti@2.1.2)))(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2)
       '@bfra.me/prettier-config':
         specifier: ^0.16.0
         version: 0.16.1(prettier@3.6.2)
@@ -169,8 +169,8 @@ packages:
   '@base-org/account@1.1.1':
     resolution: {integrity: sha512-IfVJPrDPhHfqXRDb89472hXkpvJuQQR7FDI9isLPHEqSYt/45whIoBxSPgZ0ssTt379VhQo4+87PWI1DoLSfAQ==}
 
-  '@bfra.me/eslint-config@0.30.3':
-    resolution: {integrity: sha512-1j50HnpW/epBKEL6SdJHSjrn/I8puaKqYYbbMs+nNAJiFIU3hq4KD2tFL0xZ7hkADc1hmREEppMwHFXPlhpidw==}
+  '@bfra.me/eslint-config@0.31.0':
+    resolution: {integrity: sha512-OrEErw5sofHY+kXxPhiZrJZEJ3bsnJFFPcwAi8qmiMiPRHaEaoTT1gmDF3d1GDnfgqT9Kh5r8xUg87vElTUJ8g==}
     peerDependencies:
       '@eslint-react/eslint-plugin': ^1.53.1
       '@next/eslint-plugin-next': ^15.5.3
@@ -1136,6 +1136,12 @@ packages:
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
+
+  '@stylistic/eslint-plugin@5.3.1':
+    resolution: {integrity: sha512-Ykums1VYonM0TgkD0VteVq9mrlO2FhF48MDJnPyv3MktIB2ydtuhlO0AfWm7xnW1kyf5bjOqA6xc7JjviuVTxg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: '>=9.0.0'
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -4928,10 +4934,11 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@bfra.me/eslint-config@0.30.3(@eslint-react/eslint-plugin@1.53.1(eslint@9.35.0(jiti@2.1.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@next/eslint-plugin-next@15.5.3)(@typescript-eslint/eslint-plugin@8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(@typescript-eslint/utils@8.43.0(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(eslint-config-prettier@10.1.8(eslint@9.35.0(jiti@2.1.2)))(eslint-import-resolver-node@0.3.9)(eslint-plugin-prettier@5.5.4(eslint-config-prettier@10.1.8(eslint@9.35.0(jiti@2.1.2)))(eslint@9.35.0(jiti@2.1.2))(prettier@3.6.2))(eslint-plugin-react-hooks@5.2.0(eslint@9.35.0(jiti@2.1.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.35.0(jiti@2.1.2)))(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2)':
+  '@bfra.me/eslint-config@0.31.0(@eslint-react/eslint-plugin@1.53.1(eslint@9.35.0(jiti@2.1.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@next/eslint-plugin-next@15.5.3)(@typescript-eslint/eslint-plugin@8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(@typescript-eslint/utils@8.43.0(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2))(eslint-config-prettier@10.1.8(eslint@9.35.0(jiti@2.1.2)))(eslint-import-resolver-node@0.3.9)(eslint-plugin-prettier@5.5.4(eslint-config-prettier@10.1.8(eslint@9.35.0(jiti@2.1.2)))(eslint@9.35.0(jiti@2.1.2))(prettier@3.6.2))(eslint-plugin-react-hooks@5.2.0(eslint@9.35.0(jiti@2.1.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.35.0(jiti@2.1.2)))(eslint@9.35.0(jiti@2.1.2))(typescript@5.9.2)':
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.35.0(jiti@2.1.2))
       '@eslint/markdown': 7.2.0
+      '@stylistic/eslint-plugin': 5.3.1(eslint@9.35.0(jiti@2.1.2))
       eslint: 9.35.0(jiti@2.1.2)
       eslint-config-flat-gitignore: 2.1.0(eslint@9.35.0(jiti@2.1.2))
       eslint-flat-config-utils: 2.1.1
@@ -6423,6 +6430,16 @@ snapshots:
       '@scure/base': 1.2.6
 
   '@socket.io/component-emitter@3.1.2': {}
+
+  '@stylistic/eslint-plugin@5.3.1(eslint@9.35.0(jiti@2.1.2))':
+    dependencies:
+      '@eslint-community/eslint-utils': 4.9.0(eslint@9.35.0(jiti@2.1.2))
+      '@typescript-eslint/types': 8.43.0
+      eslint: 9.35.0(jiti@2.1.2)
+      eslint-visitor-keys: 4.2.1
+      espree: 10.4.0
+      estraverse: 5.3.0
+      picomatch: 4.0.3
 
   '@swc/helpers@0.5.15':
     dependencies:
