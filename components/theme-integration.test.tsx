@@ -145,8 +145,15 @@ describe('Theme Integration', () => {
 
       const button = await waitFor(() => screen.getByRole('button'))
 
-      // Check that the button has the expected light mode classes
-      expect(button).toHaveClass('rounded-lg', 'bg-white/80', 'p-2', 'text-gray-600')
+      // Check that the button has the expected design system classes
+      expect(button).toHaveClass(
+        'inline-flex',
+        'items-center',
+        'justify-center',
+        'rounded-lg',
+        'bg-white/80',
+        'backdrop-blur-md',
+      )
     })
   })
 
