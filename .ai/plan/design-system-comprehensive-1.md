@@ -92,7 +92,7 @@ This implementation plan establishes a comprehensive design system for Token Toi
 | TASK-021 | Create `components/ui/transaction-card.tsx` for history and status display | ✅ | 2025-09-15 |
 | TASK-022 | Create `components/ui/charity-selector.tsx` for token disposal targeting | ✅ | 2025-09-15 |
 | TASK-023 | Create `components/ui/connection-status.tsx` for wallet state visualization | ✅ | 2025-09-15 |
-| TASK-024 | Update `components/theme-toggle.tsx` to use design system button variants | | |
+| TASK-024 | Update `components/theme-toggle.tsx` to use design system button variants | ✅ | 2025-09-15 |
 
 ### Implementation Phase 4: Documentation & Tooling Setup
 
