@@ -175,6 +175,5 @@ pnpm test:ui      # Run tests with UI
 - Glass morphism via `.glass-container`, `.glass-card`, `.glass-button` classes
 
 ## Reference Documentation
-- Existing Cursor rules in `.cursor/rules/` for technology-specific guidance
 - Product requirements in `.ai/docs/prd.md`
 - Development roadmap in `.ai/docs/plan.md`
