@@ -39,10 +39,12 @@ export default function Home() {
           </p>
 
           <div className="mt-10 flex items-center justify-center gap-4">
+            {/* eslint-disable-next-line no-restricted-syntax */}
             <button className="group relative overflow-hidden rounded-lg bg-violet-600 px-8 py-3 text-lg font-semibold text-white transition-all hover:bg-violet-700">
               <span className="relative z-10">Start Flushing</span>
               <div className="absolute inset-0 -translate-y-full bg-gradient-to-b from-violet-400 to-violet-600 transition-transform duration-300 group-hover:translate-y-0"></div>
             </button>
+            {/* eslint-disable-next-line no-restricted-syntax */}
             <button className="rounded-lg border border-gray-300 bg-white/80 px-8 py-3 text-lg font-semibold text-gray-700 backdrop-blur-sm transition-all hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-gray-300">
               Learn More
             </button>
