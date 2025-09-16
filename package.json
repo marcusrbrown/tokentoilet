@@ -51,6 +51,7 @@
     "@storybook/addon-essentials": "9.0.0-alpha.12",
     "@storybook/addon-interactions": "9.0.0-alpha.10",
     "@storybook/addon-links": "^9.1.6",
+    "@storybook/addon-themes": "^9.1.6",
     "@storybook/blocks": "9.0.0-alpha.17",
     "@storybook/nextjs": "^9.1.6",
     "@storybook/react": "^9.1.6",
