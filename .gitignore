@@ -55,3 +55,6 @@ legacy.md
 !.ai/notes/*
 !.ai/plan/
 !.ai/plan/*
+
+# Storybook static build output
+/storybook-static
