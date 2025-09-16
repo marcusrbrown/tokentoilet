@@ -1,27 +1,33 @@
 # Token Toilet
 
-> A Web3 solution for cleaning up your digital wallet while supporting charitable causes. This DeFi application provides a fun, gamified way to dispose of unwanted tokens (ERC-20, ERC-721) while contributing to charity through a "token fountain" mechanism.
+> A Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi v2 + Reown AppKit, featuring a complete design system with violet branding and glass morphism aesthetics.
 
-Token Toilet is built with Next.js 15, TypeScript, and Tailwind CSS, featuring Web3 wallet integration through Wagmi and Web3Modal. The project combines token disposal with charitable giving, creating an entertaining way to clean up crypto wallets while generating value for good causes.
+Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20, ERC-721) while contributing to charity through a "token fountain" mechanism. The project combines token disposal with charitable giving, creating an entertaining way to clean up crypto wallets while generating value for good causes.
 
 ## Documentation
 
 - [Main README](readme.md): Primary project documentation, features overview, and getting started guide
 - [MVP Strategy](mvp.md): Implementation priorities and development approach for the minimum viable product
 - [Legacy Concept](legacy.md): Original project concept and humorous explanation of the "toilet, fountain, and sprinkler" ecosystem
+- [Design System Guide](docs/design-system/getting-started.md): Comprehensive design system documentation with components, tokens, and Web3 patterns
+- [AI Agent Instructions](.github/copilot-instructions.md): Technical architecture and development patterns for AI agents working on the project
 
 ## Specifications
 
 - [Product Requirements Document](.ai/docs/prd.md): Comprehensive product specifications, technical architecture, and user experience requirements
 - [Development Plan](.ai/docs/plan.md): Detailed development roadmap, current progress tracking, and implementation phases
+- [Tailwind v4 Migration Guide](.ai/docs/tailwind-v4-migration-guide.md): Complete migration documentation from Tailwind v3 to v4 CSS-first approach
 
 ## Configuration
 
 - [Package Dependencies](package.json): Project dependencies, scripts, and technology stack definition
 - [TypeScript Configuration](tsconfig.json): TypeScript compiler settings and path mappings
 - [Next.js Configuration](next.config.ts): Next.js framework configuration and build settings
-- [Tailwind Configuration](tailwind.config.ts): Tailwind CSS styling framework configuration
+- [Vitest Configuration](vitest.config.ts): Test framework configuration with jsdom environment and alias resolution
+- [ESLint Configuration](eslint.config.ts): Linting rules and configuration for Next.js and React patterns
 
 ## Optional
 
 - [PostCSS Configuration](postcss.config.mjs): CSS processing configuration for Tailwind CSS integration
+- [Vitest Setup](vitest.setup.ts): Test environment setup and global configuration
+- [Tailwind v4 Migration Timeline](.ai/docs/tailwind-v4-migration-timeline.md): Historical migration progress and timeline documentation

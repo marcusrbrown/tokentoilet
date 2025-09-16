@@ -1,6 +1,6 @@
 # Token Toilet - AI Agent Instructions
 
-Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi v2 + Reown AppKit.
+Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi v2 + Reown AppKit, featuring a complete design system with violet branding and glass morphism aesthetics.
 
 ## Architecture Overview
 
@@ -14,7 +14,7 @@ Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while s
 - `/components/web3/` - Web3-specific components (wallet, transactions) - always use `'use client'`
 - `/hooks/` - Custom React hooks (wallet abstraction) - `useWallet` is the primary interface
 - `/lib/web3/` - Web3 configuration and utilities
-- `/lib/design-tokens/` - Legacy design tokens (migrated to CSS @theme blocks)
+- `/components/ui/` - Design system components with comprehensive test coverage
 
 ## Key Patterns
 
@@ -59,6 +59,7 @@ vi.mock('@reown/appkit/react', () => ({
 
 // Test files co-located with source: component.test.ts
 // Focus: wallet states, error boundaries, network validation
+// Test structure: MetaMask, WalletConnect, Coinbase-specific test files
 ```
 
 ### Component Structure & Address Formatting
@@ -73,12 +74,6 @@ const displayAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
 // Network info from NETWORK_INFO mapping in useWallet hook
 ```
 
-### Configuration Management
-- Reown AppKit project ID from `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
-- Multi-chain config in `wagmiAdapter` with custom RPC endpoints
-- Supported chains via `SUPPORTED_CHAIN_IDS` const assertion
-- Theming integrated with Tailwind's violet color scheme via CSS custom properties
-
 ## Development Workflow
 
 **Local Development**:
@@ -90,10 +85,12 @@ pnpm lint         # ESLint check
 pnpm fix          # Auto-fix lint issues
 ```
 
-**Testing**:
+**Testing & Storybook**:
 ```bash
 pnpm test         # Run Vitest test suite
 pnpm test:ui      # Run tests with UI
+pnpm storybook    # Start Storybook development server
+pnpm build-storybook  # Build static Storybook
 # Test files: component.test.ts co-located with source files
 ```
 
@@ -102,6 +99,7 @@ pnpm test:ui      # Run tests with UI
 - `hooks/use-wallet.ts` - Wallet abstraction with NetworkValidationError types
 - `vitest.config.ts` - jsdom environment with @ alias resolution
 - `app/globals.css` - Complete Tailwind v4 configuration via @theme blocks
+- `docs/design-system/getting-started.md` - Comprehensive design system documentation
 
 ## Project-Specific Conventions
 
@@ -109,6 +107,7 @@ pnpm test:ui      # Run tests with UI
 - Web3 operations wrapped in try/catch with console.error logging
 - Graceful fallbacks for wallet connection failures
 - No throw on disconnect/connection errors
+- Structured error classification with NetworkValidationError types
 
 ### Testing Patterns
 - Web3 components require mocked wallet providers in tests
@@ -116,64 +115,54 @@ pnpm test:ui      # Run tests with UI
 - Comprehensive wallet state testing: connected, connecting, error states
 - Mock patterns: `vi.mock('wagmi')` and `vi.mock('@reown/appkit/react')`
 - Focus on error boundaries and network validation scenarios
+- Wallet-specific test files: MetaMask, WalletConnect, Coinbase Wallet
 
 ### State Management
 - Wagmi handles Web3 state (accounts, chains, connections)
 - TanStack Query for async state management
 - Next-themes for theme persistence
 
-### Styling Patterns
-- **Tailwind CSS v4**: Uses CSS-first approach with `@import "tailwindcss"` in `app/globals.css`
+### Styling Patterns - Tailwind CSS v4 (Migration Complete)
+- **CSS-First Approach**: Uses `@import "tailwindcss"` in `app/globals.css`
+- **NO JavaScript Config**: `tailwind.config.ts` was eliminated - CSS-only configuration
 - **Primary Colors**: Violet branding (`bg-violet-500`, `text-violet-600`, `border-violet-300`)
-- **Dark Mode**: Support via `dark:` classes and CSS custom properties with custom variant `@custom-variant dark (&:where(.dark, .dark *))`
-- **Gradient Backgrounds**: `from-violet-50 to-blue-50`, `from-violet-400 to-blue-600`
-- **Glass Morphism**: Complete glass container utilities with backdrop-filter support
-- **Centralized Design System**: Complete migration from `/lib/design-tokens/` to CSS `@theme` blocks
+- **Dark Mode**: Support via `dark:` classes and CSS custom properties
+- **Glass Morphism**: `.glass-container`, `.glass-card`, `.glass-button` utility classes
+- **Design Tokens**: All design tokens are CSS custom properties (`--color-violet-*`, `--spacing-*`)
 
-#### Tailwind v4 Migration Completed (2025-09-10)
-**✅ Configuration Approach**:
-- **NO `tailwind.config.ts`** - Fully converted to CSS-first using `@theme` blocks in `app/globals.css`
-- **CSS Variables**: All design tokens converted to CSS custom properties (`--color-violet-*`, `--spacing-*`, etc.)
-- **Zero @apply**: All 64+ `@apply` directives eliminated - use component classes or utility combinations
-- **Single Import**: `@import "tailwindcss"` replaces legacy `@tailwind base; @tailwind components; @tailwind utilities;`
-
-**🎨 Design Token Architecture**:
+#### Critical CSS Patterns
 ```css
+/* NEVER use @apply directives - all 64+ were eliminated in migration */
+/* Use component classes with standard CSS properties instead */
+
+.glass-container {
+  background-color: var(--color-glass-light-primary);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-glass-light-border);
+}
+
+/* Use CSS custom properties for theming */
 @theme {
-  /* Violet Brand Palette */
-  --color-violet-50: #f5f3ff;
   --color-violet-500: #8b5cf6;
-
-  /* Web3 State Colors */
-  --color-web3-connected: #10b981;
-  --color-web3-pending: #f59e0b;
-
-  /* Glass Morphism Colors */
   --color-glass-light-primary: rgb(255 255 255 / 0.8);
-  --color-glass-dark-primary: rgb(17 24 39 / 0.8);
-
-  /* Spacing, Typography, Shadows, Animations */
-  --spacing-glass-xs: 0.75rem;
-  --font-family-display: ui-serif, Georgia, serif;
-  --shadow-glass-subtle: 0 1px 3px rgb(0 0 0 / 0.1);
-  --duration-fast: 150ms;
 }
 ```
 
-**🚫 Anti-Patterns (Avoid)**:
-- Creating new `tailwind.config.ts` files
-- Using `@apply` directives anywhere
-- Legacy `@tailwind` directives
-- JavaScript-based theme configuration
-- Custom CSS that duplicates Tailwind utilities
+#### Anti-Patterns (Critical - Avoid)
+- **Creating `tailwind.config.ts`** - Project uses CSS-first approach only
+- **Using `@apply` directives** - All were removed in v4 migration
+- **Legacy `@tailwind` directives** - Use `@import "tailwindcss"` instead
+- **JavaScript-based theme configuration** - Use CSS `@theme` blocks
 
-**✅ Best Practices**:
-- Use CSS `@theme` blocks for design tokens
-- Component-based CSS classes with standard properties
-- CSS custom properties for theme variables
-- Utility-first approach with semantic class combinations
-- Glass morphism via `.glass-container`, `.glass-card`, `.glass-button` classes
+### Component Development
+- Design system components in `/components/ui/` with comprehensive test coverage
+- Storybook stories for component documentation and testing
+- Co-located tests: `component.test.ts` alongside each component
+- Glass morphism aesthetic with backdrop-filter support
+- Consistent violet color scheme with gradient backgrounds
 
 ## Reference Documentation
 - Product requirements in `.ai/docs/prd.md`
 - Development roadmap in `.ai/docs/plan.md`
+- Tailwind v4 migration guide in `.ai/docs/tailwind-v4-migration-guide.md`
+- Design system guide in `docs/design-system/getting-started.md`
