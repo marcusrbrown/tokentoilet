@@ -1,0 +1,87 @@
+/* Storybook CSS with TailwindCSS v4 and Design Token Support */
+
+/* Import base TailwindCSS v4 styles and design tokens */
+@import "../app/globals.css";
+
+/*
+ * TailwindCSS v4 @source directive for component scanning
+ * This tells Tailwind to scan these directories for class usage
+ * Essential for proper class inclusion in the final CSS bundle
+ */
+@source "../components";
+@source "../lib";
+@source "../app";
+@source "../hooks";
+
+/*
+ * Additional source paths for story files
+ * Ensures Tailwind includes classes used in stories themselves
+ */
+@source ".";
+
+/*
+ * Storybook-specific overrides for better component documentation
+ * These styles enhance the design system presentation without affecting components
+ */
+
+/* Ensure proper glass morphism rendering in Storybook canvas */
+.sb-show-main {
+  /* Preserve backdrop-filter support */
+  backdrop-filter: initial;
+}
+
+/* Enhanced focus styles for accessibility testing */
+.sb-show-main *:focus-visible {
+  outline: 2px solid var(--color-violet-500, #8b5cf6);
+  outline-offset: 2px;
+}
+
+/* Preserve design token CSS custom properties in Storybook environment */
+:root {
+  /* Ensure design tokens are available in Storybook context */
+  color-scheme: light dark;
+}
+
+/* Dark mode support for Storybook canvas */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/*
+ * Component spacing adjustments for better story presentation
+ * These provide optimal spacing without affecting component internals
+ */
+.sb-show-main > div {
+  /* Minimum spacing for component visibility */
+  min-height: fit-content;
+}
+
+/*
+ * Typography adjustments for story descriptions and documentation
+ * Ensures design system typography is consistent in docs
+ */
+.sbdocs .sbdocs-content {
+  font-family: var(--font-family-base, system-ui, sans-serif);
+}
+
+/*
+ * Preserve Web3-specific styling patterns in Storybook
+ * Ensures address displays, network badges, and wallet components render correctly
+ */
+.sb-show-main .web3-component {
+  /* Preserve glass morphism effects */
+  backdrop-filter: blur(12px);
+}
+
+/* Network indicator color preservation */
+.sb-show-main [data-network="mainnet"] {
+  color: var(--color-web3-mainnet, #627eea);
+}
+
+.sb-show-main [data-network="polygon"] {
+  color: var(--color-web3-polygon, #8247e5);
+}
+
+.sb-show-main [data-network="arbitrum"] {
+  color: var(--color-web3-arbitrum, #28a0f0);
+}

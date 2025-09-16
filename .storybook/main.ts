@@ -2,15 +2,24 @@ import type {StorybookConfig} from '@storybook/nextjs'
 import * as path from 'node:path'
 
 const config: StorybookConfig = {
-  stories: ['../components/**/*.stories.@(js|jsx|mjs|ts|tsx)', '../app/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
-  addons: ['@storybook/addon-essentials', '@storybook/addon-interactions', '@storybook/addon-links'],
+  stories: [
+    '../components/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    '../app/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    '../lib/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+  ],
+  addons: [
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+    '@storybook/addon-links',
+    '@storybook/addon-themes',
+  ],
   framework: {
     name: '@storybook/nextjs',
     options: {
       image: {
         loading: 'eager',
       },
-      nextConfigPath: path.resolve(process.cwd(), 'next.config.js'),
+      nextConfigPath: path.resolve(process.cwd(), 'next.config.ts'),
     },
   },
   typescript: {
@@ -18,7 +27,22 @@ const config: StorybookConfig = {
     reactDocgen: 'react-docgen-typescript',
     reactDocgenTypescriptOptions: {
       shouldExtractLiteralValuesFromEnum: true,
-      propFilter: prop => (prop.parent ? !prop.parent.fileName.includes('node_modules') : true),
+      // Enhanced prop filtering for design system components
+      propFilter: prop => {
+        if (!prop.parent) return true
+        // Include design token and utility types
+        if (prop.parent.fileName.includes('lib/design-tokens')) return true
+        if (prop.parent.fileName.includes('lib/utils')) return true
+        // Exclude node_modules except for specific design system packages
+        return !prop.parent.fileName.includes('node_modules')
+      },
+      // Improve TypeScript compilation performance
+      compilerOptions: {
+        allowSyntheticDefaultImports: false,
+        esModuleInterop: false,
+      },
+      // Better handling of variant types from cva
+      shouldRemoveUndefinedFromOptional: true,
     },
   },
   staticDirs: ['../public'],
@@ -31,6 +55,29 @@ const config: StorybookConfig = {
   },
   core: {
     disableTelemetry: true,
+  },
+  // Enhanced webpack configuration for design token support
+  webpackFinal: async config => {
+    // Ensure proper path resolution for design tokens and utilities
+    if (config.resolve) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@': path.resolve(__dirname, '../'),
+        '@/components': path.resolve(__dirname, '../components'),
+        '@/lib': path.resolve(__dirname, '../lib'),
+        '@/hooks': path.resolve(__dirname, '../hooks'),
+        '@/app': path.resolve(__dirname, '../app'),
+      }
+
+      // Ensure TypeScript and design token files are processed correctly
+      config.resolve.extensions = [...(config.resolve.extensions || []), '.ts', '.tsx', '.js', '.jsx']
+    }
+
+    // Ensure CSS modules and PostCSS are handled correctly for TailwindCSS v4
+    // TailwindCSS v4 uses PostCSS automatically via @tailwindcss/postcss
+    // Storybook with Next.js framework already handles CSS processing correctly
+
+    return config
   },
 }
 
