@@ -21,9 +21,6 @@
   "lint-staged": {
     "*.{ts,js,jsx,tsx,css,md,json,toml,yaml,yml}": [
       "eslint --fix"
-    ],
-    "package.json": [
-      "pnpx sort-package-json"
     ]
   },
   "prettier": "@bfra.me/prettier-config/120-proof",
