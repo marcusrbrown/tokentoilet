@@ -1,5 +1,6 @@
 import {ThemeToggle} from '@/components/theme-toggle'
 import {Button} from '@/components/ui/button'
+import {Card} from '@/components/ui/card'
 import {WalletButton} from '@/components/web3/wallet-button'
 import {Droplets, Flame, Wallet} from 'lucide-react'
 import Link from 'next/link'
@@ -8,24 +9,26 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-violet-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       {/* Navbar/Wallet Area */}
-      <nav className="fixed top-0 z-50 w-full bg-white/80 px-6 py-4 backdrop-blur-md dark:bg-gray-900/80">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Droplets className="h-8 w-8 text-violet-600" />
-            <span className="text-xl font-bold">Token Toilet</span>
+      <nav className="fixed top-0 z-50 w-full px-6 py-4">
+        <Card variant="default" className="mx-auto max-w-7xl" padding="sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Droplets className="h-8 w-8 text-violet-600" />
+              <span className="text-xl font-bold">Token Toilet</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <WalletButton />
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <WalletButton />
-          </div>
-        </div>
+        </Card>
       </nav>
 
       {/* Hero Section */}
       <section className="relative pt-24">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="animate-pulse-slow absolute -left-4 top-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl"></div>
-          <div className="animate-pulse-slow absolute right-20 top-40 h-72 w-72 rounded-full bg-violet-400/20 blur-3xl"></div>
+          <div className="animate-pulse-slow absolute -left-4 top-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl" />
+          <div className="animate-pulse-slow absolute right-20 top-40 h-72 w-72 rounded-full bg-violet-400/20 blur-3xl" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-6 py-24 text-center">
@@ -56,7 +59,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-8 md:grid-cols-3">
             {/* Feature 1 */}
-            <div className="group rounded-2xl bg-white/80 p-6 backdrop-blur-sm transition-all hover:scale-105 dark:bg-gray-800/80">
+            <Card variant="default" elevation="low" interactive="subtle" className="group">
               <div className="mb-4 rounded-lg bg-violet-100 p-3 dark:bg-violet-900/30">
                 <Droplets className="h-8 w-8 text-violet-600 dark:text-violet-400" />
               </div>
@@ -64,10 +67,10 @@ export default function Home() {
               <p className="text-gray-600 dark:text-gray-400">
                 Simple one-click process to dispose of any ERC20 tokens
               </p>
-            </div>
+            </Card>
 
             {/* Feature 2 */}
-            <div className="group rounded-2xl bg-white/80 p-6 backdrop-blur-sm transition-all hover:scale-105 dark:bg-gray-800/80">
+            <Card variant="default" elevation="low" interactive="subtle" className="group">
               <div className="mb-4 rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
                 <Wallet className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
@@ -75,16 +78,16 @@ export default function Home() {
               <p className="text-gray-600 dark:text-gray-400">
                 Your disposals contribute to meaningful charitable causes
               </p>
-            </div>
+            </Card>
 
             {/* Feature 3 */}
-            <div className="group rounded-2xl bg-white/80 p-6 backdrop-blur-sm transition-all hover:scale-105 dark:bg-gray-800/80">
+            <Card variant="default" elevation="low" interactive="subtle" className="group">
               <div className="mb-4 rounded-lg bg-green-100 p-3 dark:bg-green-900/30">
                 <Flame className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="mb-2 text-xl font-semibold">Gas Efficient</h3>
               <p className="text-gray-600 dark:text-gray-400">Optimized contracts for minimal gas consumption</p>
-            </div>
+            </Card>
           </div>
         </div>
       </section>
@@ -92,26 +95,28 @@ export default function Home() {
       {/* Stats Section */}
       <section className="relative py-20">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="grid gap-8 rounded-2xl bg-white/80 p-8 backdrop-blur-sm dark:bg-gray-800/80 md:grid-cols-3">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-violet-600 dark:text-violet-400">$1.2M+</div>
-              <div className="mt-2 text-gray-600 dark:text-gray-400">Total Value Flushed</div>
+          <Card variant="default" elevation="medium" padding="lg">
+            <div className="grid gap-8 md:grid-cols-3">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-violet-600 dark:text-violet-400">$1.2M+</div>
+                <div className="mt-2 text-gray-600 dark:text-gray-400">Total Value Flushed</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-violet-600 dark:text-violet-400">12,345</div>
+                <div className="mt-2 text-gray-600 dark:text-gray-400">Successful Flushes</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-violet-600 dark:text-violet-400">$50K+</div>
+                <div className="mt-2 text-gray-600 dark:text-gray-400">Donated to Charity</div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-violet-600 dark:text-violet-400">12,345</div>
-              <div className="mt-2 text-gray-600 dark:text-gray-400">Successful Flushes</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-violet-600 dark:text-violet-400">$50K+</div>
-              <div className="mt-2 text-gray-600 dark:text-gray-400">Donated to Charity</div>
-            </div>
-          </div>
+          </Card>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white/50 py-12 dark:border-gray-800 dark:bg-gray-900/50">
-        <div className="mx-auto max-w-7xl px-6">
+      <footer className="border-t border-gray-200 py-12 dark:border-gray-800">
+        <Card variant="ghost" padding="lg" className="mx-auto max-w-7xl">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
               <Droplets className="h-6 w-6 text-violet-600 dark:text-violet-400" />
@@ -132,7 +137,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
-        </div>
+        </Card>
       </footer>
     </main>
   )
