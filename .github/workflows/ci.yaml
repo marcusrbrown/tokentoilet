@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload Coverage Reports
         if: always()
-        uses: actions/upload-artifact@39ad2bdc929c5d52b7ee8c1a3f10d19b4fece7bb # v5.0.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-coverage
           path: coverage/
@@ -93,7 +93,7 @@ jobs:
         run: pnpm run build
 
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@39ad2bdc929c5d52b7ee8c1a3f10d19b4fece7bb # v5.0.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-artifacts
           path: |
@@ -118,7 +118,7 @@ jobs:
         run: pnpm run build-storybook
 
       - name: Upload Storybook Artifacts
-        uses: actions/upload-artifact@39ad2bdc929c5d52b7ee8c1a3f10d19b4fece7bb # v5.0.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: storybook-build
           path: storybook-static/
