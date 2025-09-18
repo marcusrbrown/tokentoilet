@@ -99,10 +99,6 @@ jobs:
           name: build-artifacts
           path: |
             .next/
-            public/
-            package.json
-            next.config.ts
-            node_modules/
             !.next/cache/
           retention-days: 7
 
