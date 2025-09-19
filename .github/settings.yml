@@ -14,5 +14,15 @@ branches:
       required_pull_request_reviews: null
       required_status_checks:
         strict: false
-        contexts: [Check, Renovate / Renovate]
+        contexts:
+          - Build
+          - Build Storybook
+          - Deploy to Production
+          - Deploy to Staging
+          - Lint
+          - Notify Completion
+          - Renovate / Renovate
+          - Security Audit
+          - Test
+
       restrictions: null
