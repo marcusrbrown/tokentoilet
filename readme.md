@@ -32,31 +32,51 @@ Instead of letting these tokens gather dust or sending them to a burn address, T
 
 ## Getting Started
 
-### Prerequisites
+### For Users
 
-- Node.js 18+
-- pnpm
-- MetaMask or any Web3 wallet
+Token Toilet is currently in development. Stay tuned for the public release!
 
-### Local Development
+### For Developers
+
+Ready to contribute? Check out our comprehensive development guides:
+
+- **[Development Setup Guide](docs/development/setup.md)** - Complete environment setup and workflow
+- **[Contributing Guidelines](CONTRIBUTING.md)** - Coding standards and contribution process
+- **[Architecture Guide](docs/development/architecture.md)** - System architecture and design patterns
+- **[Design System](docs/design-system/getting-started.md)** - UI components and design tokens
+
+#### Quick Development Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/marcusrbrown/tokentoilet.git
+cd tokentoilet
+
 # Install dependencies
-pnpm install
+pnpm bootstrap
+
+# Set up environment
+cp .env.example .env.local
+# Edit .env.local with your WalletConnect Project ID
 
 # Start development server
 pnpm dev
-
-# Build for production
-pnpm build
 ```
+
+### Prerequisites
+
+- Node.js 18.17+
+- pnpm (package manager)
+- Web3 wallet (MetaMask, WalletConnect, or Coinbase Wallet)
+- WalletConnect Project ID from [WalletConnect Cloud](https://cloud.walletconnect.com)
 
 ## Technical Stack
 
-- **Frontend**: Next.js 14 with TypeScript
-- **Styling**: Tailwind CSS
-- **Smart Contracts**: Solidity (Coming Soon)
-- **Chain**: Ethereum & Layer 2s (Optimism, Arbitrum)
+- **Frontend**: Next.js 15 with App Router and TypeScript
+- **Web3**: Wagmi v2 + Reown AppKit for wallet connections
+- **Styling**: Tailwind CSS v4 with glass morphism design system
+- **Testing**: Vitest with comprehensive Web3 component mocking
+- **Networks**: Ethereum, Polygon, and Arbitrum support
 
 ## Roadmap
 
@@ -70,17 +90,32 @@ pnpm build
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](contributing.md) for details.
+We welcome contributions from the community! Whether you're interested in:
+
+- 🐛 **Bug fixes and improvements**
+- ✨ **New features and enhancements**
+- 📚 **Documentation improvements**
+- 🧪 **Testing and quality assurance**
+- 🎨 **Design and user experience**
+
+Please read our [Contributing Guidelines](CONTRIBUTING.md) to get started. For major changes, please open an issue first to discuss your ideas with the community.
+
+### Development Resources
+
+- [Development Setup Guide](docs/development/setup.md) - Environment setup and workflow
+- [Architecture Guide](docs/development/architecture.md) - System design and patterns
+- [Design System](docs/design-system/getting-started.md) - UI components and theming
+- [Environment Setup](docs/development/environment-setup.md) - Configuration and variables
 
 ## Security
 
-For security concerns, please email security@tokentoilet.com
+For security concerns, please email [security@tokentoilet.com](mailto:security@tokentoilet.com)
 
 ## License
 
-MIT License - see [LICENSE](license.md) for details
+MIT License - see the [LICENSE](LICENSE) file for details
 
 ## Connect With Us
 
-- Website: https://tokentoilet.com
+- Website: [tokentoilet.com](https://tokentoilet.com)
 <!-- - Discord: [Join our community](https://discord.gg/tokentoilet) -->
