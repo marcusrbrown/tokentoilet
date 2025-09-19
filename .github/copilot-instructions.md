@@ -57,6 +57,13 @@ vi.mock('@reown/appkit/react', () => ({
   useAppKit: vi.fn(() => ({ open: vi.fn() })),
 }))
 
+// Mock network imports for consistent testing
+vi.mock('@reown/appkit/networks', () => ({
+  mainnet: {id: 1},
+  polygon: {id: 137},
+  arbitrum: {id: 42161},
+}))
+
 // Test files co-located with source: component.test.ts
 // Focus: wallet states, error boundaries, network validation
 // Test structure: MetaMask, WalletConnect, Coinbase-specific test files
@@ -93,6 +100,12 @@ pnpm storybook    # Start Storybook development server
 pnpm build-storybook  # Build static Storybook
 # Test files: component.test.ts co-located with source files
 ```
+
+**Key Environment Setup**:
+- Environment variables in `.env.local` (see `.env.example` for template)
+- Web3 RPC endpoints configured in `lib/web3/config.ts` with fallbacks
+- Project uses `env.ts` for validated environment variable access
+- Multi-chain support requires `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
 
 **Key Files**:
 - `lib/web3/config.ts` - WagmiAdapter with multi-chain RPC endpoints

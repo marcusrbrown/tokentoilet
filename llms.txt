@@ -7,6 +7,7 @@ Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20,
 ## Documentation
 
 - [Main README](readme.md): Primary project documentation, features overview, and getting started guide
+- [Contributing Guide](CONTRIBUTING.md): Comprehensive contributing guidelines, development workflow, and coding standards
 - [MVP Strategy](mvp.md): Implementation priorities and development approach for the minimum viable product
 - [Legacy Concept](legacy.md): Original project concept and humorous explanation of the "toilet, fountain, and sprinkler" ecosystem
 - [Design System Guide](docs/design-system/getting-started.md): Comprehensive design system documentation with components, tokens, and Web3 patterns
@@ -17,6 +18,16 @@ Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20,
 - [Product Requirements Document](.ai/docs/prd.md): Comprehensive product specifications, technical architecture, and user experience requirements
 - [Development Plan](.ai/docs/plan.md): Detailed development roadmap, current progress tracking, and implementation phases
 - [Tailwind v4 Migration Guide](.ai/docs/tailwind-v4-migration-guide.md): Complete migration documentation from Tailwind v3 to v4 CSS-first approach
+
+## Development
+
+- [Architecture Documentation](docs/development/architecture.md): System architecture, component organization, and technical design patterns
+- [Development Setup](docs/development/setup.md): Local development environment setup and configuration instructions
+- [Environment Setup](docs/development/environment-setup.md): Environment variables and configuration setup guide
+- [Deployment Guide](docs/deployment/vercel-setup.md): Production deployment instructions and Vercel configuration
+- [Design System Components](docs/design-system/components.md): Detailed component documentation and usage patterns
+- [Design Tokens](docs/design-system/design-tokens.md): Design system tokens, colors, spacing, and typography specifications
+- [Accessibility Guidelines](docs/design-system/accessibility.md): Web accessibility implementation and testing guidelines
 
 ## Configuration
 
@@ -31,3 +42,5 @@ Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20,
 - [PostCSS Configuration](postcss.config.mjs): CSS processing configuration for Tailwind CSS integration
 - [Vitest Setup](vitest.setup.ts): Test environment setup and global configuration
 - [Tailwind v4 Migration Timeline](.ai/docs/tailwind-v4-migration-timeline.md): Historical migration progress and timeline documentation
+- [CSS Regression Testing Checklist](.ai/docs/css-regression-testing-checklist.md): Quality assurance checklist for CSS and visual testing
+- [Tailwind v4 Fix Resolution](.ai/docs/tailwind-v4-fix-resolution.md): Technical resolution documentation for migration issues
