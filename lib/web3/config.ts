@@ -3,8 +3,10 @@ import {arbitrum, mainnet, polygon, type AppKitNetwork} from '@reown/appkit/netw
 import {createAppKit} from '@reown/appkit/react'
 import {http} from 'viem'
 
-// You can get a project ID at https://cloud.walletconnect.com
-export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? ''
+import {env} from '../../env'
+
+// Use validated environment variables
+export const projectId = env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
 
 // Define the networks for multi-chain support
 export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, polygon, arbitrum]
@@ -13,19 +15,37 @@ export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, polygon, 
 export const metadata = {
   name: 'TokenToilet',
   description: 'A Web3 application for token interactions',
-  url: typeof window === 'undefined' ? 'https://tokentoilet.com' : window.location.origin,
+  url: env.NEXT_PUBLIC_APP_URL,
   icons: ['/toilet.svg'],
 }
 
-// Create Wagmi Adapter with multi-chain support and custom RPC endpoints
+// Helper function to get RPC URL with fallback to default endpoints
+const getRpcUrl = (chainId: number, envUrl?: string, defaultUrl?: string): string => {
+  if (envUrl !== undefined && envUrl.length > 0) {
+    return envUrl
+  }
+  if (defaultUrl !== undefined && defaultUrl.length > 0) {
+    return defaultUrl
+  }
+  // Return empty string to use chain's default RPC
+  return ''
+}
+
+// Create Wagmi Adapter with multi-chain support and configurable RPC endpoints
 export const wagmiAdapter = new WagmiAdapter({
   networks,
   projectId,
   ssr: true,
   transports: {
-    [mainnet.id]: http(), // Use default RPC for Ethereum mainnet
-    [polygon.id]: http('https://polygon-mainnet.g.alchemy.com/v2/demo'), // Polygon mainnet RPC
-    [arbitrum.id]: http('https://arb-mainnet.g.alchemy.com/v2/demo'), // Arbitrum One RPC
+    [mainnet.id]: http(
+      getRpcUrl(mainnet.id, env.NEXT_PUBLIC_ETHEREUM_RPC_URL, 'https://eth-mainnet.g.alchemy.com/v2/demo'),
+    ),
+    [polygon.id]: http(
+      getRpcUrl(polygon.id, env.NEXT_PUBLIC_POLYGON_RPC_URL, 'https://polygon-mainnet.g.alchemy.com/v2/demo'),
+    ),
+    [arbitrum.id]: http(
+      getRpcUrl(arbitrum.id, env.NEXT_PUBLIC_ARBITRUM_RPC_URL, 'https://arb-mainnet.g.alchemy.com/v2/demo'),
+    ),
   },
 })
 
@@ -36,7 +56,7 @@ createAppKit({
   projectId,
   metadata,
   features: {
-    analytics: true,
+    analytics: env.NEXT_PUBLIC_ENABLE_ANALYTICS,
   },
   themeMode: 'light',
   themeVariables: {
