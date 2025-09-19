@@ -143,6 +143,7 @@ export default defineConfig(
   // Enforce 'use client' directive for Web3 components
   {
     files: ['components/web3/**/*.tsx'],
+    ignores: ['components/web3/**/*.test.tsx', 'components/web3/**/*.stories.tsx'],
     rules: {
       'no-restricted-syntax': [
         'error',
