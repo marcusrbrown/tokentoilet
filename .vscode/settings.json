@@ -38,7 +38,5 @@
     "typescript.preferences.importModuleSpecifier": "non-relative",
     "typescript.tsdk": "node_modules/typescript/lib",
 
-    "vscode-pets.petType": "cockatiel",
-    "vscode-pets.petColor": "purple",
-    "vscode-pets.petSize": "small"
+    "vscode-pets.theme": "castle"
 }
