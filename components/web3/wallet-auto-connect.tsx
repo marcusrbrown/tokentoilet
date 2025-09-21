@@ -60,7 +60,7 @@ export function WalletAutoConnect({
       hasAttemptedReconnect.current = true
 
       if (debug) {
-        console.warn(`[WalletAutoConnect] Attempting to restore connection to wallet: ${lastWalletId}`, {
+        console.warn('[WalletAutoConnect] Attempting to restore connection to wallet:', lastWalletId, {
           preferredChain,
         })
       }
@@ -111,7 +111,7 @@ export function WalletAutoConnect({
       saveConnectionState(walletId, chainId)
         .then(success => {
           if (debug && success) {
-            console.warn(`[WalletAutoConnect] Connection state saved: ${walletId}, chain: ${chainId}`)
+            console.warn('[WalletAutoConnect] Connection state saved:', {walletId, chainId})
           }
         })
         .catch(error => {

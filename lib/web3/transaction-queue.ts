@@ -121,7 +121,6 @@ export class TransactionQueue {
       retryCount: 0,
     }
 
-    // Check queue size limit
     if (this.transactions.size >= this.config.maxQueueSize) {
       this.removeOldestTransaction()
     }
@@ -136,14 +135,12 @@ export class TransactionQueue {
     })
 
     if (this.config.debug) {
-      // Use console.warn for debug output as console.log is restricted
-      console.warn('Transaction added to queue:', queuedTransaction)
+      console.warn('[TransactionQueue] Transaction added to queue:', queuedTransaction)
     }
 
     return queuedTransaction
   }
 
-  // Update transaction status and data
   updateTransaction(id: string, updates: Partial<QueuedTransaction>): QueuedTransaction | null {
     const transaction = this.transactions.get(id)
     if (!transaction) {
@@ -159,7 +156,6 @@ export class TransactionQueue {
       payload: updatedTransaction,
     })
 
-    // Emit specific events for status changes
     if (updates.status === 'confirmed') {
       this.emitEvent({
         type: 'TRANSACTION_CONFIRMED',
@@ -173,13 +169,12 @@ export class TransactionQueue {
     }
 
     if (this.config.debug) {
-      console.warn('Transaction updated:', updatedTransaction)
+      console.warn('[TransactionQueue] Transaction updated:', updatedTransaction)
     }
 
     return updatedTransaction
   }
 
-  // Remove transaction from queue
   removeTransaction(id: string): boolean {
     const transaction = this.transactions.get(id)
     if (!transaction) {
@@ -196,7 +191,7 @@ export class TransactionQueue {
     })
 
     if (this.config.debug) {
-      console.warn('Transaction removed from queue:', id)
+      console.warn('[TransactionQueue] Transaction removed from queue:', id)
     }
 
     return true
@@ -255,7 +250,7 @@ export class TransactionQueue {
     })
 
     if (this.config.debug) {
-      console.warn('Transaction queue cleared', chainId ? `for chain ${chainId}` : '')
+      console.warn('[TransactionQueue] Transaction queue cleared', chainId ? `for chain ${chainId}` : '')
     }
   }
 
@@ -451,7 +446,7 @@ export class TransactionQueue {
       })
 
       if (this.config.debug) {
-        console.warn('Loaded persisted transactions:', this.transactions.size)
+        console.warn('[TransactionQueue] Loaded persisted transactions:', this.transactions.size)
       }
     } catch (error) {
       if (this.config.debug) {

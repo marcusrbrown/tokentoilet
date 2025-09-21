@@ -1,7 +1,73 @@
 import type {Preview} from '@storybook/react'
+import {WagmiAdapter} from '@reown/appkit-adapter-wagmi'
+import {arbitrum, mainnet, polygon, type AppKitNetwork} from '@reown/appkit/networks'
+import {createAppKit} from '@reown/appkit/react'
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {ThemeProvider} from 'next-themes'
 import React from 'react'
+import {http, WagmiProvider} from 'wagmi'
 import './storybook.css'
+
+// Set up environment variables for Storybook before any imports that use env.ts
+if (globalThis.process === undefined) {
+  globalThis.process = {
+    env: {
+      NEXT_PUBLIC_APP_URL: 'http://localhost:6006',
+      NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: 'a1b2c3d4e5f6789012345678901234567890abcd',
+      NEXT_PUBLIC_ENABLE_ANALYTICS: 'false',
+      NEXT_PUBLIC_ENABLE_TESTNETS: 'false',
+      NODE_ENV: 'development',
+      SKIP_ENV_VALIDATION: 'true', // This will skip env validation in Storybook
+    },
+  } as unknown as NodeJS.Process
+}
+
+// Define networks for Storybook with proper typing
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, polygon, arbitrum]
+
+const wagmiAdapter = new WagmiAdapter({
+  networks,
+  projectId: 'a1b2c3d4e5f6789012345678901234567890abcd', // Mock project ID
+  ssr: false, // Disable SSR for Storybook
+  transports: {
+    [mainnet.id]: http('https://eth-mainnet.g.alchemy.com/v2/demo'),
+    [polygon.id]: http('https://polygon-mainnet.g.alchemy.com/v2/demo'),
+    [arbitrum.id]: http('https://arb-mainnet.g.alchemy.com/v2/demo'),
+  },
+})
+
+// Initialize AppKit for Storybook to prevent useAppKit errors
+let appKitInitialized = false
+if (typeof window !== 'undefined' && !appKitInitialized) {
+  createAppKit({
+    adapters: [wagmiAdapter],
+    networks,
+    projectId: 'a1b2c3d4e5f6789012345678901234567890abcd', // Mock project ID
+    metadata: {
+      name: 'TokenToilet Storybook',
+      description: 'Storybook for TokenToilet components',
+      url: 'http://localhost:6006',
+      icons: ['/toilet.svg'],
+    },
+    features: {
+      analytics: false,
+    },
+    themeMode: 'light',
+    themeVariables: {
+      '--w3m-font-family': 'Inter, sans-serif',
+      '--w3m-accent': 'rgb(124 58 237)',
+      '--w3m-border-radius-master': '8px',
+    },
+  })
+  appKitInitialized = true
+}
+
+const testQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {retry: false},
+    mutations: {retry: false},
+  },
+})
 
 const preview: Preview = {
   parameters: {
@@ -71,6 +137,14 @@ const preview: Preview = {
   },
   // Global decorators
   decorators: [
+    // Web3 provider decorator - must come first to provide context
+    (StoryComponent, _context) => {
+      return React.createElement(
+        WagmiProvider,
+        {config: wagmiAdapter.wagmiConfig},
+        React.createElement(QueryClientProvider, {client: testQueryClient}, React.createElement(StoryComponent)),
+      )
+    },
     // Theme provider decorator for dark/light mode support
     (StoryComponent, context) => {
       const theme = (context.globals.theme as string) || 'light'
@@ -93,24 +167,6 @@ const preview: Preview = {
         ),
       )
     },
-    // Web3 mock decorator for Web3 components
-    (StoryComponent, context) => {
-      // Mock Web3 context for stories that need it
-      const web3Params = context.parameters?.web3 as Record<string, unknown> | undefined
-      const mockWeb3Context = {
-        isConnected: Boolean(web3Params?.isConnected) || false,
-        address: (web3Params?.address as string) || '0x1234567890123456789012345678901234567890',
-        chainId: (web3Params?.chainId as number) || 1,
-        isConnecting: Boolean(web3Params?.isConnecting) || false,
-        error: (web3Params?.error as string) || null,
-      }
-
-      return React.createElement(
-        'div',
-        {'data-web3-mock': JSON.stringify(mockWeb3Context)},
-        React.createElement(StoryComponent),
-      )
-    },
   ],
   // Global types for toolbar controls
   globalTypes: {
@@ -123,21 +179,6 @@ const preview: Preview = {
         items: [
           {value: 'light', icon: 'sun', title: 'Light'},
           {value: 'dark', icon: 'moon', title: 'Dark'},
-        ],
-        dynamicTitle: true,
-      },
-    },
-    web3State: {
-      description: 'Mock Web3 connection state',
-      defaultValue: 'disconnected',
-      toolbar: {
-        title: 'Web3 State',
-        icon: 'link',
-        items: [
-          {value: 'disconnected', title: 'Disconnected'},
-          {value: 'connected', title: 'Connected'},
-          {value: 'connecting', title: 'Connecting'},
-          {value: 'error', title: 'Error'},
         ],
         dynamicTitle: true,
       },

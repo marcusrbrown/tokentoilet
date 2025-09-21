@@ -1,84 +1,8 @@
 import type {QueuedTransaction} from '@/lib/web3/transaction-queue'
-import type {Decorator, Meta, StoryObj} from '@storybook/react'
+import type {Meta, StoryObj} from '@storybook/react'
 import type {Hash} from 'viem'
 
-import {WagmiAdapter} from '@reown/appkit-adapter-wagmi'
-import {arbitrum, mainnet, polygon, type AppKitNetwork} from '@reown/appkit/networks'
-import {createAppKit} from '@reown/appkit/react'
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
-import {http, WagmiProvider} from 'wagmi'
-
 import {TransactionStatusCard} from './transaction-status'
-
-// Set up environment variables for Storybook before any imports that use env.ts
-if (globalThis.process === undefined) {
-  globalThis.process = {
-    env: {
-      NEXT_PUBLIC_APP_URL: 'http://localhost:6006',
-      NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: 'a1b2c3d4e5f6789012345678901234567890abcd',
-      NEXT_PUBLIC_ENABLE_ANALYTICS: 'false',
-      NEXT_PUBLIC_ENABLE_TESTNETS: 'false',
-      NODE_ENV: 'development',
-      SKIP_ENV_VALIDATION: 'true',
-    },
-  } as unknown as NodeJS.Process
-}
-
-// Define networks for Storybook with proper typing
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, polygon, arbitrum]
-
-// Create Wagmi Adapter for Storybook with mock config
-const wagmiAdapter = new WagmiAdapter({
-  networks,
-  projectId: 'a1b2c3d4e5f6789012345678901234567890abcd',
-  ssr: false,
-  transports: {
-    [mainnet.id]: http('https://eth-mainnet.g.alchemy.com/v2/demo'),
-    [polygon.id]: http('https://polygon-mainnet.g.alchemy.com/v2/demo'),
-    [arbitrum.id]: http('https://arb-mainnet.g.alchemy.com/v2/demo'),
-  },
-})
-
-// Initialize AppKit for Storybook
-let appKitInitialized = false
-if (typeof window !== 'undefined' && !appKitInitialized) {
-  createAppKit({
-    adapters: [wagmiAdapter],
-    networks,
-    projectId: 'a1b2c3d4e5f6789012345678901234567890abcd',
-    metadata: {
-      name: 'TokenToilet Storybook',
-      description: 'Storybook for TokenToilet components',
-      url: 'http://localhost:6006',
-      icons: ['/toilet.svg'],
-    },
-    features: {
-      analytics: false,
-    },
-    themeMode: 'light',
-    themeVariables: {
-      '--w3m-font-family': 'Inter, sans-serif',
-      '--w3m-accent': 'rgb(124 58 237)',
-      '--w3m-border-radius-master': '8px',
-    },
-  })
-  appKitInitialized = true
-}
-
-// Create test QueryClient with retry disabled for faster feedback
-const testQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {retry: false},
-    mutations: {retry: false},
-  },
-})
-
-// Provider decorator using actual providers with proper AppKit initialization
-const withWeb3Provider: Decorator = story => (
-  <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-    <QueryClientProvider client={testQueryClient}>{story()}</QueryClientProvider>
-  </WagmiProvider>
-)
 
 // Sample transaction data for stories
 const SAMPLE_TRANSACTIONS: QueuedTransaction[] = [
@@ -147,7 +71,6 @@ const SAMPLE_TRANSACTIONS: QueuedTransaction[] = [
 const meta: Meta<typeof TransactionStatusCard> = {
   title: 'Web3/TransactionStatusCard',
   component: TransactionStatusCard,
-  decorators: [withWeb3Provider],
   parameters: {
     layout: 'centered',
     docs: {

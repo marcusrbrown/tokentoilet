@@ -47,25 +47,20 @@ const mockWalletSwitcher = {
     {uid: 'rabby-1', name: 'Rabby'},
     {uid: 'rainbow-1', name: 'Rainbow'},
   ],
-  switchToWallet: async (walletId: string) => {
-    // eslint-disable-next-line no-console
-    console.log('Switching to wallet:', walletId)
+  switchToWallet: async (_walletId: string) => {
+    // Action for Storybook - will be logged in actions panel
   },
-  connectNewWallet: async (connector: {uid: string; name: string}) => {
-    // eslint-disable-next-line no-console
-    console.log('Connecting new wallet:', connector.name)
+  connectNewWallet: async (_connector: {uid: string; name: string}) => {
+    // Action for Storybook - will be logged in actions panel
   },
-  disconnectWallet: async (walletId: string) => {
-    // eslint-disable-next-line no-console
-    console.log('Disconnecting wallet:', walletId)
+  disconnectWallet: async (_walletId: string) => {
+    // Action for Storybook - will be logged in actions panel
   },
   disconnectAll: async () => {
-    // eslint-disable-next-line no-console
-    console.log('Disconnecting all wallets')
+    // Action for Storybook - will be logged in actions panel
   },
   openWalletModal: () => {
-    // eslint-disable-next-line no-console
-    console.log('Opening wallet modal')
+    // Action for Storybook - will be logged in actions panel
   },
 }
 
