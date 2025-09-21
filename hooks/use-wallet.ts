@@ -4,6 +4,8 @@ import {arbitrum, mainnet, polygon} from '@reown/appkit/networks'
 import {useAppKit} from '@reown/appkit/react'
 import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
 
+import {useWalletPersistence} from './use-wallet-persistence'
+
 // Supported chain IDs for network validation
 const SUPPORTED_CHAIN_IDS = [mainnet.id, polygon.id, arbitrum.id] as const
 
@@ -52,6 +54,11 @@ export function useWallet() {
   const {disconnect} = useDisconnect()
   const chainId = useChainId()
   const {switchChain, isPending: isSwitchingChain, error: switchChainError} = useSwitchChain()
+
+  // Integration with wallet persistence
+  const persistence = useWalletPersistence({
+    debug: process.env.NODE_ENV === 'development',
+  })
 
   // Network validation functions
   const isSupportedChain = (chainId: number): chainId is SupportedChainId => {
@@ -122,7 +129,7 @@ export function useWallet() {
     }
   }
 
-  // Enhanced connect function with detailed error classification
+  // Enhanced connect function with detailed error classification and persistence
   const handleConnect = async () => {
     try {
       await open()
@@ -210,10 +217,15 @@ export function useWallet() {
     return null
   }
 
-  // Enhanced disconnect function
+  // Enhanced disconnect function with persistence cleanup
   const handleDisconnect = async () => {
     try {
       disconnect()
+
+      // Clear persistence data when user manually disconnects
+      if (persistence.isAvailable) {
+        await persistence.clearStoredData()
+      }
     } catch (error) {
       console.error('Failed to disconnect wallet:', error)
 
@@ -306,5 +318,21 @@ export function useWallet() {
 
     // Utility functions
     getSupportedChains,
+
+    // Persistence functionality
+    persistence: {
+      isAvailable: persistence.isAvailable,
+      autoReconnect: persistence.autoReconnect,
+      lastWalletId: persistence.lastWalletId,
+      preferredChain: persistence.preferredChain,
+      lastConnectionData: persistence.lastConnectionData,
+      isRestoring: persistence.isRestoring,
+      error: persistence.error,
+      setAutoReconnect: persistence.setAutoReconnect,
+      setPreferredChain: persistence.setPreferredChain,
+      clearStoredData: persistence.clearStoredData,
+      shouldRestore: persistence.shouldRestore,
+      getConnectionAge: persistence.getConnectionAge,
+    },
   }
 }
