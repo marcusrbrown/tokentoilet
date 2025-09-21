@@ -38,6 +38,24 @@ const mockDisconnect = vi.fn().mockResolvedValue(undefined)
 const mockSwitchToChain = vi.fn().mockResolvedValue(undefined)
 const mockHandleUnsupportedNetwork = vi.fn().mockResolvedValue(undefined)
 
+// Mock persistence object
+const mockPersistence = {
+  isAvailable: true,
+  autoReconnect: true,
+  lastWalletId: null,
+  preferredChain: null,
+  lastConnectionData: null,
+  isRestoring: false,
+  error: null,
+  saveConnectionState: vi.fn().mockResolvedValue(true),
+  clearStoredData: vi.fn().mockResolvedValue(true),
+  setAutoReconnect: vi.fn().mockResolvedValue(true),
+  setPreferredChain: vi.fn().mockResolvedValue(true),
+  updateLastActive: vi.fn(),
+  shouldRestore: vi.fn().mockReturnValue(false),
+  getConnectionAge: vi.fn().mockReturnValue(null),
+}
+
 const defaultWalletState = {
   address: undefined as `0x${string}` | undefined,
   isConnected: false,
@@ -59,6 +77,7 @@ const defaultWalletState = {
   switchChainError: null,
   isSupportedChain: (chainId: number): chainId is any => [1, 137, 42161].includes(chainId),
   validateCurrentNetwork: vi.fn(() => null),
+  persistence: mockPersistence,
 }
 
 describe('WalletDashboard', () => {
