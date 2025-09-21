@@ -68,10 +68,6 @@ export const Variants: Story = {
         story: 'All available network badge variants with different visual treatments.',
       },
     },
-    web3: {
-      isConnected: true,
-      chainId: 1,
-    },
   },
 }
 
@@ -107,11 +103,6 @@ export const WithSwitcher: Story = {
         story: 'Network badge with interactive switcher dropdown for changing blockchain networks.',
       },
     },
-    web3: {
-      isConnected: true,
-      chainId: 1,
-      supportedChainIds: [1, 137, 42161],
-    },
   },
 }
 
@@ -131,11 +122,6 @@ export const TokenToiletNetwork: Story = {
       description: {
         story: 'Token Toilet application example showing network badge with violet branding and glass morphism.',
       },
-    },
-    web3: {
-      isConnected: true,
-      chainId: 1,
-      supportedChainIds: [1, 137, 42161],
     },
   },
 }
