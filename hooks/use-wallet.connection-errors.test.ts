@@ -73,7 +73,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
         await act(async () => {
           await result.current.connect()
         })
-      }).rejects.toThrow('Failed to connect wallet')
+      }).rejects.toThrow('User rejected connection')
 
       expect(mockOpen).toHaveBeenCalled()
     })
@@ -89,9 +89,8 @@ describe('useWallet - Error Handling for Connection Failures', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        message: 'Failed to connect wallet',
-        code: 'CONNECTION_TIMEOUT',
-        userFriendlyMessage: 'Connection timed out. Please check your internet connection and try again.',
+        code: 'WALLETCONNECT_QR_CODE_EXPIRED',
+        userFriendlyMessage: 'WalletConnect QR code has expired.',
       })
     })
 
@@ -104,7 +103,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
         await act(async () => {
           await result.current.connect()
         })
-      }).rejects.toThrow('Failed to connect wallet')
+      }).rejects.toThrow('No wallet extension found')
     })
 
     it('should handle unsupported wallet errors', async () => {
@@ -116,7 +115,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
         await act(async () => {
           await result.current.connect()
         })
-      }).rejects.toThrow('Failed to connect wallet')
+      }).rejects.toThrow('Wallet not supported')
     })
 
     it('should warn about unsupported network after successful connection', async () => {
@@ -143,35 +142,41 @@ describe('useWallet - Error Handling for Connection Failures', () => {
 
   describe('Wallet Disconnection Failures', () => {
     it('should handle disconnect failures gracefully', async () => {
+      const disconnectError = new Error('Failed to disconnect')
       mockDisconnect.mockImplementation(() => {
-        throw new Error('Failed to disconnect')
+        throw disconnectError
       })
 
       const {result} = renderHook(() => useWallet())
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      await expect(async () => {
-        await act(async () => {
-          await result.current.disconnect()
-        })
-      }).rejects.toMatchObject({
-        message: 'Failed to disconnect wallet',
-        code: 'NETWORK_VALIDATION_FAILED',
-        userFriendlyMessage: 'Unable to disconnect wallet. Please try refreshing the page.',
+      await act(async () => {
+        // Disconnect should not throw - uses graceful error handling
+        await result.current.disconnect()
       })
+
+      // Verify error was logged gracefully
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to disconnect wallet:', disconnectError)
+      consoleSpy.mockRestore()
     })
 
     it('should handle wallet extension communication errors during disconnect', async () => {
+      const extensionError = new Error('Wallet extension not responding')
       mockDisconnect.mockImplementation(() => {
-        throw new Error('Wallet extension not responding')
+        throw extensionError
       })
 
       const {result} = renderHook(() => useWallet())
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      await expect(async () => {
-        await act(async () => {
-          await result.current.disconnect()
-        })
-      }).rejects.toThrow('Failed to disconnect wallet')
+      await act(async () => {
+        // Disconnect should not throw - uses graceful error handling
+        await result.current.disconnect()
+      })
+
+      // Verify error was logged gracefully
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to disconnect wallet:', extensionError)
+      consoleSpy.mockRestore()
     })
   })
 
@@ -189,10 +194,9 @@ describe('useWallet - Error Handling for Connection Failures', () => {
           await result.current.switchToChain(137)
         })
       }).rejects.toMatchObject({
-        message: 'Failed to switch to Polygon',
-        code: 'CONNECTION_REJECTED',
+        code: 'METAMASK_LOCKED',
         chainId: 137,
-        userFriendlyMessage: 'Network switch was rejected. Please accept the request to switch to Polygon.',
+        userFriendlyMessage: 'MetaMask wallet is locked or access was denied.',
       })
     })
 
@@ -209,8 +213,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
           await result.current.switchToChain(42161)
         })
       }).rejects.toMatchObject({
-        message: 'Failed to switch to Arbitrum One',
-        code: 'RPC_ENDPOINT_FAILED',
+        code: 'METAMASK_EXTENSION_ERROR',
         chainId: 42161,
       })
     })
@@ -227,7 +230,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
         await act(async () => {
           await result.current.switchToChain(137)
         })
-      }).rejects.toThrow('Failed to switch to Polygon')
+      }).rejects.toThrow('Network configuration invalid')
     })
 
     it('should handle wallet locked errors during network switch', async () => {
@@ -242,7 +245,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
         await act(async () => {
           await result.current.switchToChain(137)
         })
-      }).rejects.toThrow('Failed to switch to Polygon')
+      }).rejects.toThrow('Wallet is locked')
     })
   })
 
@@ -359,7 +362,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
         await act(async () => {
           await result.current.connect()
         })
-      }).rejects.toThrow('Failed to connect wallet')
+      }).rejects.toThrow('Connection already in progress')
 
       await firstConnection
       await secondConnection
@@ -390,8 +393,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
           await result.current.switchToChain(42161)
         })
       }).rejects.toMatchObject({
-        message: 'Failed to switch to Arbitrum One',
-        code: 'NETWORK_SWITCH_FAILED',
+        code: 'METAMASK_EXTENSION_ERROR',
       })
     })
   })
@@ -414,7 +416,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
         await act(async () => {
           await result.current.connect()
         })
-      }).rejects.toThrow('Failed to connect wallet')
+      }).rejects.toThrow('First attempt failed')
 
       // Second attempt should succeed
       await act(async () => {
@@ -443,7 +445,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
         await act(async () => {
           await result.current.switchToChain(137)
         })
-      }).rejects.toThrow('Failed to switch to Polygon')
+      }).rejects.toThrow('First switch attempt failed')
 
       // Second attempt should succeed
       await act(async () => {

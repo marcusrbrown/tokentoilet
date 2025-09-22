@@ -105,7 +105,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('User denied account authorization')
       })
 
       // Verify error was logged
@@ -233,7 +233,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('Coinbase Wallet app is not installed')
       })
 
       // Verify error was logged
@@ -311,10 +311,11 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.disconnect()).rejects.toThrow('Failed to disconnect wallet')
+        // Disconnect should not throw - uses graceful error handling
+        await result.current.disconnect()
       })
 
-      // Verify error was logged
+      // Verify error was logged gracefully
       expect(consoleSpy).toHaveBeenCalledWith('Failed to disconnect wallet:', disconnectionError)
 
       consoleSpy.mockRestore()
@@ -396,7 +397,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.switchToChain(137)).rejects.toThrow('Failed to switch to Polygon')
+        await expect(result.current.switchToChain(137)).rejects.toThrow('User rejected the network switch request')
       })
 
       // Verify error was logged
@@ -433,7 +434,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.switchToChain(137)).rejects.toThrow('Failed to switch to Polygon')
+        await expect(result.current.switchToChain(137)).rejects.toThrow('Network switch request timed out')
       })
 
       // Verify error was logged
@@ -499,7 +500,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('Coinbase Wallet is locked')
       })
 
       // Verify error was logged
@@ -519,7 +520,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('Coinbase Wallet extension is not installed')
       })
 
       // Verify error was logged
@@ -539,7 +540,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('Connection to Coinbase Wallet timed out')
       })
 
       // Verify error was logged

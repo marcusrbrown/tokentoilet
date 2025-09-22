@@ -4,51 +4,34 @@ import {walletStorage, type WalletConnectionData} from '@/lib/web3/secure-storag
 import {useCallback, useEffect, useState} from 'react'
 
 export interface WalletPersistenceConfig {
-  // Auto-reconnect timeout in milliseconds (default: 30 seconds)
-  reconnectTimeout?: number
-  // Maximum age for stored connection data in milliseconds (default: 7 days)
-  maxConnectionAge?: number
-  // Whether to log persistence operations for debugging
+  reconnectTimeout?: number // default: 30 seconds
+  maxConnectionAge?: number // default: 7 days
   debug?: boolean
 }
 
 export interface WalletPersistenceState {
-  // Whether persistence is enabled and available
   isAvailable: boolean
-  // Whether auto-reconnect is enabled
   autoReconnect: boolean
-  // Last connected wallet ID
   lastWalletId: string | null
-  // Preferred chain ID
   preferredChain: number | null
-  // Connection data from last session
   lastConnectionData: WalletConnectionData | null
-  // Loading state during restoration
   isRestoring: boolean
-  // Error state
   error: string | null
 }
 
 export interface WalletPersistenceActions {
-  // Save current wallet connection state
   saveConnectionState: (walletId: string, chainId: number) => Promise<boolean>
-  // Clear all stored connection data
   clearStoredData: () => Promise<boolean>
-  // Set auto-reconnect preference
   setAutoReconnect: (enabled: boolean) => Promise<boolean>
-  // Set preferred chain
   setPreferredChain: (chainId: number) => Promise<boolean>
-  // Update last active timestamp
   updateLastActive: () => void
-  // Check if a connection should be restored
   shouldRestore: () => boolean
-  // Get connection age in milliseconds
   getConnectionAge: () => number | null
 }
 
 const DEFAULT_CONFIG: Required<WalletPersistenceConfig> = {
-  reconnectTimeout: 30000, // 30 seconds
-  maxConnectionAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  reconnectTimeout: 30000,
+  maxConnectionAge: 7 * 24 * 60 * 60 * 1000,
   debug: false,
 }
 
@@ -60,7 +43,6 @@ export function useWalletPersistence(
 ): WalletPersistenceState & WalletPersistenceActions {
   const finalConfig = {...DEFAULT_CONFIG, ...config}
 
-  // State management
   const [state, setState] = useState<WalletPersistenceState>({
     isAvailable: false,
     autoReconnect: true,
@@ -71,7 +53,6 @@ export function useWalletPersistence(
     error: null,
   })
 
-  // Debug logging helper
   const debugLog = useCallback(
     (message: string, data?: unknown) => {
       if (finalConfig.debug) {
@@ -81,13 +62,11 @@ export function useWalletPersistence(
     [finalConfig.debug],
   )
 
-  // Initialize persistence state
   useEffect(() => {
     const initializePersistence = async () => {
       try {
         debugLog('Initializing wallet persistence')
 
-        // Check if storage is available
         const isStorageAvailable = typeof window !== 'undefined' && Boolean(window.localStorage)
 
         if (!isStorageAvailable) {
@@ -101,7 +80,6 @@ export function useWalletPersistence(
           return
         }
 
-        // Load stored data
         const connectionData = walletStorage.getConnectionData()
         const lastWalletId = walletStorage.getLastWalletId()
         const preferredChain = walletStorage.getPreferredChain()
@@ -114,7 +92,7 @@ export function useWalletPersistence(
           autoReconnect,
         })
 
-        // Validate connection data age
+        // Validate connection age to prevent stale reconnections
         let validConnectionData: WalletConnectionData | null = null
         if (connectionData) {
           const age = Date.now() - connectionData.connectedAt
@@ -123,7 +101,6 @@ export function useWalletPersistence(
             debugLog(`Connection data is valid (age: ${Math.round(age / 1000 / 60)} minutes)`)
           } else {
             debugLog(`Connection data expired (age: ${Math.round(age / 1000 / 60 / 60)} hours)`)
-            // Clear expired data
             walletStorage.clear()
           }
         }
@@ -156,7 +133,6 @@ export function useWalletPersistence(
     })
   }, [finalConfig.maxConnectionAge, debugLog])
 
-  // Save connection state
   const saveConnectionState = useCallback(
     async (walletId: string, chainId: number): Promise<boolean> => {
       try {
@@ -166,13 +142,13 @@ export function useWalletPersistence(
         }
 
         const now = Date.now()
-        const connectionData: WalletConnectionData = {
+        const connectionData = {
           walletId,
           chainId,
           connectedAt: now,
           lastActiveAt: now,
           autoReconnect: state.autoReconnect,
-        }
+        } satisfies WalletConnectionData
 
         const success =
           walletStorage.setConnectionData(connectionData) &&
@@ -205,7 +181,6 @@ export function useWalletPersistence(
     [state.isAvailable, state.autoReconnect, debugLog],
   )
 
-  // Clear stored data
   const clearStoredData = useCallback(async (): Promise<boolean> => {
     try {
       const success = walletStorage.clear()
@@ -234,7 +209,6 @@ export function useWalletPersistence(
     }
   }, [debugLog])
 
-  // Set auto-reconnect preference
   const setAutoReconnect = useCallback(
     async (enabled: boolean): Promise<boolean> => {
       try {
@@ -269,7 +243,6 @@ export function useWalletPersistence(
     [state.isAvailable, debugLog],
   )
 
-  // Set preferred chain
   const setPreferredChain = useCallback(
     async (chainId: number): Promise<boolean> => {
       try {
@@ -304,7 +277,6 @@ export function useWalletPersistence(
     [state.isAvailable, debugLog],
   )
 
-  // Update last active timestamp
   const updateLastActive = useCallback(() => {
     try {
       if (state.isAvailable && state.lastConnectionData) {
@@ -316,7 +288,6 @@ export function useWalletPersistence(
     }
   }, [state.isAvailable, state.lastConnectionData, debugLog])
 
-  // Check if connection should be restored
   const shouldRestore = useCallback((): boolean => {
     if (!state.isAvailable || !state.autoReconnect || !state.lastConnectionData) {
       return false
@@ -344,7 +315,6 @@ export function useWalletPersistence(
     debugLog,
   ])
 
-  // Get connection age
   const getConnectionAge = useCallback((): number | null => {
     if (!state.lastConnectionData) {
       return null
@@ -353,7 +323,6 @@ export function useWalletPersistence(
   }, [state.lastConnectionData])
 
   return {
-    // State
     isAvailable: state.isAvailable,
     autoReconnect: state.autoReconnect,
     lastWalletId: state.lastWalletId,
@@ -361,8 +330,6 @@ export function useWalletPersistence(
     lastConnectionData: state.lastConnectionData,
     isRestoring: state.isRestoring,
     error: state.error,
-
-    // Actions
     saveConnectionState,
     clearStoredData,
     setAutoReconnect,

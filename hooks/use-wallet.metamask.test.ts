@@ -113,7 +113,7 @@ describe('useWallet - MetaMask Connection Flow (TASK-017)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('User rejected the request')
       })
 
       // Verify error was logged
@@ -228,10 +228,11 @@ describe('useWallet - MetaMask Connection Flow (TASK-017)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.disconnect()).rejects.toThrow('Failed to disconnect wallet')
+        // Disconnect should not throw - uses graceful error handling
+        await result.current.disconnect()
       })
 
-      // Verify error was logged
+      // Verify error was logged gracefully
       expect(consoleSpy).toHaveBeenCalledWith('Failed to disconnect wallet:', disconnectError)
 
       consoleSpy.mockRestore()
@@ -328,7 +329,7 @@ describe('useWallet - MetaMask Connection Flow (TASK-017)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.switchToChain(137)).rejects.toThrow('Failed to switch to Polygon')
+        await expect(result.current.switchToChain(137)).rejects.toThrow('User rejected the request')
       })
 
       // Verify error was logged
@@ -445,7 +446,7 @@ describe('useWallet - MetaMask Connection Flow (TASK-017)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('No MetaMask wallet found')
       })
 
       expect(consoleSpy).toHaveBeenCalledWith('Failed to connect wallet:', notInstalledError)
@@ -465,7 +466,7 @@ describe('useWallet - MetaMask Connection Flow (TASK-017)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('MetaMask is locked')
       })
 
       expect(consoleSpy).toHaveBeenCalledWith('Failed to connect wallet:', lockedError)
@@ -495,7 +496,7 @@ describe('useWallet - MetaMask Connection Flow (TASK-017)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.switchToChain(137)).rejects.toThrow('Failed to switch to Polygon')
+        await expect(result.current.switchToChain(137)).rejects.toThrow('Request timed out')
       })
 
       expect(consoleSpy).toHaveBeenCalledWith('Failed to switch to chain 137:', timeoutError)

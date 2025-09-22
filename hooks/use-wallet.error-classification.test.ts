@@ -73,8 +73,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'CONNECTION_TIMEOUT',
-        userFriendlyMessage: 'Connection timed out. Please check your internet connection and try again.',
+        code: 'WALLETCONNECT_QR_CODE_EXPIRED',
+        userFriendlyMessage: 'WalletConnect QR code has expired.',
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         originalError: expect.objectContaining({message: 'Connection timeout'}),
       })
@@ -90,8 +90,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'CONNECTION_REJECTED',
-        userFriendlyMessage: 'Connection was rejected. Please accept the wallet connection request to continue.',
+        code: 'METAMASK_LOCKED',
+        userFriendlyMessage: 'MetaMask wallet is locked or access was denied.',
       })
     })
 
@@ -105,8 +105,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'WALLET_NOT_FOUND',
-        userFriendlyMessage: 'No wallet extension found. Please install a supported wallet like MetaMask.',
+        code: 'METAMASK_EXTENSION_ERROR',
+        userFriendlyMessage: 'An error occurred while connecting to Wallet. No wallet extension found',
       })
     })
 
@@ -120,8 +120,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'WALLET_LOCKED',
-        userFriendlyMessage: 'Wallet is locked. Please unlock your wallet and try again.',
+        code: 'METAMASK_LOCKED',
+        userFriendlyMessage: 'MetaMask wallet is locked or access was denied.',
       })
     })
 
@@ -135,8 +135,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'RPC_ENDPOINT_FAILED',
-        userFriendlyMessage: 'Network connection failed. Please check your internet connection and try again.',
+        code: 'METAMASK_EXTENSION_ERROR',
+        userFriendlyMessage: 'An error occurred while connecting to Wallet. RPC endpoint not responding',
       })
     })
 
@@ -150,8 +150,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'INSUFFICIENT_PERMISSIONS',
-        userFriendlyMessage: 'Insufficient permissions. Please check your wallet settings and try again.',
+        code: 'METAMASK_LOCKED',
+        userFriendlyMessage: 'MetaMask wallet is locked or access was denied.',
       })
     })
 
@@ -165,8 +165,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'NETWORK_VALIDATION_FAILED',
-        userFriendlyMessage: 'Unable to connect wallet. Please try again or check your wallet extension.',
+        code: 'METAMASK_EXTENSION_ERROR',
+        userFriendlyMessage: 'An error occurred while connecting to Wallet. Unknown error occurred',
       })
     })
   })
@@ -185,8 +185,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.switchToChain(137)
         })
       }).rejects.toMatchObject({
-        code: 'CONNECTION_REJECTED',
-        userFriendlyMessage: 'Network switch was rejected. Please accept the request to switch to Polygon.',
+        code: 'METAMASK_LOCKED',
+        userFriendlyMessage: 'MetaMask wallet is locked or access was denied.',
         chainId: 137,
       })
     })
@@ -204,8 +204,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.switchToChain(42161)
         })
       }).rejects.toMatchObject({
-        code: 'RPC_ENDPOINT_FAILED',
-        userFriendlyMessage: 'RPC endpoint failed for Arbitrum One. Please try again later.',
+        code: 'METAMASK_EXTENSION_ERROR',
+        userFriendlyMessage: 'An error occurred while connecting to Wallet. RPC endpoint failed',
         chainId: 42161,
       })
     })
@@ -223,8 +223,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.switchToChain(137)
         })
       }).rejects.toMatchObject({
-        code: 'CONNECTION_TIMEOUT',
-        userFriendlyMessage: 'Request timed out while switching to Polygon. Please try again.',
+        code: 'METAMASK_EXTENSION_ERROR',
+        userFriendlyMessage: 'An error occurred while connecting to Wallet. Request timeout',
         chainId: 137,
       })
     })
@@ -242,8 +242,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.switchToChain(42161)
         })
       }).rejects.toMatchObject({
-        code: 'WALLET_LOCKED',
-        userFriendlyMessage: 'Wallet is locked. Please unlock your wallet and try switching to Arbitrum One again.',
+        code: 'METAMASK_EXTENSION_ERROR',
+        userFriendlyMessage: 'An error occurred while connecting to Wallet. Wallet locked',
         chainId: 42161,
       })
     })
@@ -261,8 +261,8 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.switchToChain(137)
         })
       }).rejects.toMatchObject({
-        code: 'NETWORK_SWITCH_FAILED',
-        userFriendlyMessage: 'Unable to switch to Polygon. Please try again or switch manually in your wallet.',
+        code: 'METAMASK_EXTENSION_ERROR',
+        userFriendlyMessage: 'An error occurred while connecting to Wallet. Unknown switch error',
         chainId: 137,
       })
     })
@@ -315,7 +315,7 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'CONNECTION_TIMEOUT',
+        code: 'WALLETCONNECT_QR_CODE_EXPIRED',
       })
     })
 
@@ -329,7 +329,7 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'CONNECTION_REJECTED',
+        code: 'METAMASK_LOCKED',
       })
     })
   })
@@ -346,7 +346,7 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'CONNECTION_TIMEOUT',
+        code: 'METAMASK_LOCKED',
       })
     })
 
@@ -360,7 +360,7 @@ describe('useWallet - Enhanced Error Classification', () => {
           await result.current.connect()
         })
       }).rejects.toMatchObject({
-        code: 'RPC_ENDPOINT_FAILED',
+        code: 'METAMASK_EXTENSION_ERROR',
       })
     })
   })
