@@ -311,10 +311,11 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.disconnect()).rejects.toThrow('Failed to disconnect wallet')
+        // Disconnect should not throw - uses graceful error handling
+        await result.current.disconnect()
       })
 
-      // Verify error was logged
+      // Verify error was logged gracefully
       expect(consoleSpy).toHaveBeenCalledWith('Failed to disconnect wallet:', disconnectionError)
 
       consoleSpy.mockRestore()

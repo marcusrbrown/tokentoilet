@@ -142,35 +142,41 @@ describe('useWallet - Error Handling for Connection Failures', () => {
 
   describe('Wallet Disconnection Failures', () => {
     it('should handle disconnect failures gracefully', async () => {
+      const disconnectError = new Error('Failed to disconnect')
       mockDisconnect.mockImplementation(() => {
-        throw new Error('Failed to disconnect')
+        throw disconnectError
       })
 
       const {result} = renderHook(() => useWallet())
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      await expect(async () => {
-        await act(async () => {
-          await result.current.disconnect()
-        })
-      }).rejects.toMatchObject({
-        message: 'Failed to disconnect wallet',
-        code: 'NETWORK_VALIDATION_FAILED',
-        userFriendlyMessage: 'Unable to disconnect wallet. Please try refreshing the page.',
+      await act(async () => {
+        // Disconnect should not throw - uses graceful error handling
+        await result.current.disconnect()
       })
+
+      // Verify error was logged gracefully
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to disconnect wallet:', disconnectError)
+      consoleSpy.mockRestore()
     })
 
     it('should handle wallet extension communication errors during disconnect', async () => {
+      const extensionError = new Error('Wallet extension not responding')
       mockDisconnect.mockImplementation(() => {
-        throw new Error('Wallet extension not responding')
+        throw extensionError
       })
 
       const {result} = renderHook(() => useWallet())
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      await expect(async () => {
-        await act(async () => {
-          await result.current.disconnect()
-        })
-      }).rejects.toThrow('Failed to disconnect wallet')
+      await act(async () => {
+        // Disconnect should not throw - uses graceful error handling
+        await result.current.disconnect()
+      })
+
+      // Verify error was logged gracefully
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to disconnect wallet:', extensionError)
+      consoleSpy.mockRestore()
     })
   })
 

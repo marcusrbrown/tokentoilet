@@ -187,7 +187,6 @@ export function useWallet() {
     return null
   }
 
-  // Enhanced disconnect function with persistence cleanup
   const handleDisconnect = async () => {
     try {
       disconnect()
@@ -198,12 +197,8 @@ export function useWallet() {
       }
     } catch (error) {
       console.error('Failed to disconnect wallet:', error)
-
-      // Create enhanced error for disconnect failures
-      const disconnectError = new Error('Failed to disconnect wallet') as NetworkValidationError
-      disconnectError.code = 'NETWORK_VALIDATION_FAILED'
-      disconnectError.userFriendlyMessage = 'Unable to disconnect wallet. Please try refreshing the page.'
-      throw disconnectError
+      // Graceful fallback - don't throw on disconnect errors
+      // UI components should handle disconnect failures gracefully
     }
   }
 

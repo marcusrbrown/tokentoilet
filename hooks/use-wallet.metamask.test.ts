@@ -228,10 +228,11 @@ describe('useWallet - MetaMask Connection Flow (TASK-017)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.disconnect()).rejects.toThrow('Failed to disconnect wallet')
+        // Disconnect should not throw - uses graceful error handling
+        await result.current.disconnect()
       })
 
-      // Verify error was logged
+      // Verify error was logged gracefully
       expect(consoleSpy).toHaveBeenCalledWith('Failed to disconnect wallet:', disconnectError)
 
       consoleSpy.mockRestore()
