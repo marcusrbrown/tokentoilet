@@ -405,6 +405,8 @@ describe('Accessibility', () => {
       chainId: 1,
       currentNetwork: {name: 'Ethereum Mainnet', symbol: 'ETH'},
       isCurrentChainSupported: true,
+      classifyWalletError: vi.fn(),
+      getWalletErrorRecovery: vi.fn(),
     })
 
     render(<WalletDashboard />)
@@ -442,6 +444,8 @@ describe('Custom Props', () => {
       chainId: 1,
       currentNetwork: {name: 'Ethereum Mainnet', symbol: 'ETH'},
       isCurrentChainSupported: true,
+      classifyWalletError: vi.fn(),
+      getWalletErrorRecovery: vi.fn(),
     })
 
     render(<WalletDashboard onAddressCopy={onAddressCopy} />)

@@ -197,7 +197,7 @@ describe('useWallet - Network Switching', () => {
         await act(async () => {
           await result.current.switchToChain(137)
         })
-      }).rejects.toThrow('Failed to switch to Polygon')
+      }).rejects.toThrow('User rejected the request')
     })
   })
 

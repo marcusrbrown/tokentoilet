@@ -1,5 +1,7 @@
 'use client'
 
+import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
+import {classifyWalletError, getWalletErrorRecovery} from '@/lib/web3/wallet-error-detector'
 import {arbitrum, mainnet, polygon} from '@reown/appkit/networks'
 import {useAppKit} from '@reown/appkit/react'
 import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
@@ -129,7 +131,7 @@ export function useWallet() {
     }
   }
 
-  // Enhanced connect function with detailed error classification and persistence
+  // Enhanced connect function with wallet-specific error classification and persistence
   const handleConnect = async () => {
     try {
       await open()
@@ -143,54 +145,22 @@ export function useWallet() {
     } catch (error) {
       console.error('Failed to connect wallet:', error)
 
-      // Classify and enhance error based on error message/type
-      const connectionError = new Error('Failed to connect wallet') as NetworkValidationError
-      connectionError.originalError = error as Error
+      // Use wallet-specific error classification
+      const walletError = classifyWalletError(error as Error, {
+        action: 'connect',
+        chainId,
+      })
 
-      const errorMessage = (error as Error).message.toLowerCase()
+      // Enhance with recovery actions for better UX
+      const recoveryActions = getWalletErrorRecovery(walletError)
 
-      if (errorMessage.includes('timeout') || errorMessage.includes('timed out')) {
-        connectionError.code = 'CONNECTION_TIMEOUT'
-        connectionError.userFriendlyMessage =
-          'Connection timed out. Please check your internet connection and try again.'
-      } else if (
-        errorMessage.includes('rejected') ||
-        errorMessage.includes('denied') ||
-        errorMessage.includes('cancelled')
-      ) {
-        connectionError.code = 'CONNECTION_REJECTED'
-        connectionError.userFriendlyMessage =
-          'Connection was rejected. Please accept the wallet connection request to continue.'
-      } else if (
-        errorMessage.includes('not found') ||
-        errorMessage.includes('no wallet') ||
-        errorMessage.includes('extension')
-      ) {
-        connectionError.code = 'WALLET_NOT_FOUND'
-        connectionError.userFriendlyMessage =
-          'No wallet extension found. Please install a supported wallet like MetaMask.'
-      } else if (errorMessage.includes('locked') || errorMessage.includes('unlock')) {
-        connectionError.code = 'WALLET_LOCKED'
-        connectionError.userFriendlyMessage = 'Wallet is locked. Please unlock your wallet and try again.'
-      } else if (
-        errorMessage.includes('rpc') ||
-        errorMessage.includes('network') ||
-        errorMessage.includes('endpoint')
-      ) {
-        connectionError.code = 'RPC_ENDPOINT_FAILED'
-        connectionError.userFriendlyMessage =
-          'Network connection failed. Please check your internet connection and try again.'
-      } else if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
-        connectionError.code = 'INSUFFICIENT_PERMISSIONS'
-        connectionError.userFriendlyMessage =
-          'Insufficient permissions. Please check your wallet settings and try again.'
-      } else {
-        connectionError.code = 'NETWORK_VALIDATION_FAILED'
-        connectionError.userFriendlyMessage =
-          'Unable to connect wallet. Please try again or check your wallet extension.'
+      // Add recovery information to the error
+      const enhancedError = walletError as WalletSpecificError & {
+        recoveryActions?: typeof recoveryActions
       }
+      enhancedError.recoveryActions = recoveryActions
 
-      throw connectionError
+      throw enhancedError
     }
   }
 
@@ -237,7 +207,7 @@ export function useWallet() {
     }
   }
 
-  // Safe chain switching with enhanced error classification
+  // Safe chain switching with wallet-specific error classification
   const switchToChain = async (targetChainId: SupportedChainId) => {
     if (!isSupportedChain(targetChainId)) {
       const error = new Error(
@@ -254,32 +224,28 @@ export function useWallet() {
     } catch (error) {
       console.error(`Failed to switch to chain ${targetChainId}:`, error)
 
-      const networkError = new Error(
-        `Failed to switch to ${NETWORK_INFO[targetChainId].name}`,
-      ) as NetworkValidationError
-      networkError.originalError = error as Error
-      networkError.chainId = targetChainId
+      // Use wallet-specific error classification for chain switching
+      const walletError = classifyWalletError(error as Error, {
+        action: 'switch_chain',
+        chainId: targetChainId,
+      })
 
-      const errorMessage = (error as Error).message.toLowerCase()
+      // Enhance error message with target network name
+      const networkName = NETWORK_INFO[targetChainId].name
+      walletError.userFriendlyMessage = walletError.userFriendlyMessage.replaceAll(
+        /switch to [^.]+/gi,
+        `switch to ${networkName}`,
+      )
 
-      if (errorMessage.includes('rejected') || errorMessage.includes('denied') || errorMessage.includes('cancelled')) {
-        networkError.code = 'CONNECTION_REJECTED'
-        networkError.userFriendlyMessage = `Network switch was rejected. Please accept the request to switch to ${NETWORK_INFO[targetChainId].name}.`
-      } else if (errorMessage.includes('rpc') || errorMessage.includes('endpoint')) {
-        networkError.code = 'RPC_ENDPOINT_FAILED'
-        networkError.userFriendlyMessage = `RPC endpoint failed for ${NETWORK_INFO[targetChainId].name}. Please try again later.`
-      } else if (errorMessage.includes('timeout')) {
-        networkError.code = 'CONNECTION_TIMEOUT'
-        networkError.userFriendlyMessage = `Request timed out while switching to ${NETWORK_INFO[targetChainId].name}. Please try again.`
-      } else if (errorMessage.includes('locked')) {
-        networkError.code = 'WALLET_LOCKED'
-        networkError.userFriendlyMessage = `Wallet is locked. Please unlock your wallet and try switching to ${NETWORK_INFO[targetChainId].name} again.`
-      } else {
-        networkError.code = 'NETWORK_SWITCH_FAILED'
-        networkError.userFriendlyMessage = `Unable to switch to ${NETWORK_INFO[targetChainId].name}. Please try again or switch manually in your wallet.`
+      // Add recovery actions
+      const recoveryActions = getWalletErrorRecovery(walletError)
+      const enhancedError = walletError as WalletSpecificError & {
+        recoveryActions?: typeof recoveryActions
       }
+      enhancedError.recoveryActions = recoveryActions
+      enhancedError.chainId = targetChainId
 
-      throw networkError
+      throw enhancedError
     }
   }
 
@@ -318,6 +284,11 @@ export function useWallet() {
 
     // Utility functions
     getSupportedChains,
+
+    // Wallet-specific error handling
+    classifyWalletError: (error: Error, context?: Parameters<typeof classifyWalletError>[1]) =>
+      classifyWalletError(error, context),
+    getWalletErrorRecovery,
 
     // Persistence functionality
     persistence: {

@@ -113,7 +113,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('Connection timeout: QR code expired')
       })
 
       // Verify error was logged
@@ -137,7 +137,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('User rejected the connection request')
       })
 
       // Verify error was logged
@@ -190,7 +190,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('Mobile wallet app not found or deep link failed')
       })
 
       expect(consoleSpy).toHaveBeenCalledWith('Failed to connect wallet:', deepLinkError)
@@ -210,7 +210,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('Mobile wallet connection timeout')
       })
 
       expect(consoleSpy).toHaveBeenCalledWith('Failed to connect wallet:', timeoutError)
@@ -363,7 +363,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.switchToChain(137)).rejects.toThrow('Failed to switch to Polygon')
+        await expect(result.current.switchToChain(137)).rejects.toThrow('Network switch rejected in mobile wallet')
       })
 
       // Verify error was logged
@@ -407,7 +407,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('Failed to generate WalletConnect URI')
       })
 
       expect(consoleSpy).toHaveBeenCalledWith('Failed to connect wallet:', uriError)
@@ -427,7 +427,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('WalletConnect bridge server unavailable')
       })
 
       expect(consoleSpy).toHaveBeenCalledWith('Failed to connect wallet:', bridgeError)
@@ -446,7 +446,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.connect()).rejects.toThrow('Failed to connect wallet')
+        await expect(result.current.connect()).rejects.toThrow('WalletConnect protocol version not supported')
       })
 
       expect(consoleSpy).toHaveBeenCalledWith('Failed to connect wallet:', protocolError)
