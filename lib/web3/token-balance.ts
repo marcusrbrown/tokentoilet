@@ -108,6 +108,13 @@ const NATIVE_SYMBOLS: Record<SupportedChainId, string> = {
 
 /**
  * Check balance for a single ERC-20 token
+ *
+ * @param config Wagmi configuration
+ * @param userAddress User's wallet address
+ * @param tokenAddress Token contract address
+ * @param chainId Chain ID where the token exists
+ * @param decimals Token decimals (optional - will be fetched if not provided)
+ * @returns Promise resolving to token balance information
  */
 export async function checkTokenBalance(
   config: Config,
@@ -133,7 +140,11 @@ export async function checkTokenBalance(
         ],
       })
 
-      const balance = balanceResult[0].result as bigint
+      const balance = balanceResult[0]?.result
+      if (typeof balance !== 'bigint') {
+        console.error(`Failed to get balance for token ${tokenAddress} on chain ${chainId}: Invalid balance type`)
+        throw new Error(`Failed to check token balance for ${tokenAddress} on chain ${chainId}: Invalid balance result`)
+      }
 
       return {
         address: tokenAddress,
@@ -165,8 +176,13 @@ export async function checkTokenBalance(
       ],
     })
 
-    const balance = results[0].result as bigint
-    const tokenDecimals = (results[1].result as number) ?? 18
+    const balance = results[0]?.result
+    const tokenDecimals = (results[1]?.result as number) ?? 18
+
+    if (typeof balance !== 'bigint') {
+      console.error(`Failed to get balance for token ${tokenAddress} on chain ${chainId}: Invalid balance type`)
+      throw new Error(`Failed to check token balance for ${tokenAddress} on chain ${chainId}: Invalid balance result`)
+    }
 
     return {
       address: tokenAddress,
@@ -177,12 +193,18 @@ export async function checkTokenBalance(
       lastUpdated: timestamp,
     }
   } catch (error) {
+    console.error(`Failed to check token balance for ${tokenAddress} on chain ${chainId}:`, error)
     throw new Error(`Failed to check token balance for ${tokenAddress} on chain ${chainId}: ${String(error)}`)
   }
 }
 
 /**
  * Check native token balance (ETH, MATIC, etc.)
+ *
+ * @param config Wagmi configuration
+ * @param userAddress User's wallet address
+ * @param chainId Chain ID where to check the balance
+ * @returns Promise resolving to native token balance information
  */
 export async function checkNativeBalance(
   config: Config,
@@ -205,12 +227,20 @@ export async function checkNativeBalance(
       lastUpdated: timestamp,
     }
   } catch (error) {
+    console.error(`Failed to check native balance on chain ${chainId}:`, error)
     throw new Error(`Failed to check native balance on chain ${chainId}: ${String(error)}`)
   }
 }
 
 /**
  * Check balances for multiple tokens in batches
+ *
+ * @param config Wagmi configuration
+ * @param userAddress User's wallet address
+ * @param tokens Array of tokens to check with optional decimals
+ * @param chainId Chain ID where tokens exist
+ * @param options Configuration options for batch processing
+ * @returns Promise resolving to array of token balances
  */
 export async function checkMultipleTokenBalances(
   config: Config,
@@ -221,7 +251,6 @@ export async function checkMultipleTokenBalances(
 ): Promise<TokenBalance[]> {
   const mergedOptions = {...DEFAULT_BALANCE_CONFIG, ...options}
   const results: TokenBalance[] = []
-  const errors: BalanceCheckError[] = []
 
   if (!mergedOptions.enableBatching) {
     // Sequential processing
@@ -230,14 +259,8 @@ export async function checkMultipleTokenBalances(
         const balance = await checkTokenBalance(config, userAddress, token.address, chainId, token.decimals)
         results.push(balance)
       } catch (error) {
-        errors.push({
-          type: 'TOKEN_BALANCE_FAILED',
-          tokenAddress: token.address,
-          chainId,
-          message: error instanceof Error ? error.message : 'Unknown error',
-          originalError: error,
-          timestamp: Date.now(),
-        })
+        console.error(`Failed to check balance for token ${token.address}:`, error)
+        // Continue with other tokens instead of failing completely
       }
     }
     return results
@@ -278,46 +301,41 @@ export async function checkMultipleTokenBalances(
       let resultIndex = 0
       for (const token of batch) {
         try {
-          const balance = contractResults[resultIndex].result as bigint
+          const balanceResult = contractResults[resultIndex]?.result
           resultIndex++
+
+          if (typeof balanceResult !== 'bigint') {
+            console.error(`Invalid balance result for token ${token.address}`)
+            continue
+          }
 
           let decimals = token.decimals
           if (decimals === undefined) {
-            decimals = (contractResults[resultIndex].result as number) ?? 18
+            const decimalsResult = contractResults[resultIndex]?.result
+            decimals = (typeof decimalsResult === 'number' ? decimalsResult : undefined) ?? 18
             resultIndex++
           }
 
           results.push({
             address: token.address,
-            balance,
-            formattedBalance: formatUnits(balance, decimals),
+            balance: balanceResult,
+            formattedBalance: formatUnits(balanceResult, decimals),
             decimals,
             chainId,
             lastUpdated: timestamp,
           })
         } catch (error) {
-          errors.push({
-            type: 'TOKEN_BALANCE_FAILED',
-            tokenAddress: token.address,
-            chainId,
-            message: error instanceof Error ? error.message : 'Failed to process batch result',
-            originalError: error,
-            timestamp: Date.now(),
-          })
+          console.error(`Failed to process batch result for token ${token.address}:`, error)
+          // Continue with next token instead of failing the whole batch
         }
       }
     } catch (error) {
-      // Mark entire batch as failed
-      for (const token of batch) {
-        errors.push({
-          type: 'NETWORK_ERROR',
-          tokenAddress: token.address,
-          chainId,
-          message: error instanceof Error ? error.message : 'Batch request failed',
-          originalError: error,
-          timestamp: Date.now(),
-        })
-      }
+      console.error(
+        `Batch request failed for tokens:`,
+        batch.map(t => t.address),
+        error,
+      )
+      // Continue with next batch instead of failing completely
     }
   }
 
@@ -326,6 +344,13 @@ export async function checkMultipleTokenBalances(
 
 /**
  * Check all balances (tokens + native) for a user across a single chain
+ *
+ * @param config Wagmi configuration
+ * @param userAddress User's wallet address
+ * @param tokens Array of tokens to check with optional decimals
+ * @param chainId Chain ID where tokens exist
+ * @param options Configuration options for balance checking
+ * @returns Promise resolving to comprehensive balance check results
  */
 export async function checkAllBalances(
   config: Config,
@@ -343,6 +368,7 @@ export async function checkAllBalances(
   try {
     tokenBalances = await checkMultipleTokenBalances(config, userAddress, tokens, chainId, options)
   } catch (error) {
+    console.error('Token balance check failed:', error)
     errors.push({
       type: 'NETWORK_ERROR',
       chainId,
@@ -358,6 +384,7 @@ export async function checkAllBalances(
     try {
       nativeBalance = await checkNativeBalance(config, userAddress, chainId)
     } catch (error) {
+      console.error('Native balance check failed:', error)
       errors.push({
         type: 'NATIVE_BALANCE_FAILED',
         chainId,
@@ -382,7 +409,13 @@ export async function checkAllBalances(
 }
 
 /**
- * Check balances across multiple chains
+ * Check token balances across multiple chains for a single user
+ *
+ * @param config Wagmi configuration
+ * @param userAddress User's wallet address
+ * @param tokensByChain Record mapping chain IDs to arrays of tokens to check
+ * @param options Configuration options for balance checking
+ * @returns Promise resolving to cross-chain balance check results by chain ID
  */
 export async function checkCrossChainBalances(
   config: Config,
@@ -399,6 +432,7 @@ export async function checkCrossChainBalances(
       const result = await checkAllBalances(config, userAddress, tokens, chainId, options)
       return {chainId, result}
     } catch (error) {
+      console.error(`Cross-chain balance check failed for chain ${chainId}:`, error)
       const errorResult: BalanceCheckResult = {
         tokenBalances: [],
         nativeBalance: undefined,
@@ -424,6 +458,8 @@ export async function checkCrossChainBalances(
   for (const chainResult of chainResults) {
     if (chainResult.status === 'fulfilled') {
       results[chainResult.value.chainId] = chainResult.value.result
+    } else {
+      console.error('Failed to process chain balance result:', chainResult.reason)
     }
   }
 
