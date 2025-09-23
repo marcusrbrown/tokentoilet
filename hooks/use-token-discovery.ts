@@ -63,6 +63,15 @@ const DEFAULT_HOOK_OPTIONS: Required<Omit<UseTokenDiscoveryOptions, keyof TokenD
 }
 
 /**
+ * Retry configuration constants
+ */
+const RETRY_CONFIG = {
+  MAX_ATTEMPTS: 3,
+  INITIAL_DELAY: 1000, // 1 second
+  MAX_DELAY: 30_000, // 30 seconds
+} as const
+
+/**
  * Hook for discovering tokens across multiple chains for the connected wallet
  *
  * Features:
@@ -117,10 +126,10 @@ export function useTokenDiscovery(options: UseTokenDiscoveryOptions = {}): UseTo
       if (error.message.includes('not connected')) {
         return false
       }
-      // Retry up to 3 times for other errors
-      return failureCount < 3
+      // Retry up to configured max attempts for other errors
+      return failureCount < RETRY_CONFIG.MAX_ATTEMPTS
     },
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(RETRY_CONFIG.INITIAL_DELAY * 2 ** attemptIndex, RETRY_CONFIG.MAX_DELAY),
   })
 
   return {

@@ -1,7 +1,6 @@
-import type {Address} from 'viem'
 import type {Config} from 'wagmi'
 import type {SupportedChainId} from '../../hooks/use-wallet'
-import {erc20Abi} from 'viem'
+import {erc20Abi, type Address} from 'viem'
 
 import {readContracts} from 'wagmi/actions'
 
