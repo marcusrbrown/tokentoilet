@@ -272,7 +272,6 @@ export async function fetchEnhancedTokenMetadata(
       metadata.riskScore = assessTokenRisk(metadata, sources)
     }
 
-    // Update sources in metadata
     if (metadata) {
       metadata.sources = sources
     }

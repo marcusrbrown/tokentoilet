@@ -35,27 +35,16 @@ export interface UseTokenMetadataOptions extends Partial<TokenMetadataConfig> {
  * Return type for useTokenMetadata hook
  */
 export interface UseTokenMetadataReturn {
-  /** Enhanced token metadata */
   metadata: EnhancedTokenMetadata | null
-  /** Loading state */
   isLoading: boolean
-  /** Error state */
   error: Error | null
-  /** Is currently fetching */
   isFetching: boolean
-  /** Has data been fetched at least once */
   isSuccess: boolean
-  /** Metadata fetch errors */
   fetchErrors: MetadataFetchResult['errors']
-  /** Metadata validation results */
   validation: ReturnType<typeof validateTokenMetadata> | null
-  /** Cache hit indicator */
   cacheHit: boolean
-  /** Number of successful metadata sources */
   successfulSources: number
-  /** Total number of attempted sources */
   totalSources: number
-  /** Refetch function */
   refetch: () => void
   /** Force refresh (bypasses cache) */
   refresh: () => void
@@ -141,7 +130,22 @@ export function useTokenMetadata(
     queryKey,
     queryFn: async (): Promise<MetadataFetchResult> => {
       if (tokenAddress === undefined || chainId === undefined) {
-        throw new Error('Token address and chain ID are required')
+        console.error('Token metadata fetch failed: Token address and chain ID are required')
+        return {
+          metadata: null,
+          errors: [
+            {
+              source: 'hook-validation',
+              tokenAddress: tokenAddress ?? ('0x0' as Address),
+              chainId: chainId ?? 1,
+              error: 'Token address and chain ID are required',
+              timestamp: Date.now(),
+            },
+          ],
+          cacheHit: false,
+          totalSources: 0,
+          successfulSources: 0,
+        }
       }
 
       return fetchEnhancedTokenMetadata(config, tokenAddress, chainId, metadataConfig)
