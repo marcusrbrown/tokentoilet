@@ -86,5 +86,5 @@
     "viem": "^2.23.0",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.17.0"
+  "packageManager": "pnpm@10.17.1"
 }
