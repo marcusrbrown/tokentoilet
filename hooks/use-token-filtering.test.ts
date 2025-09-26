@@ -325,6 +325,7 @@ describe('useTokenSearch', () => {
     })
 
     expect(Array.isArray(result.current.tokens)).toBe(true)
-    expect(typeof result.current.filteredTokens).toBe('number')
+    expect(Array.isArray(result.current.searchResults)).toBe(true)
+    expect(typeof result.current.searchStats.totalResults).toBe('number')
   })
 })

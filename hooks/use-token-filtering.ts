@@ -3,7 +3,7 @@
 import type {DiscoveredToken} from '../lib/web3/token-discovery'
 import {useQuery, useQueryClient} from '@tanstack/react-query'
 
-import {useCallback} from 'react'
+import {useCallback, useMemo, useState} from 'react'
 import {
   calculateTokenStats,
   categorizeToken,
@@ -413,21 +413,601 @@ export function useUncategorizedTokens(
 }
 
 /**
- * Hook for token search functionality
+ * Hook for token search functionality with fuzzy matching and advanced sorting
  *
  * @param discoveredTokens Array of discovered tokens
  * @param searchQuery Search query string
- * @param options Hook configuration options
- * @returns Search results
+ * @param options Advanced search configuration options
+ * @returns Advanced search results with relevance scoring
  */
 export function useTokenSearch(
-  discoveredTokens: Parameters<typeof useTokenFiltering>[0],
+  discoveredTokens: DiscoveredToken[],
   searchQuery: string,
-  options: UseTokenFilteringOptions = {},
-): Omit<UseTokenFilteringReturn, 'stats'> {
-  const filter: TokenFilter = {searchQuery}
-  const {stats, ...result} = useTokenFiltering(discoveredTokens, filter, undefined, options)
-  return result
+  options: AdvancedSearchOptions = {},
+): {
+  /** Search results with relevance scoring */
+  searchResults: SearchResult[]
+  /** Filtered tokens from the search */
+  tokens: CategorizedToken[]
+  /** Search statistics */
+  searchStats: {
+    totalResults: number
+    hasExactMatches: boolean
+    hasFuzzyMatches: boolean
+    avgRelevance: number
+  }
+  /** Loading state */
+  isLoading: boolean
+  /** Error state */
+  error: Error | null
+} {
+  const {preferences} = useSearchAndSortPreferences()
+
+  // Apply token filtering first to get categorized tokens
+  const {
+    tokens: categorizedTokens,
+    isLoading,
+    error,
+  } = useTokenFiltering(
+    discoveredTokens,
+    {}, // No additional filters
+    undefined,
+    options,
+  )
+
+  // Perform advanced search with relevance scoring
+  const searchResults = useMemo(() => {
+    const searchOptions: AdvancedSearchOptions = {
+      ...preferences.defaultSearch,
+      ...options,
+    }
+
+    return performAdvancedSearch(categorizedTokens, searchQuery, searchOptions)
+  }, [categorizedTokens, searchQuery, preferences.defaultSearch, options])
+
+  // Calculate search statistics
+  const searchStats = useMemo(() => {
+    const totalResults = searchResults.length
+    const exactMatches = searchResults.filter((r: SearchResult) => r.relevance >= 0.9).length
+    const fuzzyMatches = searchResults.filter((r: SearchResult) => r.relevance < 0.7 && r.relevance > 0.3).length
+    const avgRelevance =
+      totalResults > 0 ? searchResults.reduce((sum: number, r: SearchResult) => sum + r.relevance, 0) / totalResults : 0
+
+    return {
+      totalResults,
+      hasExactMatches: exactMatches > 0,
+      hasFuzzyMatches: fuzzyMatches > 0,
+      avgRelevance,
+    }
+  }, [searchResults])
+
+  return {
+    searchResults,
+    tokens: searchResults.map((r: SearchResult) => r.token),
+    searchStats,
+    isLoading,
+    error,
+  }
+}
+
+// ============================================================================
+// ADVANCED SEARCH AND SORTING FUNCTIONALITY - TASK-017 IMPLEMENTATION
+// ============================================================================
+
+/**
+ * Advanced search options for improved token discovery
+ */
+export interface AdvancedSearchOptions extends UseTokenFilteringOptions {
+  /** Enable fuzzy search matching */
+  enableFuzzySearch?: boolean
+  /** Minimum similarity score for fuzzy matching (0-1) */
+  fuzzyThreshold?: number
+  /** Fields to search in */
+  searchFields?: ('name' | 'symbol' | 'address' | 'description')[]
+  /** Enable debounced search */
+  debounceMs?: number
+  /** Case sensitive search */
+  caseSensitive?: boolean
+  /** Include partial word matches */
+  includePartialMatches?: boolean
+}
+
+/**
+ * Advanced sorting options with multiple criteria
+ */
+export interface AdvancedSortOptions extends TokenSortOptions {
+  /** Enable stable sorting */
+  stable?: boolean
+  /** Multi-level sorting criteria */
+  multiSort?: {
+    field: TokenSortOptions['field']
+    direction: 'asc' | 'desc'
+    weight?: number
+  }[]
+  /** Sort by relevance when search is active */
+  relevanceWeight?: number
+}
+
+/**
+ * Search result with relevance scoring
+ */
+export interface SearchResult {
+  /** The categorized token */
+  token: CategorizedToken
+  /** Search relevance score (0-1) */
+  relevance: number
+  /** Fields that matched */
+  matchedFields: ('name' | 'symbol' | 'address' | 'description')[]
+  /** Match positions for highlighting */
+  matches: {
+    field: string
+    start: number
+    end: number
+    text: string
+  }[]
+}
+
+/**
+ * Search and sorting preferences with localStorage persistence
+ */
+export interface SearchPreferences {
+  /** Default search options */
+  defaultSearch: {
+    enableFuzzySearch: boolean
+    fuzzyThreshold: number
+    searchFields: ('name' | 'symbol' | 'address' | 'description')[]
+    caseSensitive: boolean
+    includePartialMatches: boolean
+  }
+  /** Default sorting options */
+  defaultSort: AdvancedSortOptions
+  /** Search history settings */
+  history: {
+    enabled: boolean
+    maxEntries: number
+  }
+  /** UI preferences */
+  ui: {
+    debounceMs: number
+    highlightMatches: boolean
+    showSearchStats: boolean
+  }
+}
+
+/**
+ * Default search preferences
+ */
+const DEFAULT_SEARCH_PREFERENCES: SearchPreferences = {
+  defaultSearch: {
+    enableFuzzySearch: true,
+    fuzzyThreshold: 0.6,
+    searchFields: ['name', 'symbol', 'address'],
+    caseSensitive: false,
+    includePartialMatches: true,
+  },
+  defaultSort: {
+    field: 'value',
+    direction: 'desc',
+    relevanceWeight: 0.3,
+  },
+  history: {
+    enabled: true,
+    maxEntries: 20,
+  },
+  ui: {
+    debounceMs: 300,
+    highlightMatches: true,
+    showSearchStats: true,
+  },
+}
+
+/**
+ * Calculate fuzzy similarity using Levenshtein distance
+ */
+function calculateSimilarity(str1: string, str2: string): number {
+  const longer = str1.length > str2.length ? str1 : str2
+  const shorter = str1.length > str2.length ? str2 : str1
+
+  if (longer.length === 0) return 1
+
+  const editDistance = levenshteinDistance(longer, shorter)
+  return (longer.length - editDistance) / longer.length
+}
+
+/**
+ * Calculate Levenshtein distance between two strings
+ */
+function levenshteinDistance(str1: string, str2: string): number {
+  const matrix: number[][] = []
+
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i]
+  }
+
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j
+  }
+
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1]
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1, // insertion
+          matrix[i - 1][j] + 1, // deletion
+        )
+      }
+    }
+  }
+
+  return matrix[str2.length][str1.length]
+}
+
+/**
+ * Perform advanced search with fuzzy matching and relevance scoring
+ */
+function performAdvancedSearch(
+  tokens: CategorizedToken[],
+  query: string,
+  options: AdvancedSearchOptions,
+): SearchResult[] {
+  if (!query.trim()) {
+    return tokens.map(token => ({
+      token,
+      relevance: 0.1,
+      matchedFields: [],
+      matches: [],
+    }))
+  }
+
+  const {
+    enableFuzzySearch = true,
+    fuzzyThreshold = 0.6,
+    searchFields = ['name', 'symbol', 'address'],
+    caseSensitive = false,
+    includePartialMatches = true,
+  } = options
+
+  const searchQuery = caseSensitive ? query.trim() : query.trim().toLowerCase()
+  const results: SearchResult[] = []
+
+  for (const token of tokens) {
+    const matches: SearchResult['matches'] = []
+    const matchedFields: SearchResult['matchedFields'] = []
+    let maxRelevance = 0
+
+    for (const field of searchFields) {
+      let fieldValue = ''
+
+      switch (field) {
+        case 'name':
+          fieldValue = token.name
+          break
+        case 'symbol':
+          fieldValue = token.symbol
+          break
+        case 'address':
+          fieldValue = token.address
+          break
+        case 'description':
+          fieldValue = token.metadata?.description ?? ''
+          break
+      }
+
+      if (fieldValue.trim().length === 0) continue
+
+      const searchValue = caseSensitive ? fieldValue : fieldValue.toLowerCase()
+      let relevance = 0
+
+      // Exact match (highest priority)
+      if (searchValue === searchQuery) {
+        relevance = 1
+        matches.push({
+          field,
+          start: 0,
+          end: fieldValue.length,
+          text: fieldValue,
+        })
+        matchedFields.push(field)
+      }
+      // Starts with (high priority)
+      else if (searchValue.startsWith(searchQuery)) {
+        relevance = 0.9
+        matches.push({
+          field,
+          start: 0,
+          end: searchQuery.length,
+          text: fieldValue.slice(0, Math.max(0, searchQuery.length)),
+        })
+        matchedFields.push(field)
+      }
+      // Contains (medium priority)
+      else if (includePartialMatches && searchValue.includes(searchQuery)) {
+        const matchIndex = searchValue.indexOf(searchQuery)
+        relevance = 0.7 - (matchIndex / searchValue.length) * 0.2 // Lower score for matches later in string
+        matches.push({
+          field,
+          start: matchIndex,
+          end: matchIndex + searchQuery.length,
+          text: fieldValue.slice(matchIndex, matchIndex + searchQuery.length),
+        })
+        matchedFields.push(field)
+      }
+      // Fuzzy match (lower priority)
+      else if (enableFuzzySearch) {
+        const similarity = calculateSimilarity(searchQuery, searchValue)
+        if (similarity >= fuzzyThreshold) {
+          relevance = similarity * 0.6 // Lower base score for fuzzy matches
+          matches.push({
+            field,
+            start: 0,
+            end: fieldValue.length,
+            text: fieldValue,
+          })
+          matchedFields.push(field)
+        }
+      }
+
+      maxRelevance = Math.max(maxRelevance, relevance)
+    }
+
+    if (maxRelevance > 0) {
+      results.push({
+        token,
+        relevance: maxRelevance,
+        matchedFields,
+        matches,
+      })
+    }
+  }
+
+  // Sort by relevance (highest first)
+  return results.sort((a, b) => b.relevance - a.relevance)
+}
+
+/**
+ * Advanced multi-criteria sorting
+ */
+function performAdvancedSort(
+  tokens: CategorizedToken[],
+  searchResults: SearchResult[],
+  sortOptions: AdvancedSortOptions,
+): CategorizedToken[] {
+  // Create relevance map for search results
+  const relevanceMap = new Map<string, number>()
+  for (const result of searchResults) {
+    const key = `${result.token.chainId}:${result.token.address.toLowerCase()}`
+    relevanceMap.set(key, result.relevance)
+  }
+
+  return [...tokens].sort((a, b) => {
+    // Apply relevance weighting if search is active
+    if ((sortOptions.relevanceWeight ?? 0) > 0) {
+      const aKey = `${a.chainId}:${a.address.toLowerCase()}`
+      const bKey = `${b.chainId}:${b.address.toLowerCase()}`
+      const aRelevance = relevanceMap.get(aKey) ?? 0
+      const bRelevance = relevanceMap.get(bKey) ?? 0
+
+      if (aRelevance !== bRelevance) {
+        const relevanceResult = (bRelevance - aRelevance) * (sortOptions.relevanceWeight ?? 0)
+        if (Math.abs(relevanceResult) > 0.1) return relevanceResult
+      }
+    }
+
+    // Primary sort field
+    let result = compareTokenFields(a, b, sortOptions.field, sortOptions.direction)
+    if (result !== 0) return result
+
+    // Secondary sort
+    if (sortOptions.secondary) {
+      result = compareTokenFields(a, b, sortOptions.secondary.field, sortOptions.secondary.direction)
+      if (result !== 0) return result
+    }
+
+    // Multi-sort criteria
+    if (sortOptions.multiSort) {
+      for (const criteria of sortOptions.multiSort) {
+        const weight = criteria.weight ?? 1
+        result = compareTokenFields(a, b, criteria.field, criteria.direction) * weight
+        if (result !== 0) return result
+      }
+    }
+
+    return 0
+  })
+}
+
+/**
+ * Compare tokens by specific field (extracted from existing sortTokens function)
+ */
+function compareTokenFields(
+  a: CategorizedToken,
+  b: CategorizedToken,
+  field: TokenSortOptions['field'],
+  direction: 'asc' | 'desc',
+): number {
+  const multiplier = direction === 'asc' ? 1 : -1
+
+  switch (field) {
+    case 'balance': {
+      const aBalance = Number.parseFloat(a.formattedBalance)
+      const bBalance = Number.parseFloat(b.formattedBalance)
+      return (aBalance - bBalance) * multiplier
+    }
+    case 'value': {
+      const aValue = a.estimatedValueUSD ?? 0
+      const bValue = b.estimatedValueUSD ?? 0
+      return (aValue - bValue) * multiplier
+    }
+    case 'name':
+      return a.name.localeCompare(b.name) * multiplier
+    case 'symbol':
+      return a.symbol.localeCompare(b.symbol) * multiplier
+    case 'category':
+      return a.category.localeCompare(b.category) * multiplier
+    case 'riskScore': {
+      // Define consistent risk score ordering
+      const riskOrder = ['verified', 'low', 'medium', 'high', 'unknown']
+      const aIndex = riskOrder.indexOf(a.riskScore)
+      const bIndex = riskOrder.indexOf(b.riskScore)
+      return (aIndex - bIndex) * multiplier
+    }
+    case 'lastCategorized': {
+      const aTime = a.lastCategorizedAt ?? 0
+      const bTime = b.lastCategorizedAt ?? 0
+      return (aTime - bTime) * multiplier
+    }
+    default:
+      return 0
+  }
+}
+
+/**
+ * Hook for managing search and sorting preferences with localStorage persistence
+ */
+export function useSearchAndSortPreferences(): {
+  preferences: SearchPreferences
+  updatePreferences: (updates: Partial<SearchPreferences>) => void
+  resetPreferences: () => void
+} {
+  const storageKey = 'tokentoilet:search-sort-preferences'
+
+  const {data: preferences = DEFAULT_SEARCH_PREFERENCES} = useQuery({
+    queryKey: ['search-sort-preferences'],
+    queryFn: (): SearchPreferences => {
+      try {
+        const stored = localStorage.getItem(storageKey)
+        if (stored != null && stored.trim().length > 0) {
+          return {...DEFAULT_SEARCH_PREFERENCES, ...(JSON.parse(stored) as Partial<SearchPreferences>)}
+        }
+      } catch {
+        // Ignore errors, use defaults
+      }
+      return DEFAULT_SEARCH_PREFERENCES
+    },
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: Number.POSITIVE_INFINITY,
+  })
+
+  const queryClient = useQueryClient()
+
+  const updatePreferences = useCallback(
+    (updates: Partial<SearchPreferences>) => {
+      const newPreferences = {...preferences, ...updates}
+      queryClient.setQueryData(['search-sort-preferences'], newPreferences)
+
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(newPreferences))
+      } catch {
+        // Ignore storage errors
+      }
+    },
+    [preferences, queryClient],
+  )
+
+  const resetPreferences = useCallback(() => {
+    queryClient.setQueryData(['search-sort-preferences'], DEFAULT_SEARCH_PREFERENCES)
+
+    try {
+      localStorage.removeItem(storageKey)
+    } catch {
+      // Ignore storage errors
+    }
+  }, [queryClient])
+
+  return {
+    preferences,
+    updatePreferences,
+    resetPreferences,
+  }
+}
+
+/**
+ * Token sorting hook with multi-criteria support
+ */
+export function useTokenSorting(
+  tokens: CategorizedToken[],
+  searchResults: SearchResult[] = [],
+  sortOptions?: Partial<AdvancedSortOptions>,
+): {
+  /** Sorted tokens */
+  sortedTokens: CategorizedToken[]
+  /** Current sort options */
+  currentSort: AdvancedSortOptions
+  /** Update sort options */
+  updateSort: (updates: Partial<AdvancedSortOptions>) => void
+} {
+  const {preferences, updatePreferences} = useSearchAndSortPreferences()
+  const [localSort, setLocalSort] = useState<AdvancedSortOptions>(() => ({
+    ...preferences.defaultSort,
+    ...sortOptions,
+  }))
+
+  // Sort tokens using advanced sorting
+  const sortedTokens = useMemo(() => {
+    return performAdvancedSort(tokens, searchResults, localSort)
+  }, [tokens, searchResults, localSort])
+
+  const updateSort = useCallback(
+    (updates: Partial<AdvancedSortOptions>) => {
+      const newSort = {...localSort, ...updates}
+      setLocalSort(newSort)
+
+      // Optionally update preferences if this should be the new default
+      if (updates.field || updates.direction) {
+        updatePreferences({
+          defaultSort: {
+            ...preferences.defaultSort,
+            field: updates.field ?? preferences.defaultSort.field,
+            direction: updates.direction ?? preferences.defaultSort.direction,
+          },
+        })
+      }
+    },
+    [localSort, preferences.defaultSort, updatePreferences],
+  )
+
+  return {
+    sortedTokens,
+    currentSort: localSort,
+    updateSort,
+  }
+}
+
+/**
+ * Combined search and sort hook for comprehensive token management
+ */
+export function useTokenSearchAndSort(
+  discoveredTokens: DiscoveredToken[],
+  searchQuery: string,
+  options: AdvancedSearchOptions = {},
+  sortOptions?: Partial<AdvancedSortOptions>,
+): {
+  /** Search results with relevance */
+  searchResults: SearchResult[]
+  /** Final sorted and filtered tokens */
+  tokens: CategorizedToken[]
+  /** Search statistics */
+  searchStats: ReturnType<typeof useTokenSearch>['searchStats']
+  /** Sorting controls */
+  sorting: ReturnType<typeof useTokenSorting>
+  /** Loading and error states */
+  isLoading: boolean
+  error: Error | null
+} {
+  const searchReturn = useTokenSearch(discoveredTokens, searchQuery, options)
+  const sortingReturn = useTokenSorting(searchReturn.tokens, searchReturn.searchResults, sortOptions)
+
+  return {
+    searchResults: searchReturn.searchResults,
+    tokens: sortingReturn.sortedTokens,
+    searchStats: searchReturn.searchStats,
+    sorting: sortingReturn,
+    isLoading: searchReturn.isLoading,
+    error: searchReturn.error,
+  }
 }
 
 /**
