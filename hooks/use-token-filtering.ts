@@ -418,7 +418,7 @@ export function useUncategorizedTokens(
  * @param discoveredTokens Array of discovered tokens
  * @param searchQuery Search query string
  * @param options Advanced search configuration options
- * @returns Enhanced search results with relevance scoring
+ * @returns Advanced search results with relevance scoring
  */
 export function useTokenSearch(
   discoveredTokens: DiscoveredToken[],
@@ -491,7 +491,7 @@ export function useTokenSearch(
 }
 
 // ============================================================================
-// ENHANCED SEARCH AND SORTING FUNCTIONALITY - TASK-017 IMPLEMENTATION
+// ADVANCED SEARCH AND SORTING FUNCTIONALITY - TASK-017 IMPLEMENTATION
 // ============================================================================
 
 /**
@@ -646,7 +646,7 @@ function levenshteinDistance(str1: string, str2: string): number {
 }
 
 /**
- * Perform enhanced search with fuzzy matching and relevance scoring
+ * Perform advanced search with fuzzy matching and relevance scoring
  */
 function performAdvancedSearch(
   tokens: CategorizedToken[],
@@ -696,7 +696,7 @@ function performAdvancedSearch(
           break
       }
 
-      if (!fieldValue) continue
+      if (fieldValue.trim().length === 0) continue
 
       const searchValue = caseSensitive ? fieldValue : fieldValue.toLowerCase()
       let relevance = 0
@@ -768,7 +768,7 @@ function performAdvancedSearch(
 }
 
 /**
- * Enhanced multi-criteria sorting
+ * Advanced multi-criteria sorting
  */
 function performAdvancedSort(
   tokens: CategorizedToken[],
