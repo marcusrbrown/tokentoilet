@@ -4,6 +4,7 @@ import type {SupportedChainId} from '../../hooks/use-wallet'
 import type {DiscoveredToken} from './token-discovery'
 import type {EnhancedTokenMetadata} from './token-metadata'
 import {TokenRiskScore} from './token-metadata'
+import {quickSecurityCheck, TokenSecurityRisk, type TokenSecurityValidation} from './token-validation'
 
 /**
  * Token categorization for disposal workflow
@@ -54,6 +55,9 @@ export interface CategorizedToken {
   riskScore: TokenRiskScore
   spamScore: number // 0-100, higher = more likely spam
   isVerified: boolean
+
+  /** Security validation (enhanced) */
+  securityValidation?: TokenSecurityValidation
 
   /** Value estimation */
   estimatedValueUSD?: number
@@ -496,17 +500,42 @@ export function categorizeToken(
   const riskScore = metadata?.riskScore ?? TokenRiskScore.UNKNOWN
   const isVerified = metadata?.isVerified ?? false
 
-  // Calculate spam score
-  const spamScore = mergedConfig.enableSpamDetection
-    ? calculateSpamScore({
+  // Enhanced security validation using new token validation system
+  const securityValidation = mergedConfig.enableSpamDetection
+    ? quickSecurityCheck(discoveredToken.address, discoveredToken.chainId, {
         name: discoveredToken.name,
         symbol: discoveredToken.symbol,
         decimals: discoveredToken.decimals,
-        balance: discoveredToken.balance,
-        isVerified,
-        riskScore,
       })
-    : 0
+    : undefined
+
+  // Calculate spam score (use enhanced validation if available)
+  const spamScore = securityValidation
+    ? (() => {
+        // Convert security risk level to spam score (inverse relationship)
+        switch (securityValidation.riskLevel) {
+          case TokenSecurityRisk.VERIFIED:
+            return 0
+          case TokenSecurityRisk.LOW:
+            return 10
+          case TokenSecurityRisk.MEDIUM:
+            return 30
+          case TokenSecurityRisk.HIGH:
+            return 70
+          case TokenSecurityRisk.CRITICAL:
+            return 95
+        }
+      })()
+    : mergedConfig.enableSpamDetection
+      ? calculateSpamScore({
+          name: discoveredToken.name,
+          symbol: discoveredToken.symbol,
+          decimals: discoveredToken.decimals,
+          balance: discoveredToken.balance,
+          isVerified,
+          riskScore,
+        })
+      : 0
 
   // Estimate USD value
   const priceUSD = metadata?.priceUSD
@@ -537,6 +566,32 @@ export function categorizeToken(
     marketCapUSD: metadata?.marketCapUSD,
     analysisTimestamp: Date.now(),
     confidenceScore: calculateConfidenceScore(discoveredToken, metadata, spamScore),
+    // Enhanced security validation
+    securityValidation: securityValidation
+      ? {
+          riskLevel: securityValidation.riskLevel,
+          securityScore: 0, // Will be filled by full validation
+          issues: [],
+          validatedAt: new Date(),
+          isVerified: securityValidation.trusted,
+          contractSecurity: {
+            isVerified: false,
+            isProxy: false,
+            hasMintFunction: false,
+            hasTransferRestrictions: false,
+            isHoneypot: false,
+            deployerRisk: 'medium',
+          },
+          metadataSecurity: {
+            hasSpamName: false,
+            hasSpamSymbol: false,
+            isImpersonating: false,
+            hasSuspiciousDecimals: false,
+            hasPromotionalContent: false,
+            metadataQuality: 50,
+          },
+        }
+      : undefined,
   }
 
   // Auto-categorize if enabled
