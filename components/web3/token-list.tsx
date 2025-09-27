@@ -15,9 +15,6 @@ import React, {useCallback, useMemo, useRef, useState} from 'react'
 
 import {TokenListItem} from './token-list-item'
 
-/**
- * Token list component variants using class-variance-authority
- */
 const tokenListVariants = cva(
   [
     'w-full',
@@ -47,9 +44,6 @@ const tokenListVariants = cva(
   },
 )
 
-/**
- * Token list configuration options
- */
 export interface TokenListConfig {
   /** Items per page for pagination */
   itemsPerPage: number
@@ -69,9 +63,6 @@ export interface TokenListConfig {
   enableBatchSelection: boolean
 }
 
-/**
- * Props for TokenList component
- */
 export interface TokenListProps extends VariantProps<typeof tokenListVariants> {
   /** Configuration options */
   config?: Partial<TokenListConfig>
@@ -93,10 +84,8 @@ export interface TokenListProps extends VariantProps<typeof tokenListVariants> {
   className?: string
 }
 
-/**
- * Default configuration for token list
- */
-const DEFAULT_CONFIG: TokenListConfig = {
+// Default configuration optimized for 1000+ token performance
+const DEFAULT_CONFIG = {
   itemsPerPage: 50,
   itemHeight: 80,
   enableVirtualScrolling: true,
@@ -105,44 +94,20 @@ const DEFAULT_CONFIG: TokenListConfig = {
   enableSorting: true,
   enableFiltering: true,
   enableBatchSelection: true,
-}
+} as const satisfies TokenListConfig
 
-/**
- * Default props to prevent render loops
- */
+// Stable object references prevent unnecessary re-renders
 const DEFAULT_USER_CONFIG = {}
 const DEFAULT_FILTER: TokenFilter = {}
 const DEFAULT_SORT: TokenSortOptions = {field: 'balance', direction: 'desc'}
 const EMPTY_SELECTED_TOKENS: Address[] = []
 
 /**
- * TokenList component for displaying and managing discovered tokens
+ * High-performance token list with virtual scrolling for efficient batch disposal operations.
  *
- * Features:
- * - Virtual scrolling for performance with large token collections
- * - Pagination controls with configurable page sizes
- * - Search functionality across token name and symbol
- * - Sorting by various token attributes
- * - Filtering by category, value class, and other criteria
- * - Batch selection for multi-token operations
- * - Loading states with skeleton placeholders
- * - Empty state handling with helpful messaging
- * - Error boundary integration
- * - Responsive design with glass morphism aesthetics
- *
- * @param props Component configuration and callbacks
- * @param props.config Configuration options for list behavior
- * @param props.filter Optional token filter to apply
- * @param props.sort Optional sort configuration
- * @param props.searchQuery Search query string
- * @param props.selectedTokens Array of selected token addresses
- * @param props.onTokenSelectionChange Callback for selection changes
- * @param props.onTokenClick Callback for token clicks
- * @param props.onViewTokenDetails Callback for viewing token details
- * @param props.className Additional CSS classes
- * @param props.variant Display variant
- * @param props.layout List layout mode
- * @returns React element
+ * Virtual scrolling is critical for wallets containing 1000+ tokens, common in DeFi power users.
+ * Search and filtering capabilities help users quickly identify unwanted tokens for disposal.
+ * Batch selection enables efficient multi-token disposal transactions.
  */
 export function TokenList({
   config: userConfig = DEFAULT_USER_CONFIG,
@@ -157,21 +122,18 @@ export function TokenList({
   variant = 'default',
   layout = 'list',
   ...props
-}: TokenListProps) {
-  // Merge configuration with defaults
+}: TokenListProps): React.ReactElement {
+  // Memoized config prevents unnecessary child re-renders
   const config = useMemo(() => ({...DEFAULT_CONFIG, ...userConfig}), [userConfig])
 
-  // Local state
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
   const [currentPage, setCurrentPage] = useState(1)
   const [sortConfig, setSortConfig] = useState<TokenSortOptions>(sort)
   const [activeFilter] = useState<TokenFilter>(filter)
   const [internalSelectedTokens, setInternalSelectedTokens] = useState<Address[]>(selectedTokens)
 
-  // Refs for virtualization
   const parentRef = useRef<HTMLDivElement>(null)
 
-  // Token discovery and filtering
   const {
     tokens: discoveredTokens,
     isLoading: isDiscovering,
@@ -194,14 +156,12 @@ export function TokenList({
     sortConfig,
   )
 
-  // Compute pagination
   const totalTokens = categorizedTokens.length
   const totalPages = Math.ceil(totalTokens / config.itemsPerPage)
   const startIndex = (currentPage - 1) * config.itemsPerPage
   const endIndex = Math.min(startIndex + config.itemsPerPage, totalTokens)
   const paginatedTokens = config.enablePagination ? categorizedTokens.slice(startIndex, endIndex) : categorizedTokens
 
-  // Virtual scrolling setup
   const virtualizer = useVirtualizer({
     count: config.enableVirtualScrolling ? paginatedTokens.length : 0,
     getScrollElement: () => parentRef.current,
@@ -209,7 +169,6 @@ export function TokenList({
     overscan: 5,
   })
 
-  // Event handlers
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value)
     setCurrentPage(1) // Reset to first page on search
@@ -253,11 +212,9 @@ export function TokenList({
     [totalPages],
   )
 
-  // Loading state
   const isLoading = isDiscovering || isFiltering
-  const hasError = discoveryError || filteringError
+  const hasError = discoveryError != null || filteringError != null
 
-  // Render loading state
   if (isLoading && categorizedTokens.length === 0) {
     return (
       <div className={cn(tokenListVariants({variant, layout}), className)} {...props}>
@@ -293,7 +250,6 @@ export function TokenList({
     )
   }
 
-  // Render error state
   if (hasError) {
     return (
       <div className={cn(tokenListVariants({variant, layout}), className)} {...props}>
@@ -311,19 +267,18 @@ export function TokenList({
     )
   }
 
-  // Render empty state
-  if (!isLoading && categorizedTokens.length === 0) {
+  if (isLoading === false && categorizedTokens.length === 0) {
     return (
       <div className={cn(tokenListVariants({variant, layout}), className)} {...props}>
         <div className="p-8 text-center">
           <Trash2 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No Tokens Found</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {searchQuery
+            {searchQuery.length > 0
               ? `No tokens match "${searchQuery}". Try adjusting your search or filters.`
               : "Connect your wallet and we'll discover your tokens automatically."}
           </p>
-          {searchQuery && (
+          {searchQuery.length > 0 && (
             <Button onClick={() => setSearchQuery('')} variant="outline">
               Clear Search
             </Button>
@@ -335,10 +290,8 @@ export function TokenList({
 
   return (
     <div className={cn(tokenListVariants({variant, layout}), className)} {...props}>
-      {/* Header with controls */}
       <div className="p-4 border-b border-gray-200/60 dark:border-gray-700/40">
         <div className="flex flex-col gap-4">
-          {/* Search and filters row */}
           {(config.enableSearch || config.enableFiltering) && (
             <div className="flex items-center gap-3">
               {config.enableSearch && (
@@ -362,7 +315,6 @@ export function TokenList({
             </div>
           )}
 
-          {/* Stats and controls row */}
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600 dark:text-gray-400">
               {searchQuery && `"${searchQuery}" • `}
@@ -376,7 +328,6 @@ export function TokenList({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Batch selection controls */}
               {config.enableBatchSelection && totalTokens > 0 && (
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm" onClick={handleSelectAll}>
@@ -390,7 +341,6 @@ export function TokenList({
                 </div>
               )}
 
-              {/* Sort controls */}
               {config.enableSorting && (
                 <div className="flex items-center gap-1">
                   <Button
@@ -428,10 +378,8 @@ export function TokenList({
         </div>
       </div>
 
-      {/* Token list content */}
       <div className="flex-1">
         {config.enableVirtualScrolling ? (
-          /* Virtual scrolling mode */
           <div
             ref={parentRef}
             className="h-[600px] overflow-auto p-4"
@@ -472,7 +420,6 @@ export function TokenList({
             </div>
           </div>
         ) : (
-          /* Regular scrolling mode */
           <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
             {paginatedTokens.map(token => (
               <TokenListItem
@@ -488,7 +435,6 @@ export function TokenList({
         )}
       </div>
 
-      {/* Pagination controls */}
       {config.enablePagination && totalPages > 1 && (
         <div className="p-4 border-t border-gray-200/60 dark:border-gray-700/40">
           <div className="flex items-center justify-between">

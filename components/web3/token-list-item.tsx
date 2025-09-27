@@ -23,10 +23,7 @@ import {
 } from 'lucide-react'
 import React, {useCallback} from 'react'
 
-/**
- * Token list item variants using class-variance-authority
- * Provides consistent styling for token display with glass morphism
- */
+// Token list item variants for consistent glass morphism styling across states
 const tokenListItemVariants = cva(
   [
     'group',
@@ -103,9 +100,6 @@ const tokenListItemVariants = cva(
   },
 )
 
-/**
- * Props for TokenListItem component
- */
 export interface TokenListItemProps extends VariantProps<typeof tokenListItemVariants> {
   /** Token data to display */
   token: CategorizedToken
@@ -123,9 +117,6 @@ export interface TokenListItemProps extends VariantProps<typeof tokenListItemVar
   className?: string
 }
 
-/**
- * Get appropriate icon for token category
- */
 function getCategoryIcon(category: TokenCategory): React.ReactNode {
   switch (category) {
     case TokenCategory.VALUABLE:
@@ -142,9 +133,6 @@ function getCategoryIcon(category: TokenCategory): React.ReactNode {
   }
 }
 
-/**
- * Get appropriate variant based on token properties
- */
 function getTokenVariant(token: CategorizedToken): 'default' | 'warning' | 'error' | 'success' {
   if (token.category === 'spam' || token.spamScore > 70) {
     return 'error'
@@ -158,15 +146,18 @@ function getTokenVariant(token: CategorizedToken): 'default' | 'warning' | 'erro
   return 'default'
 }
 
-/**
- * Format token value for display
- */
+// USD value thresholds for display formatting
+const VALUE_THRESHOLDS = {
+  THOUSANDS: 1000,
+  DOLLAR: 1,
+} as const
+
 function formatTokenValue(token: CategorizedToken): string {
-  if (token.estimatedValueUSD !== undefined && token.estimatedValueUSD > 0) {
-    if (token.estimatedValueUSD >= 1000) {
-      return `$${(token.estimatedValueUSD / 1000).toFixed(1)}K`
+  if (token.estimatedValueUSD != null && token.estimatedValueUSD > 0) {
+    if (token.estimatedValueUSD >= VALUE_THRESHOLDS.THOUSANDS) {
+      return `$${(token.estimatedValueUSD / VALUE_THRESHOLDS.THOUSANDS).toFixed(1)}K`
     }
-    if (token.estimatedValueUSD >= 1) {
+    if (token.estimatedValueUSD >= VALUE_THRESHOLDS.DOLLAR) {
       return `$${token.estimatedValueUSD.toFixed(2)}`
     }
     return `$${token.estimatedValueUSD.toFixed(4)}`
@@ -174,9 +165,6 @@ function formatTokenValue(token: CategorizedToken): string {
   return 'Unknown'
 }
 
-/**
- * Get value class badge variant
- */
 function getValueClassBadge(valueClass: TokenValueClass): React.ReactNode {
   switch (valueClass) {
     case TokenValueClass.HIGH_VALUE:
@@ -219,29 +207,11 @@ function getValueClassBadge(valueClass: TokenValueClass): React.ReactNode {
 }
 
 /**
- * TokenListItem component for displaying individual tokens in the token list
+ * Individual token display component optimized for virtual scrolling performance.
  *
- * Features:
- * - Glass morphism design consistent with existing UI
- * - Token categorization with visual indicators
- * - Balance and value display with proper formatting
- * - Chain identification via network badge
- * - Risk and spam scoring indicators
- * - Selection state for batch operations
- * - Loading states with skeleton placeholders
- * - Hover effects and interactive states
- *
- * @param props Component props
- * @param props.token Token data to display
- * @param props.selected Whether the token is selected for batch operations
- * @param props.loading Loading state for async operations
- * @param props.onClick Click handler for token selection
- * @param props.onToggleSelection Handler for toggling selection
- * @param props.onViewDetails Handler for viewing token details
- * @param props.className Additional CSS classes
- * @param props.variant Display variant override
- * @param props.category Token category override
- * @returns React element
+ * Uses glass morphism design to maintain visual consistency while providing
+ * clear visual hierarchy for token risk assessment and value classification.
+ * Selection state management enables batch disposal operations.
  */
 export function TokenListItem({
   token,
@@ -254,11 +224,9 @@ export function TokenListItem({
   variant: _variant,
   category: _category,
   ...props
-}: TokenListItemProps) {
-  // Determine variant based on token properties
+}: TokenListItemProps): React.ReactElement {
+  // Use token risk/value analysis to determine visual variant
   const variant = getTokenVariant(token)
-
-  // Handle click events
   const handleClick = useCallback(() => {
     onClick?.(token)
   }, [onClick, token])
@@ -279,7 +247,7 @@ export function TokenListItem({
     [onViewDetails, token],
   )
 
-  // Show loading state
+  // Skeleton loading prevents layout shift during token discovery
   if (loading) {
     return (
       <div className={cn(tokenListItemVariants({variant: 'default'}), className)} {...props}>
@@ -316,7 +284,7 @@ export function TokenListItem({
       onClick={handleClick}
       {...props}
     >
-      {/* Selection checkbox */}
+      {/* Selection checkbox for batch disposal operations */}
       {onToggleSelection && (
         <div className="absolute top-2 right-2">
           <Button
@@ -336,20 +304,18 @@ export function TokenListItem({
       )}
 
       <div className="flex items-center justify-between">
-        {/* Token Info */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Token Icon Placeholder */}
+          {/* Gradient token icon with category indicator overlay */}
           <div className="relative">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center text-white font-semibold text-sm shadow-md">
               {token.symbol.slice(0, 2).toUpperCase()}
             </div>
-            {/* Category indicator */}
+
             <div className="absolute -top-1 -right-1 bg-white dark:bg-gray-800 rounded-full p-0.5">
               {getCategoryIcon(token.category)}
             </div>
           </div>
 
-          {/* Token Details */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">{token.symbol}</h3>
@@ -369,14 +335,13 @@ export function TokenListItem({
           </div>
         </div>
 
-        {/* Balance and Value */}
         <div className="text-right flex-shrink-0 ml-4">
           <div className="font-semibold text-gray-900 dark:text-gray-100">
             {token.formattedBalance} {token.symbol}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">{formatTokenValue(token)}</div>
 
-          {/* Action buttons (shown on hover) */}
+          {/* Progressive disclosure: actions appear on hover to reduce visual clutter */}
           <div className="flex items-center justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {onViewDetails && (
               <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={handleViewDetails}>
@@ -387,7 +352,7 @@ export function TokenListItem({
         </div>
       </div>
 
-      {/* Risk indicator bar */}
+      {/* Risk indicator prevents accidental disposal of high-risk tokens */}
       {(token.spamScore > 30 || token.riskScore === TokenRiskScore.HIGH) && (
         <div className="mt-3 pt-3 border-t border-gray-200/50 dark:border-gray-700/50">
           <div className="flex items-center gap-2 text-xs">
