@@ -1,5 +1,3 @@
-'use client'
-
 import {describe, expect, it} from 'vitest'
 
 import {
@@ -221,14 +219,17 @@ describe('Token Security Validation', () => {
       expect(strictResult.securityScore).toBeLessThanOrEqual(normalResult.securityScore)
     })
 
-    it('should reject invalid addresses', async () => {
-      await expect(
-        validateTokenSecurity(MOCK_ADDRESSES.INVALID as never, 1, {
-          name: 'Test Token',
-          symbol: 'TEST',
-          decimals: 18,
-        }),
-      ).rejects.toThrow('Invalid token address')
+    it('should handle invalid addresses gracefully', async () => {
+      const result = await validateTokenSecurity(MOCK_ADDRESSES.INVALID as never, 1, {
+        name: 'Test Token',
+        symbol: 'TEST',
+        decimals: 18,
+      })
+
+      expect(result.riskLevel).toBe(TokenSecurityRisk.CRITICAL)
+      expect(result.securityScore).toBe(0)
+      expect(result.issues.length).toBeGreaterThan(0)
+      expect(result.issues[0].description).toContain('Invalid token address')
     })
   })
 

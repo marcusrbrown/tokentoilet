@@ -1,5 +1,3 @@
-'use client'
-
 import type {SupportedChainId} from '../../hooks/use-wallet'
 
 import {isAddress, type Address} from 'viem'
@@ -248,18 +246,22 @@ export const ADVANCED_SPAM_PATTERNS = {
 }
 
 /**
- * Validate token security and detect potential risks
+ * Performs comprehensive security analysis to protect users from malicious tokens.
  *
- * @param tokenAddress Token contract address
- * @param chainId Chain ID where token exists
- * @param tokenData Token metadata
- * @param tokenData.name Token name
- * @param tokenData.symbol Token symbol
- * @param tokenData.decimals Token decimal places
- * @param tokenData.totalSupply Total token supply (optional)
- * @param tokenData.balance User's token balance (optional)
- * @param config Validation configuration
- * @returns Security validation result
+ * Critical for DeFi safety as malicious tokens can drain wallets through honeypots,
+ * high taxes, or social engineering attacks. Uses multi-layered detection including
+ * verified token lists, spam pattern matching, and behavioral analysis.
+ *
+ * @param tokenAddress Token contract address to analyze
+ * @param chainId Chain ID to determine which security lists to check
+ * @param tokenData Token metadata for pattern analysis
+ * @param tokenData.name Token name for spam pattern detection
+ * @param tokenData.symbol Token symbol for validation against known scam patterns
+ * @param tokenData.decimals Decimal places to detect suspicious values (0, 1, 2, >24)
+ * @param tokenData.totalSupply Total supply for airdrop spam detection
+ * @param tokenData.balance User balance to identify potential airdrops
+ * @param config Validation options - disable expensive checks for better performance
+ * @returns Comprehensive security assessment with actionable risk information
  */
 export async function validateTokenSecurity(
   tokenAddress: Address,
@@ -278,13 +280,45 @@ export async function validateTokenSecurity(
 
   // Validate basic token data
   if (!isAddress(tokenAddress)) {
-    throw new Error(`Invalid token address: ${String(tokenAddress)}`)
+    console.error('Token validation failed: Invalid address format', {
+      providedAddress: String(tokenAddress),
+      chainId,
+      timestamp: new Date().toISOString(),
+    })
+
+    return {
+      riskLevel: TokenSecurityRisk.CRITICAL,
+      securityScore: 0,
+      issues: [
+        {
+          type: SecurityIssueType.KNOWN_SCAM,
+          severity: 'critical',
+          description: 'Invalid token address format',
+          recommendation: 'Do not interact with malformed addresses',
+        },
+      ],
+      validatedAt: new Date(),
+      isVerified: false,
+      contractSecurity: {
+        isVerified: false,
+        isProxy: false,
+        hasMintFunction: false,
+        hasTransferRestrictions: false,
+        isHoneypot: false,
+        deployerRisk: 'high',
+      },
+      metadataSecurity: {
+        hasSpamName: false,
+        hasSpamSymbol: false,
+        isImpersonating: false,
+        hasSuspiciousDecimals: false,
+        hasPromotionalContent: false,
+        metadataQuality: 0,
+      },
+    }
   }
 
-  // Check if token is in verified list (highest trust)
   const isVerified = TOKEN_SECURITY_LISTS.verified[chainId]?.includes(tokenAddress) ?? false
-
-  // Check if token is blacklisted (critical risk)
   const isBlacklisted = TOKEN_SECURITY_LISTS.blacklisted[chainId]?.includes(tokenAddress) ?? false
   if (isBlacklisted) {
     issues.push({
@@ -296,7 +330,6 @@ export async function validateTokenSecurity(
     securityScore = 0
   }
 
-  // Check if token has known risks
   const hasKnownRisks = TOKEN_SECURITY_LISTS.risky[chainId]?.includes(tokenAddress) ?? false
   if (hasKnownRisks) {
     issues.push({
@@ -313,7 +346,6 @@ export async function validateTokenSecurity(
   if (config.enableMetadataValidation) {
     metadataSecurity = validateTokenMetadata(tokenData)
 
-    // Add metadata issues to overall security assessment
     if (metadataSecurity.hasSpamName) {
       issues.push({
         type: SecurityIssueType.SPAM_NAME,
@@ -380,7 +412,6 @@ export async function validateTokenSecurity(
   if (config.enableContractAnalysis) {
     contractSecurity = await analyzeContractSecurity(tokenAddress, chainId, config)
 
-    // Add contract issues to overall assessment
     if (contractSecurity.isHoneypot) {
       issues.push({
         type: SecurityIssueType.HONEYPOT,
@@ -452,11 +483,13 @@ export async function validateTokenSecurity(
     }
   }
 
-  // Check for airdrop spam patterns
+  // Airdrop spam typically involves large token distributions to create artificial holder counts
   if (tokenData.balance != null && tokenData.totalSupply != null) {
     const balanceRatio = Number(tokenData.balance) / Number(tokenData.totalSupply)
-    if (balanceRatio > 0.001 && tokenData.balance > BigInt('1000000000000000000000')) {
-      // >1000 tokens and >0.1% of supply
+    const SUSPICIOUS_BALANCE_RATIO_THRESHOLD = 0.001 // 0.1% of total supply
+    const LARGE_BALANCE_THRESHOLD = BigInt('1000000000000000000000') // 1000+ tokens (18 decimals)
+
+    if (balanceRatio > SUSPICIOUS_BALANCE_RATIO_THRESHOLD && tokenData.balance > LARGE_BALANCE_THRESHOLD) {
       issues.push({
         type: SecurityIssueType.AIRDROP_SPAM,
         severity: 'medium',
@@ -467,7 +500,6 @@ export async function validateTokenSecurity(
     }
   }
 
-  // Determine overall risk level
   let riskLevel: TokenSecurityRisk
   if (isVerified) {
     riskLevel = TokenSecurityRisk.VERIFIED
@@ -481,15 +513,17 @@ export async function validateTokenSecurity(
     riskLevel = TokenSecurityRisk.CRITICAL
   }
 
-  // Apply strict mode adjustments
+  // Strict mode increases caution for enterprise/high-value scenarios
   if (config.strictMode) {
+    const STRICT_MODE_SCORE_PENALTY = 10
+
     if (riskLevel === TokenSecurityRisk.LOW && !isVerified) {
       riskLevel = TokenSecurityRisk.MEDIUM
     }
     if (riskLevel === TokenSecurityRisk.MEDIUM) {
       riskLevel = TokenSecurityRisk.HIGH
     }
-    securityScore = Math.max(0, securityScore - 10)
+    securityScore = Math.max(0, securityScore - STRICT_MODE_SCORE_PENALTY)
   }
 
   return {
@@ -521,24 +555,33 @@ function validateTokenMetadata(tokenData: {name: string; symbol: string; decimal
     return variants.some(variant => nameLower.includes(variant) && !nameLower.includes(original))
   })
 
-  // Check for suspicious decimal count
-  const suspiciousDecimalCounts = [0, 1, 2, 25, 26, 27, 28, 29, 30]
-  const hasSuspiciousDecimals = suspiciousDecimalCounts.includes(decimals)
+  // ERC-20 standard typically uses 18 decimals; extreme values often indicate scams
+  const SUSPICIOUS_DECIMAL_COUNTS = [0, 1, 2, 25, 26, 27, 28, 29, 30]
+  const hasSuspiciousDecimals = SUSPICIOUS_DECIMAL_COUNTS.includes(decimals)
 
   // Check for promotional content
   const hasPromotionalContent = ADVANCED_SPAM_PATTERNS.maliciousPatterns.some(
     pattern => pattern.test(name) || pattern.test(symbol),
   )
 
-  // Calculate metadata quality score
+  // Quality scoring based on metadata patterns and standards compliance
+  const QUALITY_PENALTIES = {
+    SPAM_NAME: 30,
+    SPAM_SYMBOL: 20,
+    IMPERSONATION: 25,
+    SUSPICIOUS_DECIMALS: 10,
+    PROMOTIONAL_CONTENT: 15,
+    INVALID_LENGTH: 10,
+  }
+
   let metadataQuality = 100
-  if (hasSpamName) metadataQuality -= 30
-  if (hasSpamSymbol) metadataQuality -= 20
-  if (isImpersonating) metadataQuality -= 25
-  if (hasSuspiciousDecimals) metadataQuality -= 10
-  if (hasPromotionalContent) metadataQuality -= 15
-  if (name.length < 2 || name.length > 50) metadataQuality -= 10
-  if (symbol.length < 2 || symbol.length > 10) metadataQuality -= 10
+  if (hasSpamName) metadataQuality -= QUALITY_PENALTIES.SPAM_NAME
+  if (hasSpamSymbol) metadataQuality -= QUALITY_PENALTIES.SPAM_SYMBOL
+  if (isImpersonating) metadataQuality -= QUALITY_PENALTIES.IMPERSONATION
+  if (hasSuspiciousDecimals) metadataQuality -= QUALITY_PENALTIES.SUSPICIOUS_DECIMALS
+  if (hasPromotionalContent) metadataQuality -= QUALITY_PENALTIES.PROMOTIONAL_CONTENT
+  if (name.length < 2 || name.length > 50) metadataQuality -= QUALITY_PENALTIES.INVALID_LENGTH
+  if (symbol.length < 2 || symbol.length > 10) metadataQuality -= QUALITY_PENALTIES.INVALID_LENGTH
 
   return {
     hasSpamName,
@@ -551,7 +594,12 @@ function validateTokenMetadata(tokenData: {name: string; symbol: string; decimal
 }
 
 /**
- * Analyze contract security (simplified version - would need external APIs for full analysis)
+ * Placeholder for comprehensive contract security analysis.
+ *
+ * Returns conservative defaults to avoid false sense of security. Production
+ * implementation would integrate with Etherscan APIs, honeypot detection services,
+ * and bytecode analysis tools. Current conservative approach protects users by
+ * assuming moderate risk for unknown contracts.
  */
 async function analyzeContractSecurity(
   _tokenAddress: Address,
@@ -581,8 +629,11 @@ async function analyzeContractSecurity(
 }
 
 /**
- * Quick security check for token addresses
- * Provides fast risk assessment without full validation
+ * Provides immediate security assessment for real-time filtering scenarios.
+ *
+ * Optimized for performance over accuracy - uses cached security lists and basic
+ * pattern matching to avoid expensive contract analysis. Essential for token
+ * discovery interfaces where hundreds of tokens need quick risk evaluation.
  */
 export function quickSecurityCheck(
   tokenAddress: Address,
@@ -624,11 +675,11 @@ export function quickSecurityCheck(
   if (tokenData != null) {
     const {name = '', symbol = '', decimals = 18} = tokenData
 
-    // Check for obvious spam patterns
+    const SUSPICIOUS_DECIMAL_COUNTS = [0, 1, 2, 25, 26, 27, 28, 29, 30]
     const hasSpamIndicators =
       ADVANCED_SPAM_PATTERNS.scamNames.some(pattern => pattern.test(name)) ||
       ADVANCED_SPAM_PATTERNS.scamSymbols.some(pattern => pattern.test(symbol)) ||
-      [0, 1, 2, 25, 26, 27, 28, 29, 30].includes(decimals)
+      SUSPICIOUS_DECIMAL_COUNTS.includes(decimals)
 
     if (hasSpamIndicators) {
       return {
