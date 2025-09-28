@@ -150,3 +150,32 @@ export function validateTokenAmount(
 
   return null
 }
+
+/**
+ * Format large numbers with appropriate suffixes (K, M, B)
+ */
+export function formatNumber(value: number): string {
+  if (value >= 1e9) {
+    return `${(value / 1e9).toFixed(2)}B`
+  }
+  if (value >= 1e6) {
+    return `${(value / 1e6).toFixed(2)}M`
+  }
+  if (value >= 1e3) {
+    return `${(value / 1e3).toFixed(2)}K`
+  }
+  return value.toFixed(2)
+}
+
+/**
+ * Format timestamp to human-readable date string
+ */
+export function formatDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
