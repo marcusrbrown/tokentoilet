@@ -1,14 +1,14 @@
 'use client'
 
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
-import type {Address} from 'viem'
 import {Badge} from '@/components/ui/badge'
 import {Button} from '@/components/ui/button'
 import {Modal} from '@/components/ui/modal'
 import {NetworkBadge} from '@/components/ui/network-badge'
 import {Skeleton} from '@/components/ui/skeleton'
 import {useTokenMetadata} from '@/hooks/use-token-metadata'
-import {cn} from '@/lib/utils'
+import {formatDate, formatNumber} from '@/lib/token-utils'
+import {cn, formatAddress} from '@/lib/utils'
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {cva, type VariantProps} from 'class-variance-authority'
@@ -34,6 +34,14 @@ import {
   Zap,
 } from 'lucide-react'
 import React, {useCallback, useState} from 'react'
+
+// Strict type definitions for component variants
+type RiskLevel = 'low' | 'medium' | 'high' | 'spam'
+
+// Metadata error types for better error classification
+interface MetadataError extends Error {
+  type?: 'network' | 'timeout' | 'rate-limit' | 'unknown'
+}
 
 const tokenDetailVariants = cva(['w-full', 'space-y-6'], {
   variants: {
@@ -131,9 +139,11 @@ function MetadataRow({label, value, copyable = false, className}: MetadataRowPro
         .writeText(value)
         .then(() => {
           setCopied(true)
+          // 2-second timeout provides clear user feedback without being intrusive
           setTimeout(() => setCopied(false), 2000)
         })
         .catch(error => {
+          // Log error but don't throw - clipboard failures shouldn't break the component
           console.error('Failed to copy to clipboard:', error)
         })
     }
@@ -156,34 +166,9 @@ function MetadataRow({label, value, copyable = false, className}: MetadataRowPro
   )
 }
 
-function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-function formatAddress(address: Address): string {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
-}
-
-function formatNumber(value: number): string {
-  if (value >= 1e9) {
-    return `${(value / 1e9).toFixed(2)}B`
-  }
-  if (value >= 1e6) {
-    return `${(value / 1e6).toFixed(2)}M`
-  }
-  if (value >= 1e3) {
-    return `${(value / 1e3).toFixed(2)}K`
-  }
-  return value.toFixed(2)
-}
-
-function getRiskLevelFromToken(token: CategorizedToken): 'low' | 'medium' | 'high' | 'spam' {
+function getRiskLevelFromToken(token: CategorizedToken): RiskLevel {
+  // Prioritize spam classification over risk score because user safety is paramount
+  // High spam scores indicate suspicious behavior patterns that override other risk factors
   if (token.category === 'spam' || token.spamScore > 70) {
     return 'spam'
   }
@@ -197,6 +182,7 @@ function getRiskLevelFromToken(token: CategorizedToken): 'low' | 'medium' | 'hig
       return 'high'
     case TokenRiskScore.UNKNOWN:
     default:
+      // Default to medium risk for unknown tokens to encourage user caution
       return 'medium'
   }
 }
@@ -305,6 +291,28 @@ function getRiskBadge(riskScore: TokenRiskScore): React.ReactNode {
     default:
       return <Badge variant="default">Unknown Risk</Badge>
   }
+}
+
+interface SocialLinkButtonProps {
+  href: string
+  icon: React.ReactNode
+  label: string
+}
+
+function SocialLinkButton({href, icon, label}: SocialLinkButtonProps): React.ReactElement {
+  const handleClick = useCallback(() => {
+    // Critical security: 'noopener' prevents new window from accessing parent window object
+    // 'noreferrer' prevents leaking the current page URL to external site
+    // These flags protect against malicious external sites accessing Web3 state
+    window.open(href, '_blank', 'noopener,noreferrer')
+  }, [href])
+
+  return (
+    <Button variant="outline" size="sm" onClick={handleClick}>
+      {icon}
+      <span className="ml-2">{label}</span>
+    </Button>
+  )
 }
 
 /**
@@ -430,7 +438,7 @@ export function TokenDetail({
   const renderBasicInfo = (): React.ReactElement => (
     <TokenDetailSection title="Basic Information" icon={<Info className="h-4 w-4" />}>
       <div className="space-y-1">
-        <MetadataRow label="Contract Address" value={formatAddress(token.address)} copyable />
+        <MetadataRow label="Contract Address" value={formatAddress(token.address, 4)} copyable />
         <MetadataRow label="Chain ID" value={token.chainId.toString()} />
         <MetadataRow label="Decimals" value={token.decimals.toString()} />
         <MetadataRow label="Analysis Time" value={formatDate(token.analysisTimestamp)} />
@@ -487,60 +495,16 @@ export function TokenDetail({
       <TokenDetailSection title="Social & Links" icon={<Users className="h-4 w-4" />}>
         <div className="flex flex-wrap gap-2">
           {metadata.website != null && metadata.website.trim().length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (metadata.website != null) {
-                  window.open(metadata.website, '_blank', 'noopener,noreferrer')
-                }
-              }}
-            >
-              <Globe className="h-4 w-4 mr-2" />
-              Website
-            </Button>
+            <SocialLinkButton href={metadata.website} icon={<Globe className="h-4 w-4" />} label="Website" />
           )}
           {metadata.twitter != null && metadata.twitter.trim().length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (metadata.twitter != null) {
-                  window.open(metadata.twitter, '_blank', 'noopener,noreferrer')
-                }
-              }}
-            >
-              <Twitter className="h-4 w-4 mr-2" />
-              Twitter
-            </Button>
+            <SocialLinkButton href={metadata.twitter} icon={<Twitter className="h-4 w-4" />} label="Twitter" />
           )}
           {metadata.telegram != null && metadata.telegram.trim().length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (metadata.telegram != null) {
-                  window.open(metadata.telegram, '_blank', 'noopener,noreferrer')
-                }
-              }}
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Telegram
-            </Button>
+            <SocialLinkButton href={metadata.telegram} icon={<MessageCircle className="h-4 w-4" />} label="Telegram" />
           )}
           {metadata.discord != null && metadata.discord.trim().length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (metadata.discord != null) {
-                  window.open(metadata.discord, '_blank', 'noopener,noreferrer')
-                }
-              }}
-            >
-              <Hash className="h-4 w-4 mr-2" />
-              Discord
-            </Button>
+            <SocialLinkButton href={metadata.discord} icon={<Hash className="h-4 w-4" />} label="Discord" />
           )}
         </div>
       </TokenDetailSection>
@@ -624,9 +588,35 @@ export function TokenDetail({
           <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
               <AlertTriangle className="h-4 w-4" />
-              <span className="text-sm font-medium">Failed to load extended metadata</span>
+              <span className="text-sm font-medium">
+                {(metadataError as MetadataError).type === 'network' || metadataError.message.includes('network')
+                  ? 'Network connection issue'
+                  : (metadataError as MetadataError).type === 'timeout' || metadataError.message.includes('timeout')
+                    ? 'Request timed out'
+                    : (metadataError as MetadataError).type === 'rate-limit' ||
+                        metadataError.message.includes('rate limit')
+                      ? 'Rate limit exceeded'
+                      : 'Failed to load extended metadata'}
+              </span>
             </div>
-            <p className="text-sm text-red-600 dark:text-red-300 mt-1">{metadataError.message}</p>
+            <p className="text-sm text-red-600 dark:text-red-300 mt-1">
+              {(metadataError as MetadataError).type === 'network' || metadataError.message.includes('network')
+                ? 'Please check your internet connection and try again'
+                : (metadataError as MetadataError).type === 'timeout' || metadataError.message.includes('timeout')
+                  ? 'The request took too long. Basic token information is still available'
+                  : (metadataError as MetadataError).type === 'rate-limit' ||
+                      metadataError.message.includes('rate limit')
+                    ? 'Too many requests. Extended data will be available shortly'
+                    : metadataError.message}
+            </p>
+            {(metadataError as MetadataError).type === 'network' ||
+            metadataError.message.includes('network') ||
+            (metadataError as MetadataError).type === 'timeout' ||
+            metadataError.message.includes('timeout') ? (
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            ) : null}
           </div>
         ) : null}
 

@@ -16,7 +16,7 @@ vi.mock('@/hooks/use-wallet')
 const mockUseTokenMetadata = useTokenMetadata as MockedFunction<typeof useTokenMetadata>
 const mockUseWallet = useWallet as MockedFunction<typeof useWallet>
 
-// Mock UI components with simple implementations
+// Mock UI components with consistent patterns - moved to avoid hoisting issues
 vi.mock('@/components/ui/badge', () => ({
   Badge: ({children}: {children: React.ReactNode}) => <span data-testid="badge">{children}</span>,
 }))
@@ -30,29 +30,19 @@ vi.mock('@/components/ui/button', () => ({
 }))
 
 vi.mock('@/components/ui/modal', () => ({
-  Modal: ({children, onClose, open}: {children: React.ReactNode; onClose?: () => void; open?: boolean}) => {
-    if (!open) return null
-    return (
+  Modal: ({children, onClose, open}: {children: React.ReactNode; onClose?: () => void; open?: boolean}) =>
+    open ? (
       <div data-testid="modal">
         <button type="button" data-testid="modal-close" onClick={onClose}>
           Close
         </button>
         {children}
       </div>
-    )
-  },
+    ) : null,
 }))
 
-vi.mock('@/components/web3/network-badge', () => ({
-  NetworkBadge: ({chainId}: {chainId: number}) => <span data-testid="network-badge">Network {chainId}</span>,
-}))
-
-vi.mock('@/hooks/use-token-filtering', () => ({
-  useTokenFiltering: vi.fn(() => ({
-    addToFavorites: vi.fn(),
-    reportSpam: vi.fn(),
-    updateTokenCategory: vi.fn(),
-  })),
+vi.mock('@/components/ui/network-badge', () => ({
+  NetworkBadge: () => <span data-testid="badge">ETH</span>,
 }))
 
 vi.mock('@/components/ui/skeleton', () => ({
