@@ -14,8 +14,8 @@ import React, {useState} from 'react'
 import {formatUnits, parseUnits} from 'viem'
 
 /**
- * Token approval component variants using class-variance-authority
- * Provides consistent styling for approval workflow states
+ * CVA variants for flexible approval component presentation
+ * Supports different contexts: embedded in forms, standalone modals, compact lists
  */
 const tokenApprovalVariants = cva(
   [
@@ -50,7 +50,8 @@ const tokenApprovalVariants = cva(
 )
 
 /**
- * Approval status badge variants
+ * Status badges provide immediate visual feedback to reduce user confusion
+ * Color-coded to match user mental models: green=safe, yellow=waiting, red=action needed
  */
 const approvalStatusVariants = cva(
   ['inline-flex', 'items-center', 'gap-1', 'px-2', 'py-1', 'rounded-md', 'text-xs', 'font-medium'],
@@ -151,7 +152,7 @@ function ApprovalAmountInput({token, currentAmount, onAmountChange, disabled}: A
           type="text"
           value={inputValue}
           onChange={e => handleInputChange(e.target.value)}
-          disabled={disabled || isInfinite}
+          disabled={(disabled ?? false) || isInfinite}
           placeholder="0.0"
           className="pr-16"
         />
@@ -187,7 +188,7 @@ function GasEstimateDisplay({gasEstimate, className}: GasEstimateDisplayProps) {
     )
   }
 
-  if (gasEstimate.error != null) {
+  if (gasEstimate.error !== null) {
     return (
       <div className={cn('flex items-center gap-2 text-red-600 dark:text-red-400', className)}>
         <AlertTriangle className="h-4 w-4" />

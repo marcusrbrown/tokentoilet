@@ -14,7 +14,8 @@ import {useTransactionQueue} from './use-transaction-queue'
 import {useWallet} from './use-wallet'
 
 /**
- * Token approval state tracking
+ * Tracks approval state to prevent unnecessary transactions and provide user feedback
+ * Distinguishes between loading allowance data vs pending approval transaction
  */
 export interface ApprovalState {
   isApproved: boolean
@@ -26,7 +27,8 @@ export interface ApprovalState {
 }
 
 /**
- * Gas estimation data for approval transaction
+ * Provides comprehensive gas estimation to help users make informed approval decisions
+ * Includes safety buffer and EIP-1559 fee structure for accurate cost prediction
  */
 export interface GasEstimate {
   gasLimit: bigint | null
@@ -79,8 +81,11 @@ export interface UseTokenApprovalReturn {
 const MAX_UINT256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
 
 /**
- * Custom hook for managing token approval workflow with gas estimation
- * Provides comprehensive approval management for ERC-20 tokens in disposal workflow
+ * Manages token approval workflow with gas estimation for disposal transactions
+ *
+ * Centralizes approval logic to ensure consistent UX across disposal workflow.
+ * Provides real-time gas estimation to help users understand transaction costs
+ * before approving tokens for disposal contract interaction.
  */
 export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalReturn {
   const {token, spender, amount, useInfiniteApproval = false, autoRefresh = true} = config
@@ -105,7 +110,7 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
   const shouldUseInfinite = useInfiniteApproval || approvalAmount === MAX_UINT256
   const finalApprovalAmount = shouldUseInfinite ? MAX_UINT256 : approvalAmount
 
-  // Read current allowance
+  // Read current allowance with explicit null checks following strict boolean expressions
   const {
     data: currentAllowance = BigInt(0),
     isLoading: isLoadingAllowance,
@@ -115,16 +120,16 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
     address: token.address,
     abi: erc20Abi,
     functionName: 'allowance',
-    args: userAddress != null && spender != null ? [userAddress, spender] : undefined,
+    args: typeof userAddress === 'string' && typeof spender === 'string' ? [userAddress, spender] : undefined,
     chainId: chainId as SupportedChainId,
     query: {
-      enabled: userAddress != null && spender != null && isConnected && networkError == null,
-      staleTime: 30_000, // 30 second cache
+      enabled: typeof userAddress === 'string' && typeof spender === 'string' && isConnected && networkError === null,
+      staleTime: 30_000, // Cache for 30 seconds to reduce RPC calls
       retry: 2,
     },
   })
 
-  // Gas estimation for approval transaction
+  // Gas estimation for approval transaction with explicit null checks
   const {
     data: gasLimit,
     isLoading: isLoadingGas,
@@ -132,14 +137,13 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
   } = useEstimateGas({
     to: token.address,
     data:
-      userAddress == null
-        ? // Encode approve function call
-          undefined
-        : `0x095ea7b3${spender.slice(2).padStart(64, '0')}${finalApprovalAmount.toString(16).padStart(64, '0')}`,
-    account: userAddress ?? undefined,
+      typeof userAddress === 'string'
+        ? `0x095ea7b3${spender.slice(2).padStart(64, '0')}${finalApprovalAmount.toString(16).padStart(64, '0')}`
+        : undefined,
+    account: typeof userAddress === 'string' ? userAddress : undefined,
     chainId: chainId as SupportedChainId,
     query: {
-      enabled: userAddress != null && spender != null && isConnected && networkError == null,
+      enabled: typeof userAddress === 'string' && typeof spender === 'string' && isConnected && networkError === null,
       retry: 1,
     },
   })
@@ -198,9 +202,9 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
     [currentAllowance, finalApprovalAmount, isLoadingAllowance, isPending, isWritePending, error, allowanceError],
   )
 
-  // Gas estimate calculation
+  // Gas estimate calculation with explicit error handling
   const gasEstimate: GasEstimate = useMemo(() => {
-    if (gasLimit == null || gasError != null) {
+    if (typeof gasLimit !== 'bigint' || gasError !== null) {
       return {
         gasLimit: null,
         gasPrice: null,
@@ -230,17 +234,22 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
     }
   }, [gasLimit, gasError, isLoadingGas])
 
-  // Approval function
+  // Approval function with enhanced error handling following Web3 guidelines
   const approve = useCallback(async () => {
-    if (userAddress == null || !isConnected || networkError != null) {
+    if (typeof userAddress !== 'string' || !isConnected || networkError !== null) {
       const errorMsg =
-        userAddress == null ? 'Wallet not connected' : (networkError?.error.userFriendlyMessage ?? 'Network error')
+        typeof userAddress === 'string'
+          ? (networkError?.error.userFriendlyMessage ?? 'Network configuration error - please check your connection')
+          : 'Wallet connection required to approve tokens'
+      console.error('Token approval validation failed:', errorMsg, {userAddress, isConnected, networkError})
       setError(new Error(errorMsg))
       return
     }
 
-    if (spender == null || token.address == null) {
-      setError(new Error('Invalid approval parameters'))
+    if (typeof spender !== 'string' || typeof token.address !== 'string') {
+      const errorMsg = 'Invalid approval configuration - missing spender or token address'
+      console.error('Token approval configuration error:', {spender, tokenAddress: token.address})
+      setError(new Error(errorMsg))
       return
     }
 
@@ -256,11 +265,26 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
         chainId: chainId as SupportedChainId,
       })
     } catch (error_) {
-      console.error('Approval transaction failed:', error_)
-      setError(error_ as Error)
+      const errorMessage = error_ instanceof Error ? error_.message : 'Unknown approval transaction error'
+      console.error('Approval transaction failed:', errorMessage, {
+        token: token.symbol,
+        spender,
+        amount: finalApprovalAmount.toString(),
+      })
+      setError(error_ instanceof Error ? error_ : new Error(errorMessage))
       setIsPending(false)
     }
-  }, [userAddress, isConnected, networkError, spender, token.address, finalApprovalAmount, chainId, writeContract])
+  }, [
+    userAddress,
+    isConnected,
+    networkError,
+    spender,
+    token.address,
+    token.symbol,
+    finalApprovalAmount,
+    chainId,
+    writeContract,
+  ])
 
   // Check allowance function
   const checkAllowance = useCallback(async () => {
@@ -285,10 +309,12 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
     setError(null)
   }, [])
 
-  // Auto-refresh allowance on chain/user change
+  // Auto-refresh allowance on chain/user change with explicit null checks
   useEffect(() => {
-    if (userAddress != null && isConnected && networkError == null) {
-      checkAllowance().catch(console.error)
+    if (typeof userAddress === 'string' && isConnected && networkError === null) {
+      checkAllowance().catch(error => {
+        console.error('Failed to auto-refresh token allowance:', error, {userAddress, chainId})
+      })
     }
   }, [userAddress, chainId, isConnected, networkError, checkAllowance])
 
