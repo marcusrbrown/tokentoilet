@@ -19,7 +19,6 @@ vi.mock('wagmi', () => ({
   useConfig: vi.fn(() => ({})),
 }))
 
-// Mock localStorage for persistence testing
 const mockLocalStorage = {
   getItem: vi.fn(),
   setItem: vi.fn(),
@@ -27,7 +26,6 @@ const mockLocalStorage = {
   clear: vi.fn(),
 }
 
-// Replace global localStorage with our mock
 Object.defineProperty(window, 'localStorage', {
   value: mockLocalStorage,
 })
@@ -314,8 +312,9 @@ describe('TokenSelection', () => {
       const onSelectionChange = vi.fn()
       renderWithProviders({onSelectionChange})
 
-      const spamButton = screen.getByText('Spam Tokens').closest('button')!
-      await userEvent.click(spamButton)
+      const spamButton = screen.getByText('Spam Tokens').closest('button')
+      expect(spamButton).not.toBeNull()
+      await userEvent.click(spamButton as HTMLButtonElement)
 
       const spamTokens = mockTokens.filter(token => token.category === TokenCategory.SPAM)
       expect(onSelectionChange).toHaveBeenCalledWith(spamTokens.map(token => token.address))
@@ -345,8 +344,9 @@ describe('TokenSelection', () => {
       const onSelectionChange = vi.fn()
       renderWithProviders({onSelectionChange})
 
-      const unwantedButton = screen.getByText('Unwanted Tokens').closest('button')!
-      await userEvent.click(unwantedButton)
+      const unwantedButton = screen.getByText('Unwanted Tokens').closest('button')
+      expect(unwantedButton).not.toBeNull()
+      await userEvent.click(unwantedButton as HTMLButtonElement)
 
       const unwantedTokens = mockTokens.filter(token => token.category === TokenCategory.UNWANTED)
       expect(onSelectionChange).toHaveBeenCalledWith(unwantedTokens.map(token => token.address))
@@ -368,8 +368,9 @@ describe('TokenSelection', () => {
       const onSelectionChange = vi.fn()
       renderWithProviders({onSelectionChange})
 
-      const nonFavoritesButton = screen.getByText('Non-Favorites').closest('button')!
-      await userEvent.click(nonFavoritesButton)
+      const nonFavoritesButton = screen.getByText('Non-Favorites').closest('button')
+      expect(nonFavoritesButton).not.toBeNull()
+      await userEvent.click(nonFavoritesButton as HTMLButtonElement)
 
       const nonFavoriteTokens = mockTokens.filter(token => !token.isUserFavorite)
       expect(onSelectionChange).toHaveBeenCalledWith(nonFavoriteTokens.map(token => token.address))
@@ -430,8 +431,9 @@ describe('TokenSelection', () => {
       const selectedTokens = [mockTokens[0].address]
       renderWithProviders({selectedTokens})
 
-      const markAsSpamButton = screen.getByText('Mark as Spam').closest('button')!
-      await userEvent.click(markAsSpamButton)
+      const markAsSpamButton = screen.getByText('Mark as Spam').closest('button')
+      expect(markAsSpamButton).not.toBeNull()
+      await userEvent.click(markAsSpamButton as HTMLButtonElement)
 
       expect(mockBatchOperations[0].action).toHaveBeenCalledWith([mockTokens[0]])
     })
@@ -464,11 +466,13 @@ describe('TokenSelection', () => {
       const selectedTokens = [mockTokens[0].address]
       renderWithProviders({selectedTokens})
 
-      const batchApprovalButton = screen.getByText('Batch Approval').closest('button')!
-      await userEvent.click(batchApprovalButton)
+      const batchApprovalButton = screen.getByText('Batch Approval').closest('button')
+      expect(batchApprovalButton).not.toBeNull()
+      await userEvent.click(batchApprovalButton as HTMLButtonElement)
 
-      const cancelButton = screen.getByText('Cancel').closest('button')!
-      await userEvent.click(cancelButton)
+      const cancelButton = screen.getByText('Cancel').closest('button')
+      expect(cancelButton).not.toBeNull()
+      await userEvent.click(cancelButton as HTMLButtonElement)
 
       expect(screen.queryByText('Confirm Batch Approval')).not.toBeInTheDocument()
       expect(mockBatchOperations[3].action).not.toHaveBeenCalled()
@@ -527,8 +531,9 @@ describe('TokenSelection', () => {
         config: {persistSelection: false},
       })
 
-      const spamButton = screen.getByText('Spam Tokens').closest('button')!
-      await userEvent.click(spamButton)
+      const spamButton = screen.getByText('Spam Tokens').closest('button')
+      expect(spamButton).not.toBeNull()
+      await userEvent.click(spamButton as HTMLButtonElement)
 
       expect(mockLocalStorage.setItem).not.toHaveBeenCalled()
     })
@@ -554,8 +559,9 @@ describe('TokenSelection', () => {
         config: {persistSelection: true},
       })
 
-      const spamButton = screen.getByText('Spam Tokens').closest('button')!
-      await userEvent.click(spamButton)
+      const spamButton = screen.getByText('Spam Tokens').closest('button')
+      expect(spamButton).not.toBeNull()
+      await userEvent.click(spamButton as HTMLButtonElement)
 
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith('Failed to persist token selection:', expect.any(Error))
@@ -575,11 +581,12 @@ describe('TokenSelection', () => {
         batchOperations: [errorOperation],
       })
 
-      const markAsSpamButton = screen.getByText('Mark as Spam').closest('button')!
-      await userEvent.click(markAsSpamButton)
+      const markAsSpamButton = screen.getByText('Mark as Spam').closest('button')
+      expect(markAsSpamButton).not.toBeNull()
+      await userEvent.click(markAsSpamButton as HTMLButtonElement)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error))
+        expect(consoleSpy).toHaveBeenCalledWith('Batch operation failed:', expect.any(Error))
       })
 
       consoleSpy.mockRestore()

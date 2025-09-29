@@ -148,12 +148,15 @@ const DEFAULT_CONFIG: TokenSelectionConfig = {
   enableBatchOperations: true,
   persistSelection: true,
   showSelectionStats: true,
-}
+} as const
 
 const DEFAULT_BATCH_OPERATIONS: BatchOperation[] = []
-const DEFAULT_USER_CONFIG = {}
+const DEFAULT_USER_CONFIG = {} as const
 
-// Quick selection presets for common disposal scenarios
+/**
+ * Predefined selection patterns optimized for token disposal workflows.
+ * Each preset targets specific categories of tokens users typically want to dispose of.
+ */
 const QUICK_SELECTION_PRESETS: {
   id: string
   label: string
@@ -240,12 +243,10 @@ function calculateSelectionStats(tokens: CategorizedToken[], selectedAddresses: 
     averageSpamScore: 0,
   }
 
-  // Initialize category counts
   Object.values(TokenCategoryEnum).forEach(category => {
     stats.byCategory[category] = 0
   })
 
-  // Initialize value class counts
   Object.values(TokenValueClassEnum).forEach(valueClass => {
     stats.byValueClass[valueClass] = 0
   })
@@ -261,7 +262,6 @@ function calculateSelectionStats(tokens: CategorizedToken[], selectedAddresses: 
     stats.byCategory[token.category]++
     stats.byValueClass[token.valueClass]++
 
-    // Convert risk score enum to numeric for averaging
     const riskScoreValue =
       token.riskScore === TokenRiskScore.HIGH ? 3 : token.riskScore === TokenRiskScore.MEDIUM ? 2 : 1
     totalRiskScore += riskScoreValue
@@ -275,18 +275,15 @@ function calculateSelectionStats(tokens: CategorizedToken[], selectedAddresses: 
 }
 
 function matchesCriteria(token: CategorizedToken, criteria: BatchSelectionCriteria): boolean {
-  // Category filter
-  if (criteria.categories && !criteria.categories.includes(token.category)) {
+  if (criteria.categories != null && !criteria.categories.includes(token.category)) {
     return false
   }
 
-  // Value class filter
-  if (criteria.valueClasses && !criteria.valueClasses.includes(token.valueClass)) {
+  if (criteria.valueClasses != null && !criteria.valueClasses.includes(token.valueClass)) {
     return false
   }
 
-  // Value range filter
-  if (criteria.valueRange && token.estimatedValueUSD != null) {
+  if (criteria.valueRange != null && token.estimatedValueUSD != null) {
     const {min, max} = criteria.valueRange
     if (min != null && token.estimatedValueUSD < min) {
       return false
@@ -375,7 +372,6 @@ export function TokenSelection({
   const [searchQuery, setSearchQuery] = useState('')
   const [confirmOperation, setConfirmOperation] = useState<BatchOperation | null>(null)
 
-  // Apply initial filter if provided
   const filteredTokens = useMemo(() => {
     if (!initialFilter) return tokens
 
@@ -396,20 +392,17 @@ export function TokenSelection({
     })
   }, [tokens, initialFilter])
 
-  // Calculate selection statistics
   const selectionStats = useMemo(
     () => calculateSelectionStats(filteredTokens, selectedTokens),
     [filteredTokens, selectedTokens],
   )
 
-  // Quick selection handlers
   const handleQuickSelection = useCallback(
-    (criteria: BatchSelectionCriteria) => {
+    (criteria: BatchSelectionCriteria): void => {
       const matchingTokens = filteredTokens.filter(token => matchesCriteria(token, criteria))
       const newSelection = [...new Set([...selectedTokens, ...matchingTokens.map(t => t.address)])]
 
       if (config.maxSelection != null && config.maxSelection > 0 && newSelection.length > config.maxSelection) {
-        // Truncate to max selection limit
         onSelectionChange(newSelection.slice(0, config.maxSelection))
         return
       }
@@ -419,11 +412,13 @@ export function TokenSelection({
     [filteredTokens, selectedTokens, onSelectionChange, config.maxSelection],
   )
 
-  const handleCustomSelection = useCallback(() => {
+  const handleCustomSelection = useCallback((): void => {
     const matchingTokens = filteredTokens.filter(token => {
-      if (searchQuery) {
+      if (searchQuery.length > 0) {
         const query = searchQuery.toLowerCase()
-        if (!token.name.toLowerCase().includes(query) && !token.symbol.toLowerCase().includes(query)) {
+        const nameMatches = token.name.toLowerCase().includes(query)
+        const symbolMatches = token.symbol.toLowerCase().includes(query)
+        if (!nameMatches && !symbolMatches) {
           return false
         }
       }
@@ -435,38 +430,48 @@ export function TokenSelection({
     setShowAdvancedFilters(false)
   }, [filteredTokens, selectedTokens, onSelectionChange, customCriteria, searchQuery])
 
-  const handleClearSelection = useCallback(() => {
+  const handleClearSelection = useCallback((): void => {
     onSelectionChange([])
   }, [onSelectionChange])
 
-  const handleInvertSelection = useCallback(() => {
+  const handleInvertSelection = useCallback((): void => {
     const allAddresses = filteredTokens.map(t => t.address)
     const newSelection = allAddresses.filter(addr => !selectedTokens.includes(addr))
     onSelectionChange(newSelection)
   }, [filteredTokens, selectedTokens, onSelectionChange])
 
   const handleBatchOperation = useCallback(
-    async (operation: BatchOperation) => {
+    async (operation: BatchOperation): Promise<void> => {
       if (operation.requiresConfirmation) {
         setConfirmOperation(operation)
         return
       }
 
-      const selectedTokensData = filteredTokens.filter(token => selectedTokens.includes(token.address))
-      await operation.action(selectedTokensData)
+      try {
+        const selectedTokensData = filteredTokens.filter(token => selectedTokens.includes(token.address))
+        await operation.action(selectedTokensData)
+      } catch (error) {
+        console.error('Batch operation failed:', error)
+        // Graceful fallback - keep current selection state
+      }
     },
     [filteredTokens, selectedTokens],
   )
 
-  const handleConfirmOperation = useCallback(async () => {
-    if (!confirmOperation) return
+  const handleConfirmOperation = useCallback(async (): Promise<void> => {
+    if (confirmOperation == null) return
 
-    const selectedTokensData = filteredTokens.filter(token => selectedTokens.includes(token.address))
-    await confirmOperation.action(selectedTokensData)
-    setConfirmOperation(null)
+    try {
+      const selectedTokensData = filteredTokens.filter(token => selectedTokens.includes(token.address))
+      await confirmOperation.action(selectedTokensData)
+      setConfirmOperation(null)
+    } catch (error) {
+      console.error('Confirmed batch operation failed:', error)
+      setConfirmOperation(null)
+      // Graceful fallback - close modal and keep current state
+    }
   }, [confirmOperation, filteredTokens, selectedTokens])
 
-  // Persist selection if enabled
   useEffect(() => {
     if (config.persistSelection) {
       const key = 'tokentoilet-selection'
