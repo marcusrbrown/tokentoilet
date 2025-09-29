@@ -5,6 +5,8 @@ import {Badge} from '@/components/ui/badge'
 import {Button} from '@/components/ui/button'
 import {NetworkBadge} from '@/components/ui/network-badge'
 import {Skeleton} from '@/components/ui/skeleton'
+import {useTokenPrice} from '@/hooks/use-token-price'
+import {formatUsdValue, getPriceChangeDisplay, rawToDecimal} from '@/lib/token-utils'
 import {cn} from '@/lib/utils'
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
@@ -19,9 +21,10 @@ import {
   Shield,
   Star,
   Trash2,
+  TrendingDown,
   TrendingUp,
 } from 'lucide-react'
-import React, {useCallback} from 'react'
+import React, {useCallback, useMemo} from 'react'
 
 // Token list item variants for consistent glass morphism styling across states
 const tokenListItemVariants = cva(
@@ -146,23 +149,69 @@ function getTokenVariant(token: CategorizedToken): 'default' | 'warning' | 'erro
   return 'default'
 }
 
-// USD value thresholds for display formatting
-const VALUE_THRESHOLDS = {
-  THOUSANDS: 1000,
-  DOLLAR: 1,
-} as const
+/**
+ * Enhanced token value display component with live price integration
+ */
+function TokenValueDisplay({token}: {token: CategorizedToken}) {
+  const {price, priceChange24h, isLoading} = useTokenPrice(token, {
+    include24hChange: true,
+    refreshInterval: 60_000, // 1 minute for list items
+  })
 
-function formatTokenValue(token: CategorizedToken): string {
-  if (token.estimatedValueUSD != null && token.estimatedValueUSD > 0) {
-    if (token.estimatedValueUSD >= VALUE_THRESHOLDS.THOUSANDS) {
-      return `$${(token.estimatedValueUSD / VALUE_THRESHOLDS.THOUSANDS).toFixed(1)}K`
+  const {formattedValue, totalValue} = useMemo(() => {
+    const balanceDecimal = rawToDecimal(token.balance.toString(), token.decimals)
+
+    // Use live price if available, fall back to cached value
+    const currentPrice = price ?? token.priceUSD
+
+    if (currentPrice != null && currentPrice > 0) {
+      const value = formatUsdValue(balanceDecimal, currentPrice)
+      const total = Number.parseFloat(balanceDecimal) * currentPrice
+      return {formattedValue: value, totalValue: total}
     }
-    if (token.estimatedValueUSD >= VALUE_THRESHOLDS.DOLLAR) {
-      return `$${token.estimatedValueUSD.toFixed(2)}`
+
+    // Fallback to estimated value if no price available
+    if (token.estimatedValueUSD != null && token.estimatedValueUSD > 0) {
+      return {
+        formattedValue: formatUsdValue('1', token.estimatedValueUSD),
+        totalValue: token.estimatedValueUSD,
+      }
     }
-    return `$${token.estimatedValueUSD.toFixed(4)}`
+
+    return {formattedValue: 'Unknown', totalValue: 0}
+  }, [token, price])
+
+  const priceChangeDisplay = useMemo(() => {
+    return getPriceChangeDisplay(priceChange24h ?? undefined)
+  }, [priceChange24h])
+
+  if (isLoading && price === null) {
+    return (
+      <div className="text-right">
+        <Skeleton className="h-4 w-20 mb-1" />
+        <Skeleton className="h-3 w-16" />
+      </div>
+    )
   }
-  return 'Unknown'
+
+  return (
+    <div className="text-right">
+      <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{formattedValue}</div>
+      {priceChange24h != null && (
+        <div className={cn('text-xs flex items-center gap-1 justify-end', priceChangeDisplay.colorClass)}>
+          {priceChangeDisplay.isPositive ? (
+            <TrendingUp className="h-3 w-3" />
+          ) : priceChangeDisplay.isPositive === false ? (
+            <TrendingDown className="h-3 w-3" />
+          ) : null}
+          <span>{priceChangeDisplay.text}</span>
+        </div>
+      )}
+      {priceChange24h === null && totalValue > 0 && (
+        <div className="text-xs text-gray-500 dark:text-gray-400">{price === null ? 'Estimated' : 'Live'}</div>
+      )}
+    </div>
+  )
 }
 
 function getValueClassBadge(valueClass: TokenValueClass): React.ReactNode {
@@ -335,11 +384,13 @@ export function TokenListItem({
           </div>
         </div>
 
-        <div className="text-right flex-shrink-0 ml-4">
-          <div className="font-semibold text-gray-900 dark:text-gray-100">
-            {token.formattedBalance} {token.symbol}
+        <div className="flex-shrink-0 ml-4">
+          <div className="text-right mb-2">
+            <div className="font-semibold text-gray-900 dark:text-gray-100">
+              {token.formattedBalance} {token.symbol}
+            </div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">{formatTokenValue(token)}</div>
+          <TokenValueDisplay token={token} />
 
           {/* Progressive disclosure: actions appear on hover to reduce visual clutter */}
           <div className="flex items-center justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">

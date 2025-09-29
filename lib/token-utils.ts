@@ -101,6 +101,165 @@ export function calculateUsdValue(amount: string, price?: number): string {
 }
 
 /**
+ * Enhanced USD value formatting with magnitude-aware display
+ *
+ * Provides intelligent formatting for USD values based on their magnitude:
+ * - Very small values: Shows "<$0.001" or precision to 3 decimal places
+ * - Large values: Uses K/M suffixes for readability
+ * - Standard values: Shows 2 decimal places
+ */
+export function formatUsdValue(
+  amount: string,
+  price?: number,
+  options?: {
+    /** Show currency symbol (default: true) */
+    showSymbol?: boolean
+    /** Minimum decimals to show for small amounts (default: 3) */
+    smallValueDecimals?: number
+    /** Threshold for showing "<" prefix (default: 0.001) */
+    minDisplayValue?: number
+  },
+): string {
+  const {showSymbol = true, smallValueDecimals = 3, minDisplayValue = 0.001} = options || {}
+
+  if (price === null || price === undefined || price === 0 || !amount) {
+    return showSymbol ? '$0.00' : '0.00'
+  }
+
+  try {
+    const numericAmount = Number.parseFloat(amount)
+    if (Number.isNaN(numericAmount)) {
+      return showSymbol ? '$0.00' : '0.00'
+    }
+
+    const usdValue = numericAmount * price
+    const symbol = showSymbol ? '$' : ''
+
+    // Handle very small values
+    if (usdValue > 0 && usdValue < minDisplayValue) {
+      return `<${symbol}${minDisplayValue.toFixed(smallValueDecimals)}`
+    }
+
+    // Handle large values with suffixes
+    if (usdValue >= 1_000_000) {
+      return `${symbol}${(usdValue / 1_000_000).toFixed(2)}M`
+    }
+    if (usdValue >= 1_000) {
+      return `${symbol}${(usdValue / 1_000).toFixed(2)}K`
+    }
+
+    // Handle small positive values with extra precision
+    if (usdValue > 0 && usdValue < 0.01) {
+      return `${symbol}${usdValue.toFixed(smallValueDecimals)}`
+    }
+
+    // Standard formatting
+    return `${symbol}${usdValue.toFixed(2)}`
+  } catch {
+    return showSymbol ? '$0.00' : '0.00'
+  }
+}
+
+/**
+ * Calculate total portfolio USD value from token array
+ *
+ * Sums USD values of all tokens, handling missing prices gracefully.
+ * Returns formatted string with appropriate magnitude suffix.
+ */
+export function calculateTotalUsdValue(tokens: {balance: string; decimals: number; price?: number}[]): string {
+  let total = 0
+
+  for (const token of tokens) {
+    if (token.price != null && token.price > 0 && token.balance && token.decimals) {
+      try {
+        const balanceDecimal = rawToDecimal(token.balance, token.decimals)
+        const tokenValue = Number.parseFloat(balanceDecimal) * token.price
+        if (!Number.isNaN(tokenValue)) {
+          total += tokenValue
+        }
+      } catch {
+        // Skip tokens with invalid data
+      }
+    }
+  }
+
+  return formatUsdValue(total.toString(), 1) // Price is 1 since total is already in USD
+}
+
+/**
+ * Get percentage change indicator and color class for price changes
+ *
+ * Returns appropriate styling and display text for price change percentages
+ * following the project's violet branding and semantic color patterns.
+ */
+export function getPriceChangeDisplay(priceChange?: number): {
+  text: string
+  colorClass: string
+  isPositive: boolean | null
+} {
+  if (priceChange === null || priceChange === undefined || Number.isNaN(priceChange)) {
+    return {
+      text: '--',
+      colorClass: 'text-gray-400 dark:text-gray-500',
+      isPositive: null,
+    }
+  }
+
+  const isPositive = priceChange > 0
+  const absChange = Math.abs(priceChange)
+
+  // Format percentage with appropriate precision
+  let formattedChange: string
+  if (absChange < 0.01) {
+    formattedChange = absChange.toFixed(3)
+  } else if (absChange < 1) {
+    formattedChange = absChange.toFixed(2)
+  } else {
+    formattedChange = absChange.toFixed(1)
+  }
+
+  return {
+    text: `${isPositive ? '+' : '-'}${formattedChange}%`,
+    colorClass: isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400',
+    isPositive,
+  }
+}
+
+/**
+ * Parse and validate price data from external APIs
+ *
+ * Safely extracts numeric price values from API responses,
+ * handling various data formats and providing fallbacks.
+ */
+export function parseApiPrice(priceData: unknown): number | null {
+  if (typeof priceData === 'number') {
+    return Number.isNaN(priceData) || !Number.isFinite(priceData) ? null : priceData
+  }
+
+  if (typeof priceData === 'string') {
+    const parsed = Number.parseFloat(priceData)
+    return Number.isNaN(parsed) || !Number.isFinite(parsed) ? null : parsed
+  }
+
+  // Handle nested price objects (common in API responses)
+  if (typeof priceData === 'object' && priceData !== null) {
+    const obj = priceData as Record<string, unknown>
+
+    // Try common price field names
+    for (const field of ['usd', 'price', 'value', 'rate']) {
+      if (field in obj) {
+        const nestedPrice = parseApiPrice(obj[field])
+        if (nestedPrice !== null) {
+          return nestedPrice
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+/**
  * Validate token amount input
  */
 export function validateTokenAmount(
