@@ -14,7 +14,8 @@ const DEFAULT_VALIDATION_CONFIG = {}
 const DEFAULT_BALANCE_OPTIONS = {}
 
 /**
- * Real-time validation result with enhanced context
+ * Comprehensive validation result that provides contextual feedback beyond simple pass/fail.
+ * Enables sophisticated user guidance and progressive disclosure of validation issues.
  */
 interface ValidationResult {
   isValid: boolean
@@ -25,23 +26,25 @@ interface ValidationResult {
 }
 
 /**
- * Enhanced validation configuration
+ * Configuration for advanced validation logic beyond basic amount validation.
+ * Allows customization of business rules specific to DeFi token interactions.
  */
 interface ValidationConfig {
-  /** Enable real-time balance verification */
+  /** Fetches fresh balance data for accurate validation, trading performance for accuracy */
   enableRealTimeBalance?: boolean
-  /** Minimum amount validation */
+  /** Enforces minimum transaction amounts to prevent dust accumulation */
   minAmount?: string
-  /** Maximum amount validation (overrides balance check) */
+  /** Enforces maximum transaction amounts, useful for regulatory compliance or risk management */
   maxAmount?: string
-  /** Dust threshold for warning */
+  /** Warns users about dust amounts that may not be economically viable due to gas costs */
   dustThreshold?: string
-  /** Custom validation function */
+  /** Allows parent components to inject domain-specific validation logic */
   customValidator?: (amount: string, token?: TokenData, balance?: string) => ValidationResult | null
 }
 
 /**
- * Balance verification status
+ * Status information for real-time balance verification to ensure data reliability.
+ * Critical for DeFi applications where stale data can cause transaction failures.
  */
 interface BalanceVerification {
   isLoading: boolean
@@ -52,47 +55,58 @@ interface BalanceVerification {
 
 export interface TokenAmountInputProps extends Omit<TokenInputProps, 'error' | 'warning' | 'success' | 'validate'> {
   /**
-   * Validation configuration options
+   * Configuration for advanced validation logic including dust thresholds and balance verification.
+   * Allows customization of validation behavior beyond basic amount validation.
    */
   validationConfig?: ValidationConfig
   /**
-   * Balance checking options
+   * Options for controlling real-time balance fetching behavior to optimize RPC usage.
+   * Allows fine-tuning of refetch intervals and caching strategies.
    */
   balanceOptions?: UseSingleTokenBalanceOptions
   /**
-   * Show detailed validation feedback
+   * Controls visibility of enhanced validation messaging to reduce UI clutter when not needed.
+   * Useful for simpler interfaces that only need basic error states.
    */
   showDetailedFeedback?: boolean
   /**
-   * Show balance verification status
+   * Shows balance verification indicators to help users understand data freshness and reliability.
+   * Critical for DeFi applications where stale balance data can cause transaction failures.
    */
   showBalanceVerification?: boolean
   /**
-   * Show amount as percentage of balance
+   * Displays amount as percentage of total balance to help users gauge transaction impact.
+   * Particularly useful for preventing users from accidentally spending entire balances.
    */
   showPercentageOfBalance?: boolean
   /**
-   * Enable quick percentage buttons (25%, 50%, 75%, 100%)
+   * Provides quick access buttons for common percentage amounts to improve UX.
+   * Reduces user error and speeds up common operations like "max" transactions.
    */
   enableQuickPercentages?: boolean
   /**
-   * Custom error message override
+   * Allows parent components to override error messaging for specific business logic contexts.
+   * Enables consistent error handling across different validation scenarios.
    */
   errorOverride?: string
   /**
-   * Custom warning message override
+   * Allows parent components to provide contextual warnings beyond standard validation.
+   * Useful for external constraints like slippage or gas fee warnings.
    */
   warningOverride?: string
   /**
-   * Custom success message override
+   * Allows parent components to override success messaging for enhanced user confidence.
+   * Useful for confirming complex validation states or external service integration.
    */
   successOverride?: string
   /**
-   * Callback when validation result changes
+   * Notifies parent components of validation state changes for coordinated UI updates.
+   * Enables advanced form validation and conditional rendering based on input validity.
    */
   onValidationChange?: (result: ValidationResult) => void
   /**
-   * Callback when balance verification status changes
+   * Notifies parent components of balance verification status for loading states and error handling.
+   * Critical for showing appropriate loading indicators and handling RPC failures gracefully.
    */
   onBalanceVerificationChange?: (status: BalanceVerification) => void
 }
@@ -354,9 +368,15 @@ export function TokenAmountInput({
               </div>
               <div className="flex items-center gap-2">
                 {balanceError ? (
-                  <button type="button" onClick={refreshBalance} className="text-red-500 hover:text-red-600 underline">
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    onClick={refreshBalance}
+                    className="p-0 h-auto text-red-500 hover:text-red-600"
+                  >
                     Retry
-                  </button>
+                  </Button>
                 ) : hasBalanceData ? (
                   <div className="flex items-center gap-1 text-green-500">
                     <CheckCircle2 className="h-3 w-3" />
