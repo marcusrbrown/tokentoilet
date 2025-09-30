@@ -150,13 +150,26 @@ function getTokenVariant(token: CategorizedToken): 'default' | 'warning' | 'erro
 }
 
 /**
- * Enhanced token value display component with live price integration
+ * Enhanced token value display component with real-time price integration
+ *
+ * Provides live USD values for token disposal decision-making.
+ * Uses aggressive refresh rates for accurate pricing during disposal workflows
+ * with graceful fallbacks when price data is unavailable.
  */
 function TokenValueDisplay({token}: {token: CategorizedToken}) {
-  const {price, priceChange24h, isLoading} = useTokenPrice(token, {
+  const {price, priceChange24h, isLoading, error} = useTokenPrice(token, {
     include24hChange: true,
-    refreshInterval: 60_000, // 1 minute for list items
+    refreshInterval: 60_000, // 1 minute refresh for disposal workflows
   })
+
+  // Log price fetch errors for debugging while gracefully degrading
+  if (error) {
+    console.error('Failed to fetch token price:', error, {
+      token: token.symbol,
+      address: token.address,
+      chainId: token.chainId,
+    })
+  }
 
   const {formattedValue, totalValue} = useMemo(() => {
     const balanceDecimal = rawToDecimal(token.balance.toString(), token.decimals)

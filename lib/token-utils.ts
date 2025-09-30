@@ -101,70 +101,46 @@ export function calculateUsdValue(amount: string, price?: number): string {
 }
 
 /**
- * Enhanced USD value formatting with magnitude-aware display
+ * Format USD values with intelligent magnitude-based display
  *
- * Provides intelligent formatting for USD values based on their magnitude:
- * - Very small values: Shows "<$0.001" or precision to 3 decimal places
- * - Large values: Uses K/M suffixes for readability
- * - Standard values: Shows 2 decimal places
+ * Provides user-friendly formatting for token values in disposal workflows.
+ * Uses abbreviated notation (K/M) for large values to improve readability
+ * and help users quickly assess token values for disposal decisions.
  */
-export function formatUsdValue(
-  amount: string,
-  price?: number,
-  options?: {
-    /** Show currency symbol (default: true) */
-    showSymbol?: boolean
-    /** Minimum decimals to show for small amounts (default: 3) */
-    smallValueDecimals?: number
-    /** Threshold for showing "<" prefix (default: 0.001) */
-    minDisplayValue?: number
-  },
-): string {
-  const {showSymbol = true, smallValueDecimals = 3, minDisplayValue = 0.001} = options || {}
-
-  if (price === null || price === undefined || price === 0 || !amount) {
-    return showSymbol ? '$0.00' : '0.00'
-  }
+export function formatUsdValue(amount: string, price: number): string {
+  if (price === null || price === undefined || price === 0 || !amount) return '$0.00'
 
   try {
     const numericAmount = Number.parseFloat(amount)
-    if (Number.isNaN(numericAmount)) {
-      return showSymbol ? '$0.00' : '0.00'
-    }
+    if (Number.isNaN(numericAmount)) return '$0.00'
 
     const usdValue = numericAmount * price
-    const symbol = showSymbol ? '$' : ''
 
-    // Handle very small values
-    if (usdValue > 0 && usdValue < minDisplayValue) {
-      return `<${symbol}${minDisplayValue.toFixed(smallValueDecimals)}`
+    // Use abbreviated notation for better UX in token disposal context
+    if (usdValue < 0.01) {
+      return usdValue < 0.001 ? '<$0.001' : `$${usdValue.toFixed(3)}`
     }
-
-    // Handle large values with suffixes
     if (usdValue >= 1_000_000) {
-      return `${symbol}${(usdValue / 1_000_000).toFixed(2)}M`
+      return `$${(usdValue / 1_000_000).toFixed(2)}M`
     }
     if (usdValue >= 1_000) {
-      return `${symbol}${(usdValue / 1_000).toFixed(2)}K`
+      return `$${(usdValue / 1_000).toFixed(2)}K`
     }
 
-    // Handle small positive values with extra precision
-    if (usdValue > 0 && usdValue < 0.01) {
-      return `${symbol}${usdValue.toFixed(smallValueDecimals)}`
-    }
-
-    // Standard formatting
-    return `${symbol}${usdValue.toFixed(2)}`
-  } catch {
-    return showSymbol ? '$0.00' : '0.00'
+    return `$${usdValue.toFixed(2)}`
+  } catch (error) {
+    // Log formatting errors for debugging while providing safe fallback
+    console.error('Error formatting USD value:', error, {amount, price})
+    return '$0.00'
   }
 }
 
 /**
  * Calculate total portfolio USD value from token array
  *
- * Sums USD values of all tokens, handling missing prices gracefully.
- * Returns formatted string with appropriate magnitude suffix.
+ * Essential for portfolio valuation in token disposal workflows.
+ * Helps users understand the total value they're disposing of across multiple tokens
+ * with formatted output for easy comprehension in the UI.
  */
 export function calculateTotalUsdValue(tokens: {balance: string; decimals: number; price?: number}[]): string {
   let total = 0
@@ -177,8 +153,13 @@ export function calculateTotalUsdValue(tokens: {balance: string; decimals: numbe
         if (!Number.isNaN(tokenValue)) {
           total += tokenValue
         }
-      } catch {
-        // Skip tokens with invalid data
+      } catch (error) {
+        // Log calculation errors but continue processing other tokens
+        console.error('Error calculating individual token USD value:', error, {
+          balance: token.balance,
+          decimals: token.decimals,
+          price: token.price,
+        })
       }
     }
   }

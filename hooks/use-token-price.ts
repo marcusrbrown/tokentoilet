@@ -8,11 +8,14 @@ import {useWallet, type SupportedChainId} from './use-wallet'
 
 /**
  * Platform identifiers for CoinGecko API
+ *
+ * Maps our supported chain IDs to CoinGecko platform names for API compatibility.
+ * This mapping is required because CoinGecko uses different identifiers than standard chain IDs.
  */
 const CHAIN_TO_PLATFORM: Record<SupportedChainId, string> = {
-  1: 'ethereum', // Ethereum
-  137: 'polygon-pos', // Polygon
-  42161: 'arbitrum-one', // Arbitrum
+  1: 'ethereum', // Ethereum mainnet
+  137: 'polygon-pos', // Polygon (formerly Matic)
+  42161: 'arbitrum-one', // Arbitrum One L2
 }
 
 /**
@@ -101,7 +104,10 @@ export interface UseTokenPricesReturn {
 }
 
 /**
- * Token price fetching error with context
+ * Specialized error for token price fetching failures
+ *
+ * Provides structured error information for price API failures,
+ * enabling appropriate user feedback and error recovery strategies.
  */
 export class TokenPriceFetchError extends Error {
   constructor(
@@ -164,7 +170,14 @@ async function fetchTokenPrices(
     })
 
     if (!response.ok) {
-      // Handle rate limiting and other HTTP errors
+      // Log API errors for debugging while providing user-friendly messages
+      console.error(`Token price API error: ${response.status} ${response.statusText}`, {
+        url: url.toString(),
+        chainId,
+        contractAddresses,
+      })
+
+      // Handle rate limiting with specific user guidance
       if (response.status === 429) {
         throw new TokenPriceFetchError('CoinGecko API rate limit exceeded. Please try again later.', undefined, 429)
       }
@@ -189,7 +202,14 @@ async function fetchTokenPrices(
       throw error
     }
 
-    // Handle network errors and other fetch failures
+    // Log network errors for debugging
+    console.error('Network error while fetching token prices:', error, {
+      url: url.toString(),
+      chainId,
+      contractAddresses,
+    })
+
+    // Handle network errors and other fetch failures with graceful degradation
     throw new TokenPriceFetchError(
       'Network error while fetching token prices',
       error instanceof Error ? error : new Error(String(error)),
@@ -198,14 +218,15 @@ async function fetchTokenPrices(
 }
 
 /**
- * Hook for fetching price of a single token
+ * Hook for fetching real-time price data for a single token
  *
- * Provides real-time USD price data for a single token using CoinGecko API.
- * Includes automatic caching, error handling, and retry logic.
+ * Integrates with CoinGecko API to provide live USD pricing for DeFi token disposal workflows.
+ * Uses intelligent caching to minimize API calls while keeping prices current for user decisions.
+ * Only fetches when wallet is connected and token is available to avoid unnecessary requests.
  *
  * @param token - The token to fetch price for
  * @param config - Price fetching configuration options
- * @returns Price data and query state
+ * @returns Price data and query state with graceful error handling
  */
 export function useTokenPrice(token?: CategorizedToken, config: TokenPriceConfig = {}): UseTokenPriceReturn {
   const {chainId, isConnected} = useWallet()
@@ -223,7 +244,8 @@ export function useTokenPrice(token?: CategorizedToken, config: TokenPriceConfig
     error,
     refetch: queryRefetch,
   } = useQuery({
-    queryKey: ['token-price', chainId, token?.address.toLowerCase(), fetchConfig] as const,
+    // Optimize query key for better caching and deduplication
+    queryKey: ['token-price', chainId, token?.address.toLowerCase(), JSON.stringify(fetchConfig)] as const,
     queryFn: async () => {
       if (!token || !chainId) {
         return null
@@ -257,14 +279,15 @@ export function useTokenPrice(token?: CategorizedToken, config: TokenPriceConfig
 }
 
 /**
- * Hook for fetching prices of multiple tokens in batch
+ * Hook for efficient batch fetching of multiple token prices
  *
- * Efficiently fetches USD prices for multiple tokens using CoinGecko's batch API.
- * Provides utilities for calculating USD values and retrieving specific token prices.
+ * Optimizes token disposal workflows by fetching prices in batches rather than individual requests.
+ * Essential for portfolio views and bulk token operations where users need to evaluate
+ * multiple tokens simultaneously. Includes utilities for immediate USD calculations.
  *
  * @param tokens - Array of tokens to fetch prices for
  * @param config - Price fetching configuration options
- * @returns Batch price data and query utilities
+ * @returns Batch price data and query utilities with calculation helpers
  */
 export function useTokenPrices(tokens: CategorizedToken[] = [], config: TokenPriceConfig = {}): UseTokenPricesReturn {
   const {chainId, isConnected} = useWallet()
@@ -285,7 +308,8 @@ export function useTokenPrices(tokens: CategorizedToken[] = [], config: TokenPri
     error,
     refetch: queryRefetch,
   } = useQuery({
-    queryKey: ['token-prices', chainId, addresses, fetchConfig] as const,
+    // Optimize query key for better caching across different token combinations
+    queryKey: ['token-prices', chainId, addresses, JSON.stringify(fetchConfig)] as const,
     queryFn: async () => {
       if (tokens.length === 0 || !chainId) {
         return {}
