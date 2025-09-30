@@ -29,7 +29,6 @@ import {TokenApproval} from '../token-approval'
 import {TokenList} from '../token-list'
 import {TokenSelection} from '../token-selection'
 
-// Mock wagmi hooks
 vi.mock('wagmi', () => ({
   useAccount: vi.fn(),
   useChainId: vi.fn(),
@@ -41,7 +40,6 @@ vi.mock('wagmi', () => ({
   useSwitchChain: vi.fn(() => ({switchChain: vi.fn(), isPending: false, error: null})),
 }))
 
-// Mock useWallet hook
 vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(() => ({
     address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' as Address,
@@ -63,12 +61,10 @@ vi.mock('@/hooks/use-wallet', () => ({
   })),
 }))
 
-// Mock token discovery hook
 vi.mock('@/hooks/use-token-discovery', () => ({
   useTokenDiscovery: vi.fn(),
 }))
 
-// Mock token filtering hook
 vi.mock('@/hooks/use-token-filtering', () => ({
   useTokenFiltering: vi.fn(),
   useTokenCategorizationPreferences: vi.fn(() => ({
@@ -79,12 +75,10 @@ vi.mock('@/hooks/use-token-filtering', () => ({
   })),
 }))
 
-// Mock token approval hook
 vi.mock('@/hooks/use-token-approval', () => ({
   useTokenApproval: vi.fn(),
 }))
 
-// Mock @tanstack/react-virtual for token list virtualization
 vi.mock('@tanstack/react-virtual', () => ({
   useVirtualizer: vi.fn(() => ({
     getTotalSize: () => 400,
@@ -96,7 +90,6 @@ vi.mock('@tanstack/react-virtual', () => ({
   })),
 }))
 
-// Mock Reown AppKit
 const mockAppKitOpen = vi.fn()
 vi.mock('@reown/appkit/react', () => ({
   useAppKit: vi.fn(() => ({
@@ -105,14 +98,12 @@ vi.mock('@reown/appkit/react', () => ({
   createAppKit: vi.fn(),
 }))
 
-// Mock network imports
 vi.mock('@reown/appkit/networks', () => ({
   mainnet: {id: 1, name: 'Ethereum'},
   polygon: {id: 137, name: 'Polygon'},
   arbitrum: {id: 42161, name: 'Arbitrum'},
 }))
 
-// Mock toast notifications
 vi.mock('react-hot-toast', () => ({
   default: {
     success: vi.fn(),
@@ -123,9 +114,11 @@ vi.mock('react-hot-toast', () => ({
 
 const WALLET_ADDRESS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' as Address
 const SPENDER_ADDRESS = '0x1234567890123456789012345678901234567890' as Address
+const TEST_TIMEOUT = 3000 as const
 
 /**
- * Test utility: Create mock token with realistic data
+ * Creates realistic token data for testing.
+ * Generates random addresses to ensure test isolation across parallel runs.
  */
 function createMockToken(overrides: Partial<CategorizedToken> = {}): CategorizedToken {
   const defaults: CategorizedToken = {
@@ -228,7 +221,6 @@ describe('Token Discovery Workflow E2E Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Default connected wallet state
     mockUseAccount.mockReturnValue({
       address: WALLET_ADDRESS,
       isConnected: true,
@@ -237,7 +229,6 @@ describe('Token Discovery Workflow E2E Tests', () => {
 
     mockUseChainId.mockReturnValue(1)
 
-    // Mock token discovery with realistic data
     const mockTokens = createMockTokenCollection()
     mockUseTokenDiscovery.mockReturnValue({
       tokens: mockTokens.map(t => ({
@@ -253,14 +244,12 @@ describe('Token Discovery Workflow E2E Tests', () => {
       refetch: vi.fn(),
     })
 
-    // Mock token filtering to return categorized tokens
     mockUseTokenFiltering.mockReturnValue({
       tokens: mockTokens,
       isLoading: false,
       error: null,
     })
 
-    // Mock token balance queries
     mockUseReadContract.mockImplementation(({functionName, address}: {address?: Address; functionName: string}) => {
       if (functionName === 'balanceOf') {
         const token = mockTokens.find(t => t.address === address)
@@ -283,27 +272,25 @@ describe('Token Discovery Workflow E2E Tests', () => {
   it('should complete token discovery workflow: connect wallet → discover tokens → display list', async () => {
     renderWithProviders(<TokenList />)
 
-    // Component should render with token list
     await waitFor(
       () => {
         const tokenListElement = screen.queryByText('5 tokens')
         expect(tokenListElement).toBeInTheDocument()
       },
-      {timeout: 3000},
+      {timeout: TEST_TIMEOUT},
     )
   })
 
   it('should handle token discovery across multiple chains', async () => {
-    mockUseChainId.mockReturnValue(137) // Polygon
+    mockUseChainId.mockReturnValue(137)
 
     renderWithProviders(<TokenList />)
 
-    // Component should still render on different chain
     await waitFor(
       () => {
         expect(screen.getByText(/5\s+tokens/i)).toBeInTheDocument()
       },
-      {timeout: 3000},
+      {timeout: TEST_TIMEOUT},
     )
   })
 
@@ -318,13 +305,12 @@ describe('Token Discovery Workflow E2E Tests', () => {
 
     renderWithProviders(<TokenList />)
 
-    // Component should render error state
     await waitFor(
       () => {
         expect(screen.getByText('Failed to Load Tokens')).toBeInTheDocument()
         expect(screen.getByText('RPC rate limit exceeded')).toBeInTheDocument()
       },
-      {timeout: 3000},
+      {timeout: TEST_TIMEOUT},
     )
   })
 
@@ -338,7 +324,6 @@ describe('Token Discovery Workflow E2E Tests', () => {
 
     renderWithProviders(<TokenList />)
 
-    // Should show loading state - multiple skeleton elements exist
     const skeletons = screen.queryAllByTestId('skeleton')
     expect(skeletons.length).toBeGreaterThan(0)
   })
@@ -363,7 +348,7 @@ describe('Token Discovery Workflow E2E Tests', () => {
       () => {
         expect(screen.getByText('No Tokens Found')).toBeInTheDocument()
       },
-      {timeout: 3000},
+      {timeout: TEST_TIMEOUT},
     )
   })
 
@@ -385,7 +370,7 @@ describe('Token Discovery Workflow E2E Tests', () => {
       () => {
         expect(screen.queryByText(/discovering tokens/i)).not.toBeInTheDocument()
       },
-      {timeout: 3000},
+      {timeout: TEST_TIMEOUT},
     )
   })
 })
@@ -416,7 +401,6 @@ describe('Token Selection Workflow E2E Tests', () => {
       <TokenSelection tokens={mockTokens} selectedTokens={[]} onSelectionChange={handleSelectionChange} />,
     )
 
-    // Wait for component to render
     await waitFor(() => {
       expect(screen.getByText('Batch Selection')).toBeInTheDocument()
     })
@@ -577,7 +561,6 @@ describe('Token Selection Workflow E2E Tests', () => {
   it('should handle empty token list gracefully', () => {
     renderWithProviders(<TokenSelection tokens={[]} selectedTokens={[]} onSelectionChange={vi.fn()} />)
 
-    // Component should still render with 0 tokens selected message
     expect(screen.getByText(/0.*selected/i)).toBeInTheDocument()
   })
 
@@ -645,7 +628,6 @@ describe('Token Approval Workflow E2E Tests', () => {
       error: null,
     })
 
-    // Mock useTokenApproval hook
     mockUseTokenApproval.mockReturnValue({
       approvalState: {
         isApproved: false,
@@ -681,7 +663,6 @@ describe('Token Approval Workflow E2E Tests', () => {
       />,
     )
 
-    // Component should render - look for specific approval button
     await waitFor(() => {
       const approveButton = screen.getByRole('button', {name: /approve usdc/i})
       expect(approveButton).toBeInTheDocument()
@@ -707,7 +688,6 @@ describe('Token Approval Workflow E2E Tests', () => {
       />,
     )
 
-    // Component should render with infinite approval option
     await waitFor(() => {
       const approveButton = screen.getByRole('button', {name: /approve usdc/i})
       expect(approveButton).toBeInTheDocument()
@@ -773,7 +753,6 @@ describe('Token Approval Workflow E2E Tests', () => {
     renderWithProviders(<TokenApproval token={mockToken} spender={SPENDER_ADDRESS} amount={parseUnits('100', 6)} />)
 
     await waitFor(() => {
-      // Look for the green approval status badge
       const approvedBadge = screen.getAllByText(/approved/i).find(el => el.className.includes('green'))
       expect(approvedBadge).toBeDefined()
     })
@@ -843,7 +822,6 @@ describe('Token Approval Workflow E2E Tests', () => {
     )
 
     await waitFor(() => {
-      // Look for the gas limit text which should be displayed
       const gasLimitText = screen.getByText(/50,000/)
       expect(gasLimitText).toBeInTheDocument()
     })
@@ -857,7 +835,6 @@ describe('Token Approval Workflow E2E Tests', () => {
     )
 
     await waitFor(() => {
-      // Look for the approve button which should render
       const approveButton = screen.getByRole('button', {name: /approve usdc/i})
       expect(approveButton).toBeInTheDocument()
     })
@@ -885,7 +862,6 @@ describe('Complete Token Disposal Workflow E2E Test', () => {
 
     mockUseChainId.mockReturnValue(1)
 
-    // Mock token discovery and filtering for complete workflow
     mockUseTokenDiscovery.mockReturnValue({
       tokens: mockTokens.map(t => ({
         address: t.address,
@@ -943,12 +919,11 @@ describe('Complete Token Disposal Workflow E2E Test', () => {
   it('should complete full disposal workflow: discover → select spam/dust → display', async () => {
     renderWithProviders(<TokenList />)
 
-    // Wait for component to render with tokens
     await waitFor(
       () => {
         expect(screen.queryByText(/5 tokens/i)).toBeInTheDocument()
       },
-      {timeout: 3000},
+      {timeout: TEST_TIMEOUT},
     )
   })
 
