@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-/* eslint-disable unused-imports/no-unused-vars */
 import {useWallet} from '@/hooks/use-wallet'
 import {useWalletErrorHandler} from '@/hooks/use-wallet-error-handler'
 import {useWalletPersistence} from '@/hooks/use-wallet-persistence'
@@ -35,6 +32,12 @@ vi.mock('@reown/appkit/networks', () => ({
 // Mock localStorage for persistence tests
 const mockLocalStorage: Record<string, string> = {}
 
+const clearMockLocalStorage = (): void => {
+  Object.keys(mockLocalStorage).forEach(key => {
+    delete mockLocalStorage[key]
+  })
+}
+
 beforeEach(() => {
   Object.defineProperty(globalThis, 'localStorage', {
     value: {
@@ -45,11 +48,7 @@ beforeEach(() => {
       removeItem: vi.fn((key: string) => {
         delete mockLocalStorage[key]
       }),
-      clear: vi.fn(() => {
-        Object.keys(mockLocalStorage).forEach(key => {
-          delete mockLocalStorage[key]
-        })
-      }),
+      clear: vi.fn(clearMockLocalStorage),
     },
     writable: true,
   })
@@ -70,7 +69,7 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockLocalStorage.clear?.()
+    clearMockLocalStorage()
 
     // Default to disconnected state
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -102,11 +101,9 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
     it.skip('should complete full connection workflow: connect → validate → persist → disconnect', async () => {
       const {result} = renderHook(() => useWallet())
 
-      // Step 1: Initial disconnected state
       expect(result.current.isConnected).toBe(false)
       expect(result.current.address).toBeUndefined()
 
-      // Step 2: Initiate connection
       mockAppKitOpen.mockResolvedValueOnce(undefined)
       await act(async () => {
         await result.current.connect()
@@ -114,7 +111,7 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
 
       expect(mockAppKitOpen).toHaveBeenCalledTimes(1)
 
-      // Step 3: Simulate successful MetaMask connection
+      // Wagmi hooks update after successful MetaMask connection
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: METAMASK_ADDRESS,
@@ -124,16 +121,12 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
 
       const {result: connectedResult} = renderHook(() => useWallet())
 
-      // Step 4: Verify connected state
       expect(connectedResult.current.isConnected).toBe(true)
       expect(connectedResult.current.address).toBe(METAMASK_ADDRESS)
-      expect(connectedResult.current.displayAddress).toBe('0xf39F...2266')
 
-      // Step 5: Verify network validation passes
       expect(connectedResult.current.isCurrentChainSupported).toBe(true)
-      expect(connectedResult.current.unsupportedNetworkError).toBeNull()
+      expect(connectedResult.current.getUnsupportedNetworkError()).toBeNull()
 
-      // Step 6: Test disconnection
       await act(async () => {
         await connectedResult.current.disconnect()
       })
@@ -142,18 +135,15 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
     })
 
     it('should handle MetaMask connection with network switching', async () => {
-      // Start on unsupported network
-      mockUseChainId.mockReturnValue(5) // Goerli testnet
+      mockUseChainId.mockReturnValue(5) // Goerli testnet - unsupported
 
       const {result} = renderHook(() => useWallet())
 
-      // Step 1: Connect to MetaMask on unsupported network
       mockAppKitOpen.mockResolvedValueOnce(undefined)
       await act(async () => {
         await result.current.connect()
       })
 
-      // Simulate connection
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: METAMASK_ADDRESS,
@@ -163,7 +153,6 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
 
       const {result: connectedResult} = renderHook(() => useWallet())
 
-      // Step 2: Verify unsupported network detected
       expect(connectedResult.current.isCurrentChainSupported).toBe(false)
       const unsupportedError = connectedResult.current.getUnsupportedNetworkError()
       expect(unsupportedError).not.toBeNull()
@@ -171,7 +160,6 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
         expect(unsupportedError.currentChainId).toBe(5)
       }
 
-      // Step 3: Switch to supported network (Polygon)
       mockSwitchChain.mockImplementation(async ({chainId}: {chainId: number}) => {
         mockUseChainId.mockReturnValue(chainId)
         return Promise.resolve()
@@ -181,7 +169,6 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
         await connectedResult.current.switchToChain(137)
       })
 
-      // Step 4: Verify network switched successfully
       const {result: switchedResult} = renderHook(() => useWallet())
       expect(switchedResult.current.chainId).toBe(137)
       expect(switchedResult.current.isCurrentChainSupported).toBe(true)
@@ -227,10 +214,8 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
     it.skip('should complete full WalletConnect connection workflow', async () => {
       const {result} = renderHook(() => useWallet())
 
-      // Step 1: Initial state
       expect(result.current.isConnected).toBe(false)
 
-      // Step 2: Initiate WalletConnect connection (QR code displayed)
       mockAppKitOpen.mockResolvedValueOnce(undefined)
       await act(async () => {
         await result.current.connect()
@@ -238,7 +223,7 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
 
       expect(mockAppKitOpen).toHaveBeenCalledTimes(1)
 
-      // Step 3: Simulate successful WalletConnect pairing
+      // Wagmi hooks update after successful WalletConnect pairing
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: WALLETCONNECT_ADDRESS,
@@ -248,12 +233,8 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
 
       const {result: connectedResult} = renderHook(() => useWallet())
 
-      // Step 4: Verify connected state
       expect(connectedResult.current.isConnected).toBe(true)
       expect(connectedResult.current.address).toBe(WALLETCONNECT_ADDRESS)
-      expect(connectedResult.current.displayAddress).toBe('0x7099...79C8')
-
-      // Step 5: Verify network support
       expect(connectedResult.current.isCurrentChainSupported).toBe(true)
     })
 
@@ -319,10 +300,8 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
     it.skip('should complete full Coinbase Wallet connection workflow', async () => {
       const {result} = renderHook(() => useWallet())
 
-      // Step 1: Initial disconnected state
       expect(result.current.isConnected).toBe(false)
 
-      // Step 2: Initiate Coinbase Wallet connection
       mockAppKitOpen.mockResolvedValueOnce(undefined)
       await act(async () => {
         await result.current.connect()
@@ -330,7 +309,7 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
 
       expect(mockAppKitOpen).toHaveBeenCalledTimes(1)
 
-      // Step 3: Simulate successful Coinbase connection
+      // Wagmi hooks update after successful Coinbase connection
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: COINBASE_ADDRESS,
@@ -340,12 +319,10 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
 
       const {result: connectedResult} = renderHook(() => useWallet())
 
-      // Step 4: Verify connected state
       expect(connectedResult.current.isConnected).toBe(true)
       expect(connectedResult.current.address).toBe(COINBASE_ADDRESS)
-      expect(connectedResult.current.displayAddress).toBe('0x3C44...293BC')
 
-      // Step 5: Test network validation on Arbitrum
+      // Test network validation on Arbitrum
       mockUseChainId.mockReturnValue(42161)
       const {result: arbitrumResult} = renderHook(() => useWallet())
 
@@ -372,8 +349,7 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
     })
 
     it('should handle Coinbase Wallet network mismatch on connection', async () => {
-      // Connect on unsupported network (BSC)
-      mockUseChainId.mockReturnValue(56)
+      mockUseChainId.mockReturnValue(56) // BSC - unsupported
 
       mockAppKitOpen.mockResolvedValueOnce(undefined)
 
@@ -383,7 +359,6 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
         await result.current.connect()
       })
 
-      // Simulate connection on wrong network
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: COINBASE_ADDRESS,
@@ -393,10 +368,9 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
 
       const {result: connectedResult} = renderHook(() => useWallet())
 
-      // Verify unsupported network detected
       expect(connectedResult.current.isConnected).toBe(true)
       expect(connectedResult.current.isCurrentChainSupported).toBe(false)
-      expect(connectedResult.current.unsupportedNetworkError).not.toBeNull()
+      expect(connectedResult.current.getUnsupportedNetworkError()).not.toBeNull()
     })
   })
 
@@ -512,7 +486,10 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
     })
 
     it.skip('should integrate useWallet with useWalletSwitcher for multi-chain operations', async () => {
-      // Step 1: Connect to Ethereum
+      // jsdom limitation: Hook state doesn't update through renderHook after mock changes
+      // This test validates useWallet + useWalletSwitcher API integration
+      // TODO: Move to E2E testing when available
+
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: METAMASK_ADDRESS,
@@ -522,23 +499,21 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
       mockUseChainId.mockReturnValue(1)
 
       const {result: walletResult} = renderHook(() => useWallet())
-      const {result: switcherResult} = renderHook(() => useWalletSwitcher())
+      renderHook(() => useWalletSwitcher())
 
       expect(walletResult.current.chainId).toBe(1)
 
-      // Step 2: Use switcher to change to Polygon
       mockSwitchChain.mockImplementation(async ({chainId}: {chainId: number}) => {
         mockUseChainId.mockReturnValue(chainId)
         return Promise.resolve()
       })
 
-      if (switcherResult.current.switchChain != null) {
-        await act(async () => {
-          await switcherResult.current.switchChain(137)
-        })
-      }
+      // Note: useWalletSwitcher doesn't expose switchChain directly
+      // Use useWallet.switchToChain instead
+      await act(async () => {
+        await walletResult.current.switchToChain(137)
+      })
 
-      // Step 3: Verify chain switched through both hooks
       const {result: updatedWallet} = renderHook(() => useWallet())
       expect(updatedWallet.current.chainId).toBe(137)
       expect(updatedWallet.current.currentNetwork?.name).toBe('Polygon')
@@ -607,13 +582,16 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
     })
 
     it.skip('should support all three main chains (Ethereum, Polygon, Arbitrum) for all providers', async () => {
+      // jsdom limitation: Hook state doesn't update through renderHook after mock changes
+      // This test validates multi-chain support across providers
+      // TODO: Move to E2E testing when available
+
       const supportedChains = [
         {id: 1, name: 'Ethereum Mainnet', symbol: 'ETH'},
         {id: 137, name: 'Polygon', symbol: 'MATIC'},
         {id: 42161, name: 'Arbitrum One', symbol: 'ETH'},
       ]
 
-      // Test MetaMask on all chains
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: METAMASK_ADDRESS,
@@ -628,14 +606,17 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
         expect(result.current.isCurrentChainSupported).toBe(true)
         expect(result.current.currentNetwork?.name).toBe(chain.name)
         expect(result.current.currentNetwork?.symbol).toBe(chain.symbol)
-        expect(result.current.unsupportedNetworkError).toBeNull()
+        expect(result.current.getUnsupportedNetworkError()).toBeNull()
       }
     })
   })
 
   describe('Connection Persistence Integration', () => {
     it.skip('should persist connection state across page reloads', async () => {
-      // Step 1: Connect wallet
+      // jsdom limitation: localStorage state and hook state updates don't synchronize in test environment
+      // This test validates persistence API integration
+      // TODO: Move to E2E testing when available
+
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: METAMASK_ADDRESS,
@@ -644,32 +625,30 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
       } as any)
       mockUseChainId.mockReturnValue(1)
 
-      const {result: wallet1} = renderHook(() => useWallet())
+      renderHook(() => useWallet())
       const {result: persistence1} = renderHook(() => useWalletPersistence({debug: false}))
 
-      // Step 2: Store connection data
+      // Use correct API: saveConnectionState instead of storeWalletPreference
       await act(async () => {
-        await persistence1.current.storeWalletPreference('MetaMask', METAMASK_ADDRESS)
-        await persistence1.current.storeChainPreference(1)
+        await persistence1.current.saveConnectionState('metaMaskSDK', 1)
       })
 
-      // Step 3: Verify storage
       expect(mockLocalStorage.wallet_preference).toBeDefined()
-      expect(mockLocalStorage.wallet_chain_preference).toBeDefined()
 
-      // Step 4: Simulate page reload (new hook instances)
       const {result: persistence2} = renderHook(() => useWalletPersistence({debug: false}))
 
       await waitFor(() => {
-        expect(persistence2.current.lastConnectedWallet).toBe('MetaMask')
+        expect(persistence2.current.lastWalletId).toBe('metaMaskSDK')
       })
 
-      expect(persistence2.current.lastConnectedAddress).toBe(METAMASK_ADDRESS)
-      expect(persistence2.current.lastConnectedChain).toBe(1)
+      expect(persistence2.current.preferredChain).toBe(1)
     })
 
     it.skip('should clear persistence on manual disconnect', async () => {
-      // Step 1: Set up connected state with persistence
+      // jsdom limitation: localStorage and hook state synchronization issues in test environment
+      // This test validates clearStoredData API
+      // TODO: Move to E2E testing when available
+
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: METAMASK_ADDRESS,
@@ -681,19 +660,15 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
       const {result: persistence} = renderHook(() => useWalletPersistence({debug: false}))
 
       await act(async () => {
-        if (persistence.current.storeWalletPreference) {
-          await persistence.current.storeWalletPreference('MetaMask', METAMASK_ADDRESS)
-        }
+        await persistence.current.saveConnectionState('metaMaskSDK', 1)
       })
 
       expect(mockLocalStorage.wallet_preference).toBeDefined()
 
-      // Step 2: Disconnect wallet
       await act(async () => {
         await wallet.current.disconnect()
       })
 
-      // Step 3: Verify persistence cleared
       await waitFor(() => {
         expect(mockLocalStorage.wallet_preference).toBeUndefined()
       })
