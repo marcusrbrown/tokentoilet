@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, unused-imports/no-unused-vars */
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import type {Address} from 'viem'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {renderHook, waitFor} from '@testing-library/react'
 import {erc20Abi} from 'viem'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
@@ -47,15 +49,20 @@ describe('useTokenApproval', () => {
     balance: BigInt('1000000000'),
     chainId: 1,
     formattedBalance: '1000',
-    category: 'valuable',
-    score: 0.9,
+    category: TokenCategory.VALUABLE,
+    valueClass: TokenValueClass.HIGH_VALUE,
+    riskScore: TokenRiskScore.VERIFIED,
+    spamScore: 0,
+    isVerified: true,
+    analysisTimestamp: Date.now(),
+    confidenceScore: 0.95,
     metadata: {
       address: mockTokenAddress,
       chainId: 1,
       name: 'USD Coin',
       symbol: 'USDC',
       decimals: 6,
-      riskScore: 0,
+      riskScore: TokenRiskScore.VERIFIED,
       sources: [],
       lastUpdated: Date.now(),
       cacheKey: 'usdc-1',
@@ -408,7 +415,7 @@ describe('useTokenApproval', () => {
 
       // Simulate successful approval
       if (mutationConfig?.onSuccess) {
-        mutationConfig.onSuccess(mockHash, {} as any, {} as any)
+        mutationConfig.onSuccess(mockHash, {} as any, {} as any, {} as any)
       }
 
       await waitFor(() => {
