@@ -108,7 +108,7 @@ This implementation plan establishes the foundation for Token Toilet's Web3 DeFi
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
 | TASK-025 | Create unit tests for all new token discovery and management hooks | ✅ | 2025-09-30 |
-| TASK-026 | Implement integration tests for wallet connection flows across all providers | |  |
+| TASK-026 | Implement integration tests for wallet connection flows across all providers | ✅ | 2025-09-29 |
 | TASK-027 | Add visual regression tests for new components using Storybook | |  |
 | TASK-028 | Create end-to-end tests for token discovery and selection workflows | |  |
 | TASK-029 | Implement performance tests for token discovery with large token collections | |  |
