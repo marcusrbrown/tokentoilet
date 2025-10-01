@@ -83,6 +83,14 @@ vi.mock('@/hooks/use-wallet', () => ({
     isUnsupportedNetwork: false,
     getUnsupportedNetworkError: vi.fn(() => null),
     handleUnsupportedNetwork: vi.fn(),
+    getSupportedChains: vi.fn(() => [
+      {id: 1, name: 'Ethereum'},
+      {id: 137, name: 'Polygon'},
+      {id: 42161, name: 'Arbitrum'},
+    ]),
+    isCurrentChainSupported: true,
+    switchToChain: vi.fn(),
+    isSwitchingChain: false,
   })),
 }))
 
@@ -154,6 +162,7 @@ vi.mock('@/hooks/use-token-approval', () => ({
       isInfiniteApproval: true,
       approvalAmount: BigInt('1000000000000000000'),
       isPending: false,
+      isLoading: false,
     },
     gasEstimate: {
       estimatedGas: BigInt(50000),
