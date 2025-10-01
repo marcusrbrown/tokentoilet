@@ -157,7 +157,13 @@ function MetadataRow({label, value, copyable = false, className}: MetadataRowPro
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{value}</span>
         {copyable && typeof value === 'string' && (
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={handleCopy}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+            onClick={handleCopy}
+            aria-label={copied ? `${label} copied` : `Copy ${label}`}
+          >
             {copied ? <CheckCircle2 className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3 text-gray-400" />}
           </Button>
         )}
@@ -352,7 +358,13 @@ export function TokenDetail({
   const renderTokenHeader = (): React.ReactElement => (
     <div className={tokenHeaderVariants({riskLevel})}>
       {isModal && onClose != null && (
-        <Button variant="ghost" size="sm" className="absolute top-4 right-4 h-8 w-8 p-0" onClick={onClose}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-4 right-4 h-8 w-8 p-0"
+          onClick={onClose}
+          aria-label="Close token details"
+        >
           <X className="h-4 w-4" />
         </Button>
       )}

@@ -502,7 +502,8 @@ describe('Token Selection Workflow E2E Tests', () => {
       await user.click(advancedFiltersButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/category|value|risk/i)).toBeInTheDocument()
+        const elements = screen.getAllByText(/category|value|risk/i)
+        expect(elements.length).toBeGreaterThan(0)
       })
     }
   })

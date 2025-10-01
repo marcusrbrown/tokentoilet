@@ -105,7 +105,7 @@ interface ApprovalAmountInputProps {
 }
 
 function ApprovalAmountInput({token, currentAmount, onAmountChange, disabled}: ApprovalAmountInputProps) {
-  const [inputValue, setInputValue] = useState(() => formatUnits(currentAmount, token.decimals))
+  const [inputValue, setInputValue] = useState(() => formatUnits(currentAmount ?? BigInt(0), token.decimals))
   const [isInfinite, setIsInfinite] = useState(false)
 
   const handleInputChange = (value: string) => {
@@ -389,6 +389,7 @@ export function TokenApproval({
           }}
           disabled={approvalState.isLoading}
           className="shrink-0"
+          aria-label="Refresh allowance"
         >
           <RefreshCw className={cn('h-4 w-4', approvalState.isLoading && 'animate-spin')} />
         </Button>
@@ -399,6 +400,8 @@ export function TokenApproval({
           size="sm"
           onClick={() => setShowAdvancedControls(!showAdvancedControls)}
           className="shrink-0"
+          aria-label={showAdvancedControls ? 'Hide advanced settings' : 'Show advanced settings'}
+          aria-expanded={showAdvancedControls}
         >
           <Settings className="h-4 w-4" />
         </Button>
