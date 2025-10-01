@@ -1,3 +1,26 @@
+/**
+ * Accessibility Test Suite for Web3 Token Components
+ *
+ * This test suite validates WCAG 2.1 Level AA compliance for all token-related UI components
+ * using vitest-axe and axe-core automated accessibility testing.
+ *
+ * Test Results Interpretation:
+ * - **Passing tests (7)**: Verify the accessibility testing infrastructure works correctly
+ * - **Failing tests (21)**: Detect real accessibility violations in components that need fixing
+ *
+ * Common Violations Detected:
+ * - button-name: Buttons lack discernible text for screen readers (missing aria-label, text content, or title)
+ *
+ * Testing Strategy:
+ * - Tests each component across multiple states (loading, error, different variants)
+ * - Uses comprehensive Web3 mocking to ensure components render without provider errors
+ * - Follows project patterns from `.github/copilot-instructions.md` for wagmi/Reown AppKit mocking
+ *
+ * Next Steps:
+ * - Fix component implementations to address detected violations (separate task)
+ * - Re-run tests to validate fixes reduce failure count to zero
+ */
+
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
 
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
@@ -173,7 +196,34 @@ vi.mock('next/image', () => ({
   ),
 }))
 
-// Helper function to create mock tokens
+/**
+ * Creates a mock CategorizedToken for testing purposes
+ *
+ * Provides a complete token object with sensible defaults that can be partially
+ * overridden for specific test scenarios.
+ *
+ * @param overrides - Partial CategorizedToken properties to override defaults
+ * @returns Complete CategorizedToken with defaults merged with overrides
+ *
+ * @example
+ * // Create default DAI token
+ * const token = createMockToken()
+ *
+ * @example
+ * // Create USDC token with custom properties
+ * const usdc = createMockToken({
+ *   symbol: 'USDC',
+ *   name: 'USD Coin',
+ *   address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+ * })
+ *
+ * @example
+ * // Create high-risk spam token
+ * const spam = createMockToken({
+ *   category: TokenCategory.SPAM,
+ *   riskScore: TokenRiskScore.HIGH
+ * })
+ */
 function createMockToken(overrides?: Partial<CategorizedToken>): CategorizedToken {
   return {
     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F' as `0x${string}`,
@@ -502,22 +552,6 @@ describe('Token Components Accessibility Tests', () => {
     })
 
     it('should have no accessibility violations in compact variant', async () => {
-      const {container} = render(
-        <TestWrapper>
-          <TokenApproval
-            token={mockToken}
-            spender={mockSpender}
-            amount={BigInt('1000000000000000000')}
-            variant="compact"
-          />
-        </TestWrapper>,
-      )
-
-      const results = await axe(container)
-      expect(results).toHaveNoViolations()
-    })
-
-    it('should have no accessibility violations with compact variant', async () => {
       const {container} = render(
         <TestWrapper>
           <TokenApproval
