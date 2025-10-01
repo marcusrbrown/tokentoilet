@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import type {Address} from 'viem'
 import type {Config} from 'wagmi'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
@@ -17,23 +15,20 @@ import {useWallet} from '../../hooks/use-wallet'
 import {discoverUserTokens, type DiscoveredToken, type TokenDiscoveryResult} from '../../lib/web3/token-discovery'
 
 /**
- * Performance Benchmarks for Token Discovery with Large Collections
+ * Performance benchmarks for token discovery operations with large datasets.
  *
- * Tests performance characteristics of token discovery operations with
- * datasets ranging from 100 to 5000+ tokens across multiple chains.
- *
- * Key Performance Areas:
- * - Token discovery hook initialization and data fetching
+ * Validates performance characteristics across:
+ * - Discovery hook initialization and data fetching
  * - Query caching and re-render efficiency
- * - Filtering operations on large datasets
- * - Sorting operations by balance
- * - Multi-chain token grouping
- * - Batch processing performance
+ * - Filtering, sorting, and grouping operations
+ * - Multi-chain batch processing
+ *
+ * Tests scale from 100 to 5000+ tokens to identify performance bottlenecks
+ * before they impact production user experience.
  */
 
-// Mock dependencies
 vi.mock('wagmi', () => ({
-  useConfig: vi.fn(() => ({}) as Config),
+  useConfig: vi.fn((): Config => ({}) as Config),
 }))
 
 vi.mock('../../lib/web3/token-discovery', () => ({
@@ -50,26 +45,22 @@ vi.mock('../../hooks/use-wallet', () => ({
   useWallet: vi.fn(),
 }))
 
-/**
- * Generate realistic mock token data for performance testing
- */
 function generateMockToken(index: number, chainId: number): DiscoveredToken {
   const tokenSymbols = ['USDC', 'DAI', 'USDT', 'WBTC', 'WETH', 'LINK', 'UNI', 'AAVE', 'MATIC', 'SHIB']
   const symbolIndex = index % tokenSymbols.length
   const symbol = tokenSymbols[symbolIndex]
 
-  // Generate varied balances (some large, some small, some zero)
   let balance: bigint
   if (index % 10 === 0) {
-    balance = BigInt(0) // 10% zero balance
+    balance = BigInt(0)
   } else if (index % 3 === 0) {
-    balance = BigInt(Math.floor(Math.random() * 1_000_000_000_000)) // Large balance
+    balance = BigInt(Math.floor(Math.random() * 1_000_000_000_000))
   } else {
-    balance = BigInt(Math.floor(Math.random() * 1_000_000)) // Small balance
+    balance = BigInt(Math.floor(Math.random() * 1_000_000))
   }
 
   return {
-    address: `0x${index.toString(16).padStart(40, '0')}` as Address,
+    address: `0x${index.toString(16).padStart(40, '0')}`,
     symbol: `${symbol}-${index}`,
     name: `Token ${symbol} ${index}`,
     decimals: 18,
@@ -79,9 +70,6 @@ function generateMockToken(index: number, chainId: number): DiscoveredToken {
   }
 }
 
-/**
- * Generate large collection of mock tokens across multiple chains
- */
 function generateTokenCollection(size: number, chains: number[] = [1, 137, 42161]): DiscoveredToken[] {
   const tokens: DiscoveredToken[] = []
   const tokensPerChain = Math.ceil(size / chains.length)
@@ -105,7 +93,7 @@ describe('Token Discovery Performance Benchmarks', () => {
       defaultOptions: {
         queries: {
           retry: false,
-          gcTime: 0, // Disable cache for performance tests
+          gcTime: 0,
           staleTime: 0,
         },
       },
@@ -114,12 +102,40 @@ describe('Token Discovery Performance Benchmarks', () => {
     vi.mocked(useWallet).mockReturnValue({
       address: mockAddress,
       isConnected: true,
-      getSupportedChains: vi.fn(() => [
-        {id: 1, name: 'Ethereum', blockExplorers: {default: {name: 'Etherscan', url: 'https://etherscan.io'}}},
-        {id: 137, name: 'Polygon', blockExplorers: {default: {name: 'PolygonScan', url: 'https://polygonscan.com'}}},
-        {id: 42161, name: 'Arbitrum', blockExplorers: {default: {name: 'Arbiscan', url: 'https://arbiscan.io'}}},
-      ]),
-    } as any)
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      chainId: 1,
+      currentNetwork: {name: 'Ethereum Mainnet', symbol: 'ETH'},
+      isCurrentChainSupported: true,
+      isSupportedChain: (chainId: number): chainId is 1 | 137 | 42161 => [1, 137, 42161].includes(chainId),
+      validateCurrentNetwork: vi.fn(),
+      getUnsupportedNetworkError: vi.fn(),
+      handleUnsupportedNetwork: vi.fn(),
+      switchToChain: vi.fn(),
+      isSwitchingChain: false,
+      switchChainError: null,
+      getSupportedChains: () => [
+        {id: 1 as const, name: 'Ethereum Mainnet', symbol: 'ETH'},
+        {id: 137 as const, name: 'Polygon', symbol: 'MATIC'},
+        {id: 42161 as const, name: 'Arbitrum One', symbol: 'ETH'},
+      ],
+      classifyWalletError: vi.fn(),
+      getWalletErrorRecovery: vi.fn(),
+      persistence: {
+        isAvailable: true,
+        autoReconnect: false,
+        lastWalletId: null,
+        preferredChain: null,
+        lastConnectionData: null,
+        isRestoring: false,
+        error: null,
+        setAutoReconnect: vi.fn(),
+        setPreferredChain: vi.fn(),
+        clearStoredData: vi.fn(),
+        shouldRestore: vi.fn(),
+        getConnectionAge: vi.fn(),
+      },
+    })
   })
 
   const wrapper = ({children}: {children: React.ReactNode}) => (
@@ -239,7 +255,6 @@ describe('Token Discovery Performance Benchmarks', () => {
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true)
-        // Should filter out zero balance tokens (~10% in our mock data)
         expect(result.current.tokens.length).toBeGreaterThan(0)
         expect(result.current.tokens.length).toBeLessThan(1000)
       })
@@ -278,7 +293,6 @@ describe('Token Discovery Performance Benchmarks', () => {
 
       await waitFor(() => {
         expect(result.current.totalTokens).toBe(2000)
-        // Should group into 3 chains
         expect(Object.keys(result.current.tokensByChain).length).toBeGreaterThan(0)
       })
     })
@@ -301,7 +315,6 @@ describe('Token Discovery Performance Benchmarks', () => {
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true)
         expect(result.current.tokens).toHaveLength(500)
-        // Verify sorted (highest balance first)
         if (result.current.tokens.length > 1) {
           expect(result.current.tokens[0].balance >= result.current.tokens[1].balance).toBe(true)
         }
@@ -324,7 +337,6 @@ describe('Token Discovery Performance Benchmarks', () => {
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true)
         expect(result.current.tokens).toHaveLength(1000)
-        // Verify sorted
         if (result.current.tokens.length > 1) {
           expect(result.current.tokens[0].balance >= result.current.tokens[1].balance).toBe(true)
         }
@@ -347,7 +359,6 @@ describe('Token Discovery Performance Benchmarks', () => {
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true)
         expect(result.current.tokens).toHaveLength(2000)
-        // Verify sorted
         if (result.current.tokens.length > 1) {
           expect(result.current.tokens[0].balance >= result.current.tokens[1].balance).toBe(true)
         }
@@ -391,7 +402,6 @@ describe('Token Discovery Performance Benchmarks', () => {
 
       await waitFor(() => {
         expect(result.current.totalTokens).toBe(2000)
-        // Should have tokens distributed across chains
         const chainCount = Object.keys(result.current.tokensByChain).length
         expect(chainCount).toBeGreaterThan(0)
         expect(chainCount).toBeLessThanOrEqual(3)
@@ -411,17 +421,13 @@ describe('Token Discovery Performance Benchmarks', () => {
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
 
-      // First render - populate cache
       const {result, rerender} = renderHook(() => useTokenDiscovery(), {wrapper})
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true)
       })
 
-      // Clear mock call count
       vi.mocked(discoverUserTokens).mockClear()
-
-      // Re-render should use cache (no new API call in our mock setup)
       rerender()
 
       await waitFor(() => {
@@ -441,7 +447,6 @@ describe('Token Discovery Performance Benchmarks', () => {
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
 
-      // Render multiple hook instances
       const {result: result1} = renderHook(() => useTokenDiscovery(), {wrapper})
       const {result: result2} = renderHook(() => useTokenDiscovery(), {wrapper})
       const {result: result3} = renderHook(() => useTokensByBalance(), {wrapper})
@@ -452,7 +457,6 @@ describe('Token Discovery Performance Benchmarks', () => {
         expect(result3.current.isSuccess).toBe(true)
       })
 
-      // All instances should have the same data
       expect(result1.current.tokens).toHaveLength(500)
       expect(result2.current.tokens).toHaveLength(500)
       expect(result3.current.tokens).toHaveLength(500)
@@ -531,10 +535,9 @@ describe('Token Discovery Performance Benchmarks', () => {
         expect(result.current.isSuccess).toBe(true)
       })
 
-      // Verify that token array references are stable
       const tokensRef1 = result.current.tokens
       const tokensRef2 = result.current.tokens
-      expect(tokensRef1).toBe(tokensRef2) // Same reference
+      expect(tokensRef1).toBe(tokensRef2)
     })
 
     bench('filtered tokens maintain references (2000 tokens)', async () => {
@@ -554,7 +557,6 @@ describe('Token Discovery Performance Benchmarks', () => {
         expect(result.current.totalTokens).toBe(2000)
       })
 
-      // Verify grouping is efficient
       const totalGroupedTokens = Object.values(result.current.tokensByChain).reduce(
         (sum, tokens) => sum + tokens.length,
         0,
