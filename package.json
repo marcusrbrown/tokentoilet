@@ -13,6 +13,7 @@
     "start": "next start",
     "storybook": "storybook dev -p 6006",
     "test": "vitest run",
+    "test:bench": "vitest bench",
     "test:ui": "vitest --ui"
   },
   "simple-git-hooks": {
