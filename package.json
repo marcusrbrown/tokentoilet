@@ -86,7 +86,8 @@
     "tsx": "^4.20.5",
     "typescript": "5.9.2",
     "viem": "^2.23.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "vitest-axe": "^0.1.0"
   },
   "packageManager": "pnpm@10.17.1"
 }
