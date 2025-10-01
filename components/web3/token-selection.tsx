@@ -513,11 +513,11 @@ export function TokenSelection({
             </div>
             {selectionStats.totalSelected > 0 && (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={handleInvertSelection}>
+                <Button variant="ghost" size="sm" onClick={handleInvertSelection} aria-label="Invert token selection">
                   <RotateCcw className="h-4 w-4" />
                   Invert
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleClearSelection}>
+                <Button variant="ghost" size="sm" onClick={handleClearSelection} aria-label="Clear token selection">
                   <X className="h-4 w-4" />
                   Clear
                 </Button>
@@ -586,7 +586,13 @@ export function TokenSelection({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Advanced Selection</h4>
-                <Button variant="ghost" size="sm" onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  aria-label={showAdvancedFilters ? 'Hide advanced filters' : 'Show advanced filters'}
+                  aria-expanded={showAdvancedFilters}
+                >
                   <Filter className="h-4 w-4" />
                   <ChevronDown
                     className={cn('h-4 w-4 ml-1 transition-transform', showAdvancedFilters && 'rotate-180')}
