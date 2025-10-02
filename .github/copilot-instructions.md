@@ -2,6 +2,18 @@
 
 Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi v2 + Reown AppKit, featuring a complete design system with violet branding and glass morphism aesthetics.
 
+## Documentation Structure
+
+**Primary Documentation**: All core project documentation is referenced in `llms.txt` at the project root
+- **Product Specs**: `.ai/docs/prd.md` - comprehensive product requirements
+- **Development Plan**: `.ai/docs/plan.md` - detailed roadmap and progress tracking
+- **Design System**: `docs/design-system/getting-started.md` - complete component library guide
+- **Migration Guides**: `.ai/docs/tailwind-v4-migration-guide.md` - Tailwind v3→v4 CSS-first approach
+- **Contributing**: `CONTRIBUTING.md` - development workflow and coding standards
+- **README**: `readme.md` - project overview and quick start guide
+
+**Always reference `llms.txt` first** when looking for project context - it provides structured links to all relevant documentation.
+
 ## Architecture Overview
 
 **Web3 Provider Chain**: `app/layout.tsx` → `app/providers.tsx` → `Web3Provider` (Wagmi + TanStack Query) → `ThemeSync`
@@ -103,16 +115,19 @@ pnpm build-storybook  # Build static Storybook
 
 **Key Environment Setup**:
 - Environment variables in `.env.local` (see `.env.example` for template)
-- Web3 RPC endpoints configured in `lib/web3/config.ts` with fallbacks
-- Project uses `env.ts` for validated environment variable access
-- Multi-chain support requires `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
+- Web3 RPC endpoints configured in `lib/web3/config.ts` with Alchemy fallbacks
+- Project uses `env.ts` for validated environment variable access via `@t3-oss/env-nextjs`
+- Multi-chain support requires `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` from [WalletConnect Cloud](https://cloud.walletconnect.com)
+- Optional RPC URLs: `NEXT_PUBLIC_ETHEREUM_RPC_URL`, `NEXT_PUBLIC_POLYGON_RPC_URL`, `NEXT_PUBLIC_ARBITRUM_RPC_URL`
 
 **Key Files**:
-- `lib/web3/config.ts` - WagmiAdapter with multi-chain RPC endpoints
-- `hooks/use-wallet.ts` - Wallet abstraction with NetworkValidationError types
+- `lib/web3/config.ts` - WagmiAdapter with multi-chain RPC endpoints and Reown AppKit theming
+- `hooks/use-wallet.ts` - Complete wallet abstraction with NetworkValidationError types (305 lines)
+- `hooks/use-wallet-persistence.ts` - LocalStorage-based wallet connection persistence
 - `vitest.config.ts` - jsdom environment with @ alias resolution
-- `app/globals.css` - Complete Tailwind v4 configuration via @theme blocks
-- `docs/design-system/getting-started.md` - Comprehensive design system documentation
+- `vitest.setup.ts` - Global test mocks (matchMedia, canvas, React global)
+- `app/globals.css` - Complete Tailwind v4 configuration via @theme blocks (1039 lines)
+- `docs/design-system/getting-started.md` - Comprehensive design system documentation (507 lines)
 
 ## Project-Specific Conventions
 
@@ -136,12 +151,17 @@ pnpm build-storybook  # Build static Storybook
 - Next-themes for theme persistence
 
 ### Styling Patterns - Tailwind CSS v4 (Migration Complete)
-- **CSS-First Approach**: Uses `@import "tailwindcss"` in `app/globals.css`
+- **CSS-First Approach**: Uses `@import "tailwindcss"` in `app/globals.css` - Tailwind v4.1.13
 - **NO JavaScript Config**: `tailwind.config.ts` was eliminated - CSS-only configuration
 - **Primary Colors**: Violet branding (`bg-violet-500`, `text-violet-600`, `border-violet-300`)
-- **Dark Mode**: Support via `dark:` classes and CSS custom properties
-- **Glass Morphism**: `.glass-container`, `.glass-card`, `.glass-button` utility classes
-- **Design Tokens**: All design tokens are CSS custom properties (`--color-violet-*`, `--spacing-*`)
+- **Dark Mode**: Support via `@custom-variant dark (&:where(.dark, .dark *))` and CSS custom properties
+- **Glass Morphism**: `.glass-container` utility class with backdrop-filter support
+- **Design Tokens**: All design tokens are CSS custom properties in `@theme` blocks
+  - Colors: `--color-violet-*`, `--color-web3-*`, `--color-glass-*`
+  - Spacing: `--spacing-glass-*` (xs through 2xl)
+  - Shadows: `--shadow-glass-*`, `--shadow-violet-glow`
+  - Blur: `--blur-*` (sm through 3xl)
+  - Animation: `--duration-*`, `--timing-*`
 
 #### Critical CSS Patterns
 ```css
@@ -169,13 +189,25 @@ pnpm build-storybook  # Build static Storybook
 
 ### Component Development
 - Design system components in `/components/ui/` with comprehensive test coverage
-- Storybook stories for component documentation and testing
+- Storybook stories for component documentation and testing (Storybook v9.x)
 - Co-located tests: `component.test.ts` alongside each component
-- Glass morphism aesthetic with backdrop-filter support
-- Consistent violet color scheme with gradient backgrounds
+- Glass morphism aesthetic with `backdrop-filter: blur(var(--blur-md))` pattern
+- Consistent violet color scheme with `var(--color-violet-*)` custom properties
+- Web3 components ALWAYS require `'use client'` directive and comprehensive mocking in tests
+
+### Address Formatting Pattern
+```typescript
+// Standard address display format used throughout the app
+const displayAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
+// Example: "0x1234...7890"
+
+// Component class available: .address-display with monospace font
+```
 
 ## Reference Documentation
-- Product requirements in `.ai/docs/prd.md`
-- Development roadmap in `.ai/docs/plan.md`
+**Always start with `llms.txt`** - it provides structured navigation to:
+- Product requirements in `.ai/docs/prd.md` (715 lines)
+- Development roadmap in `.ai/docs/plan.md` (384 lines)
 - Tailwind v4 migration guide in `.ai/docs/tailwind-v4-migration-guide.md`
-- Design system guide in `docs/design-system/getting-started.md`
+- Design system guide in `docs/design-system/getting-started.md` (507 lines)
+- Contributing guidelines in `CONTRIBUTING.md`
