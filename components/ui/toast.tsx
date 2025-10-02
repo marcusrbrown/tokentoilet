@@ -147,6 +147,7 @@ export function CustomToast({
         <div className="text-sm">{message}</div>
         {action ? (
           <button
+            type="button"
             onClick={action.onClick}
             className={cn(
               'mt-2 text-xs font-medium underline underline-offset-2',
@@ -167,6 +168,7 @@ export function CustomToast({
       {/* Dismiss button */}
       {dismissible && (
         <button
+          type="button"
           onClick={() => toast.dismiss(toastObj.id)}
           className={cn(
             'flex-shrink-0 p-1 rounded-full transition-all duration-150',

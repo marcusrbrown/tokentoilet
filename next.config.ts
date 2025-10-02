@@ -1,4 +1,5 @@
 import type {NextConfig} from 'next'
+import type {Configuration} from 'webpack'
 import path from 'node:path'
 import url from 'node:url'
 import {PHASE_PRODUCTION_BUILD} from 'next/constants.js'
@@ -43,6 +44,17 @@ const nextConfig: NextConfig = {
 
   eslint: {
     ignoreDuringBuilds: !buildEnv.NEXT_BUILD_ENV_LINT,
+  },
+
+  webpack: (config: Configuration) => {
+    // Ignore react-native async-storage import from MetaMask SDK (web-only app)
+    if (config.resolve) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@react-native-async-storage/async-storage': false,
+      }
+    }
+    return config
   },
 }
 

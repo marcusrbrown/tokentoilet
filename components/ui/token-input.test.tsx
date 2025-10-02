@@ -513,7 +513,9 @@ describe('TokenInput', () => {
       const backdrop = document.querySelector('.fixed.inset-0.z-40')
       expect(backdrop).toBeInTheDocument()
 
-      await user.click(backdrop!)
+      if (backdrop) {
+        await user.click(backdrop)
+      }
 
       // Dropdown should close
       await waitFor(
