@@ -14,7 +14,11 @@
     "storybook": "storybook dev -p 6006",
     "test": "vitest run",
     "test:bench": "vitest bench",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "type-check": "tsc --noEmit",
+    "validate": "pnpm run lint && pnpm run type-check && pnpm run test && pnpm run validate:design-system && pnpm run build-storybook",
+    "validate:design-system": "tsx scripts/validate-design-system.ts",
+    "validate:stories": "pnpm run build-storybook"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged"

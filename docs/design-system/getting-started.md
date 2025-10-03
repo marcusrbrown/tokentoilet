@@ -385,6 +385,33 @@ pnpm lint
 pnpm fix
 ```
 
+### Design System Validation
+
+Validate design system integrity with comprehensive checks:
+
+```bash
+# Validate design system completeness
+pnpm validate:design-system
+
+# Run type checking
+pnpm type-check
+
+# Validate Storybook stories build
+pnpm validate:stories
+
+# Run complete validation suite (CI/CD ready)
+pnpm validate
+```
+
+The `validate:design-system` script checks:
+
+- **Component completeness**: Ensures all UI components have test and story files
+- **Design tokens**: Verifies all required design token files exist
+- **Documentation**: Confirms all required documentation is present
+- **Storybook configuration**: Validates Storybook setup
+
+Use `pnpm validate` in CI/CD pipelines to run all quality checks: linting, type-checking, testing, design system validation, and Storybook build verification.
+
 ## Best Practices
 
 ### Component Development
