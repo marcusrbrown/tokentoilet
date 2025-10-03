@@ -26,6 +26,7 @@ Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20,
 - [Environment Setup](docs/development/environment-setup.md): Environment variables and configuration setup guide
 - [Deployment Guide](docs/deployment/vercel-setup.md): Production deployment instructions and Vercel configuration
 - [Design System Components](docs/design-system/components.md): Detailed component documentation and usage patterns
+- [Design System Migration Guide](docs/design-system/migration-guide.md): Comprehensive guide for migrating components to the Token Toilet Design System
 - [Design Tokens](docs/design-system/design-tokens.md): Design system tokens, colors, spacing, and typography specifications
 - [Accessibility Guidelines](docs/design-system/accessibility.md): Web accessibility implementation and testing guidelines
 
