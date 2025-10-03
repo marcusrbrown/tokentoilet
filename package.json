@@ -18,7 +18,8 @@
     "type-check": "tsc --noEmit",
     "validate": "pnpm run lint && pnpm run type-check && pnpm run test && pnpm run validate:design-system && pnpm run build-storybook",
     "validate:design-system": "tsx scripts/validate-design-system.ts",
-    "validate:stories": "pnpm run build-storybook"
+    "validate:stories": "pnpm run build-storybook",
+    "validate:web3": "tsx scripts/validate-web3-integration.ts"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged"
