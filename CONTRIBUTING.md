@@ -97,9 +97,12 @@ Our automated tools enforce consistent code quality:
 
 ```bash
 # Check code quality
-pnpm lint               # ESLint with Web3 patterns
-pnpm fix                # Auto-fix linting issues
-pnpm test               # Run full test suite
+pnpm lint                      # ESLint with Web3 patterns
+pnpm fix                       # Auto-fix linting issues
+pnpm test                      # Run full test suite
+pnpm type-check                # TypeScript type checking
+pnpm validate:design-system    # Validate design system completeness
+pnpm validate                  # Run all checks (CI/CD ready)
 ```
 
 ### Coding Conventions
