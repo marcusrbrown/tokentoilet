@@ -5,7 +5,6 @@ import {cva} from 'class-variance-authority'
  * Provides consistent styling for connection states and network indicators
  */
 export const badgeVariants = cva(
-  // Base classes applied to all badges
   [
     'inline-flex',
     'items-center',
@@ -22,7 +21,6 @@ export const badgeVariants = cva(
   {
     variants: {
       variant: {
-        // Default variant with neutral styling
         default: ['bg-gray-100', 'text-gray-800', 'dark:bg-gray-800', 'dark:text-gray-200'],
         // Web3 connection state variants
         connected: [
