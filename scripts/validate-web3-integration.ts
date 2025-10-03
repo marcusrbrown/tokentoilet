@@ -158,7 +158,6 @@ async function validateWeb3Hooks(): Promise<ValidationResult> {
 async function validateProviderChain(): Promise<ValidationResult> {
   const issues: string[] = []
 
-  // Check all provider files exist
   for (const file of REQUIRED_PROVIDER_FILES) {
     const exists = await fileExists(file)
     if (!exists) {
@@ -166,31 +165,26 @@ async function validateProviderChain(): Promise<ValidationResult> {
     }
   }
 
-  // Verify provider chain integration patterns
   const layoutExists = await fileExists('app/layout.tsx')
   const providersExists = await fileExists('app/providers.tsx')
 
   if (layoutExists && providersExists) {
-    // Check layout.tsx imports Providers
     const layoutImportsProviders = await fileContains('app/layout.tsx', 'Providers')
     if (!layoutImportsProviders) {
       issues.push('app/layout.tsx does not import Providers component')
     }
 
-    // Check providers.tsx contains Web3Provider
     const providersHasWeb3 = await fileContains('app/providers.tsx', 'Web3Provider')
     if (!providersHasWeb3) {
       issues.push('app/providers.tsx does not integrate Web3Provider')
     }
 
-    // Check providers.tsx contains NextThemesProvider
     const providersHasTheme = await fileContains('app/providers.tsx', 'ThemeProvider')
     if (!providersHasTheme) {
       issues.push('app/providers.tsx does not integrate NextThemesProvider')
     }
   }
 
-  // Verify Web3Provider uses WagmiProvider
   const web3ProviderExists = await fileExists('components/web3/web3-provider.tsx')
   if (web3ProviderExists) {
     const hasWagmi = await fileContains('components/web3/web3-provider.tsx', 'WagmiProvider')
@@ -209,7 +203,6 @@ async function validateProviderChain(): Promise<ValidationResult> {
     }
   }
 
-  // Verify ThemeSync bridges next-themes and Reown AppKit
   const themeSyncExists = await fileExists('components/theme-sync.tsx')
   if (themeSyncExists) {
     const hasAppKitTheme = await fileContains('components/theme-sync.tsx', 'useAppKitTheme')
@@ -240,7 +233,6 @@ async function validateProviderChain(): Promise<ValidationResult> {
 async function validateReownAppKitConfig(): Promise<ValidationResult> {
   const issues: string[] = []
 
-  // Check config file exists
   const configExists = await fileExists('lib/web3/config.ts')
   if (!configExists) {
     return {
@@ -249,7 +241,6 @@ async function validateReownAppKitConfig(): Promise<ValidationResult> {
     }
   }
 
-  // Verify Reown AppKit integration
   const hasWagmiAdapter = await fileContains('lib/web3/config.ts', 'WagmiAdapter')
   if (!hasWagmiAdapter) {
     issues.push('lib/web3/config.ts does not use WagmiAdapter')
@@ -265,7 +256,6 @@ async function validateReownAppKitConfig(): Promise<ValidationResult> {
     issues.push('lib/web3/config.ts missing networks configuration')
   }
 
-  // Check for multi-chain support
   const hasMainnet = await fileContains('lib/web3/config.ts', 'mainnet')
   const hasPolygon = await fileContains('lib/web3/config.ts', 'polygon')
   const hasArbitrum = await fileContains('lib/web3/config.ts', 'arbitrum')
@@ -274,7 +264,6 @@ async function validateReownAppKitConfig(): Promise<ValidationResult> {
     issues.push('lib/web3/config.ts missing multi-chain support (Ethereum, Polygon, Arbitrum)')
   }
 
-  // Check for violet theming
   const hasVioletTheme = await fileContains('lib/web3/config.ts', 'violet')
   if (!hasVioletTheme) {
     issues.push('lib/web3/config.ts missing violet design system theming')
@@ -297,7 +286,6 @@ async function validateReownAppKitConfig(): Promise<ValidationResult> {
 async function validateWagmiIntegration(): Promise<ValidationResult> {
   const issues: string[] = []
 
-  // Check useWallet hook uses wagmi hooks
   const useWalletExists = await fileExists('hooks/use-wallet.ts')
   if (useWalletExists) {
     const hasUseAccount = await fileContains('hooks/use-wallet.ts', 'useAccount')
@@ -315,7 +303,6 @@ async function validateWagmiIntegration(): Promise<ValidationResult> {
     issues.push('hooks/use-wallet.ts does not exist')
   }
 
-  // Check WalletButton uses useWallet hook (not direct wagmi)
   const walletButtonExists = await fileExists('components/web3/wallet-button.tsx')
   if (walletButtonExists) {
     const usesUseWallet = await fileContains('components/web3/wallet-button.tsx', 'useWallet')
@@ -323,7 +310,6 @@ async function validateWagmiIntegration(): Promise<ValidationResult> {
       issues.push('WalletButton component does not use useWallet hook abstraction')
     }
 
-    // Should NOT directly use wagmi hooks in component
     const usesWagmiDirect = await fileContains('components/web3/wallet-button.tsx', "from 'wagmi'")
     if (usesWagmiDirect) {
       issues.push('WalletButton component directly imports from wagmi (should use useWallet hook)')
@@ -347,7 +333,6 @@ async function validateWagmiIntegration(): Promise<ValidationResult> {
 async function validateDesignSystemIntegration(): Promise<ValidationResult> {
   const issues: string[] = []
 
-  // Check WalletButton uses design system components
   const walletButtonExists = await fileExists('components/web3/wallet-button.tsx')
   if (walletButtonExists) {
     const usesButton = await fileContains('components/web3/wallet-button.tsx', '@/components/ui/button')
@@ -359,7 +344,6 @@ async function validateDesignSystemIntegration(): Promise<ValidationResult> {
     if (!usesCard) issues.push('WalletButton does not use design system Card component')
   }
 
-  // Check all Web3 design system components exist
   for (const component of WEB3_DESIGN_SYSTEM_COMPONENTS) {
     const exists = await fileExists(component)
     if (!exists) {
@@ -367,7 +351,6 @@ async function validateDesignSystemIntegration(): Promise<ValidationResult> {
     }
   }
 
-  // Verify Button has Web3 variants
   const buttonExists = await fileExists('components/ui/button.tsx')
   if (buttonExists) {
     const hasWeb3Connected = await fileContains('components/ui/button.tsx', 'web3Connected')
@@ -379,7 +362,6 @@ async function validateDesignSystemIntegration(): Promise<ValidationResult> {
     }
   }
 
-  // Verify Badge has connected variant
   const badgeExists = await fileExists('components/ui/badge.tsx')
   if (badgeExists) {
     const hasConnected = await fileContains('components/ui/badge.tsx', 'connected')
@@ -432,7 +414,6 @@ async function runValidation(): Promise<ValidationSummary> {
   consola.box('Web3Modal & Wagmi Integration Validation')
   consola.info('Validating Token Toilet Web3 integration...\n')
 
-  // Run all validation checks
   consola.start('Checking Web3 components...')
   results.push(await validateWeb3Components())
 
@@ -454,7 +435,6 @@ async function runValidation(): Promise<ValidationSummary> {
   consola.start('Checking test coverage...')
   results.push(await validateTestCoverage())
 
-  // Display results
   for (const result of results) {
     if (result.pass) {
       consola.success(result.message)
@@ -468,7 +448,6 @@ async function runValidation(): Promise<ValidationSummary> {
     }
   }
 
-  // Calculate summary
   const passed = results.filter(r => r.pass).length
   const failed = results.filter(r => !r.pass).length
 

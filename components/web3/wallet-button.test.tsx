@@ -4,12 +4,10 @@ import {render, screen} from '@testing-library/react'
 import {userEvent} from '@testing-library/user-event'
 import {beforeEach, describe, expect, it, vi, type Mock} from 'vitest'
 
-// Mock useWallet hook
 vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(),
 }))
 
-// Mock lucide-react icons
 vi.mock('lucide-react', () => ({
   Wallet: () => <div data-testid="wallet-icon" />,
   AlertTriangle: () => <div data-testid="alert-icon" />,
@@ -109,7 +107,6 @@ describe('WalletButton', () => {
     it('should render connected state with formatted address', () => {
       render(<WalletButton />)
 
-      // Address is formatted as 0x1234...7890 by formatAddress utility
       expect(screen.getByText(/0x1234/)).toBeInTheDocument()
     })
 
@@ -233,7 +230,6 @@ describe('WalletButton', () => {
       const switchButton = screen.getByRole('button', {name: /switch to ethereum mainnet/i})
       await userEvent.click(switchButton)
 
-      // Button should show loading state
       expect(screen.getByText(/switching\.\.\./i)).toBeInTheDocument()
     })
 
@@ -289,7 +285,6 @@ describe('WalletButton', () => {
 
       const {container} = render(<WalletButton />)
 
-      // Button should have design system classes
       const button = container.querySelector('button')
       expect(button).toBeInTheDocument()
     })
@@ -312,7 +307,6 @@ describe('WalletButton', () => {
 
       render(<WalletButton />)
 
-      // Badge should be present with network name
       expect(screen.getByText('Ethereum Mainnet')).toBeInTheDocument()
     })
 
@@ -340,7 +334,6 @@ describe('WalletButton', () => {
 
       render(<WalletButton />)
 
-      // Card should be present for error state
       expect(screen.getByText(/network not supported/i)).toBeInTheDocument()
     })
   })
@@ -366,7 +359,6 @@ describe('WalletButton', () => {
 
       render(<WalletButton />)
 
-      // Should show formatted address (0x1234...7890)
       expect(screen.getByText(/0x1234/)).toBeInTheDocument()
     })
 
