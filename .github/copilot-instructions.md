@@ -5,12 +5,12 @@ Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while s
 ## Documentation Structure
 
 **Primary Documentation**: All core project documentation is referenced in `llms.txt` at the project root
-- **Product Specs**: `.ai/docs/prd.md` - comprehensive product requirements
-- **Development Plan**: `.ai/docs/plan.md` - detailed roadmap and progress tracking
-- **Design System**: `docs/design-system/getting-started.md` - complete component library guide
-- **Migration Guides**: `.ai/docs/tailwind-v4-migration-guide.md` - Tailwind v3→v4 CSS-first approach
-- **Contributing**: `CONTRIBUTING.md` - development workflow and coding standards
-- **README**: `readme.md` - project overview and quick start guide
+- **Product Specs**: `.ai/docs/prd.md` - comprehensive product requirements (715 lines)
+- **Development Plan**: `.ai/docs/plan.md` - detailed roadmap and progress tracking (384 lines)
+- **Design System**: `docs/design-system/getting-started.md` - complete component library guide (507 lines)
+- **Design System Migration**: `docs/design-system/migration-guide.md` - component migration patterns (970 lines)
+- **Tailwind v4 Migration**: `.ai/docs/tailwind-v4-migration-guide.md` - CSS-first approach migration
+- **Contributing**: `CONTRIBUTING.md` - development workflow and coding standards (499 lines)
 
 **Always reference `llms.txt` first** when looking for project context - it provides structured links to all relevant documentation.
 
@@ -40,6 +40,24 @@ import { useWallet } from '@/hooks/use-wallet'
 // Network validation with detailed error classification and auto-switching
 ```
 
+### Token Approval Workflow
+```tsx
+// Use useTokenApproval for all ERC-20 approval operations
+import { useTokenApproval } from '@/hooks/use-token-approval'
+
+// Provides: approval state tracking, gas estimation, transaction queue integration
+const { approvalState, gasEstimate, approve } = useTokenApproval({
+  token,
+  spender: DISPOSAL_CONTRACT_ADDRESS,
+  amount: parseUnits('100', token.decimals),
+  useInfiniteApproval: false, // Or true for max uint256
+  autoRefresh: true // Auto-refresh allowance after approval
+})
+
+// Approval state includes: isApproved, currentAllowance, isPending, error
+// Gas estimate includes: gasLimit, totalCost, totalCostFormatted
+```
+
 ### Critical Web3 Error Handling
 ```tsx
 // NEVER throw on disconnect/connection errors - use console.error + graceful fallbacks
@@ -63,6 +81,9 @@ vi.mock('wagmi', () => ({
   useChainId: vi.fn(),
   useDisconnect: vi.fn(),
   useSwitchChain: vi.fn(),
+  useReadContract: vi.fn(), // For token allowance checks
+  useWriteContract: vi.fn(), // For approval transactions
+  useEstimateGas: vi.fn(), // For gas estimation
 }))
 
 vi.mock('@reown/appkit/react', () => ({
@@ -76,9 +97,18 @@ vi.mock('@reown/appkit/networks', () => ({
   arbitrum: {id: 42161},
 }))
 
-// Test files co-located with source: component.test.ts
-// Focus: wallet states, error boundaries, network validation
-// Test structure: MetaMask, WalletConnect, Coinbase-specific test files
+// Mock token approval hook for component tests
+vi.mock('@/hooks/use-token-approval', () => ({
+  useTokenApproval: vi.fn(() => ({
+    approvalState: { isApproved: false, currentAllowance: 0n, isPending: false },
+    gasEstimate: { totalCostFormatted: '0.001 ETH' },
+    approve: vi.fn(),
+  })),
+}))
+
+// Test files co-located with source: component.test.ts, component.test.tsx
+// E2E workflow tests in: components/web3/__tests__/token-workflows.e2e.test.tsx
+// Focus: wallet states, error boundaries, network validation, approval workflows
 ```
 
 ### Component Structure & Address Formatting
@@ -116,18 +146,23 @@ pnpm build-storybook  # Build static Storybook
 **Key Environment Setup**:
 - Environment variables in `.env.local` (see `.env.example` for template)
 - Web3 RPC endpoints configured in `lib/web3/config.ts` with Alchemy fallbacks
-- Project uses `env.ts` for validated environment variable access via `@t3-oss/env-nextjs`
+- **Critical**: Project uses `env.ts` for validated environment variable access via `@t3-oss/env-nextjs`
+  - Custom validation schemas: `rpcUrlSchema` (HTTPS required), `walletConnectProjectIdSchema` (32+ char hex)
+  - Access via `import {env} from '@/env'` - NEVER use `process.env` directly
+  - Schema validation skipped in CI/test/build, but required for dev/production
 - Multi-chain support requires `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` from [WalletConnect Cloud](https://cloud.walletconnect.com)
 - Optional RPC URLs: `NEXT_PUBLIC_ETHEREUM_RPC_URL`, `NEXT_PUBLIC_POLYGON_RPC_URL`, `NEXT_PUBLIC_ARBITRUM_RPC_URL`
 
 **Key Files**:
 - `lib/web3/config.ts` - WagmiAdapter with multi-chain RPC endpoints and Reown AppKit theming
 - `hooks/use-wallet.ts` - Complete wallet abstraction with NetworkValidationError types (305 lines)
+- `hooks/use-token-approval.ts` - Token approval workflow with gas estimation (340+ lines)
 - `hooks/use-wallet-persistence.ts` - LocalStorage-based wallet connection persistence
 - `vitest.config.ts` - jsdom environment with @ alias resolution
 - `vitest.setup.ts` - Global test mocks (matchMedia, canvas, React global)
 - `app/globals.css` - Complete Tailwind v4 configuration via @theme blocks (1039 lines)
 - `docs/design-system/getting-started.md` - Comprehensive design system documentation (507 lines)
+- `docs/design-system/migration-guide.md` - Component migration patterns (970 lines)
 
 ## Project-Specific Conventions
 
@@ -210,4 +245,5 @@ const displayAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
 - Development roadmap in `.ai/docs/plan.md` (384 lines)
 - Tailwind v4 migration guide in `.ai/docs/tailwind-v4-migration-guide.md`
 - Design system guide in `docs/design-system/getting-started.md` (507 lines)
-- Contributing guidelines in `CONTRIBUTING.md`
+- Design system migration guide in `docs/design-system/migration-guide.md` (970 lines)
+- Contributing guidelines in `CONTRIBUTING.md` (499 lines)
