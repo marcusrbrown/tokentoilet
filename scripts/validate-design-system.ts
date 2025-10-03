@@ -22,7 +22,7 @@ const DESIGN_SYSTEM_PATHS = {
   components: 'components/ui',
   tokens: 'lib/design-tokens',
   docs: 'docs/design-system',
-}
+} as const
 
 async function fileExists(filePath: string): Promise<boolean> {
   try {
@@ -51,6 +51,11 @@ async function getComponentFiles(directory: string): Promise<string[]> {
   return files
 }
 
+/**
+ * Validates that all UI components follow the design system standard of having
+ * co-located test and story files. This ensures comprehensive test coverage and
+ * living documentation via Storybook for all design system components.
+ */
 async function validateComponentCompleteness(): Promise<ValidationResult> {
   const componentsPath = join(process.cwd(), DESIGN_SYSTEM_PATHS.components)
   const components = await getComponentFiles(componentsPath)
@@ -91,9 +96,21 @@ async function validateComponentCompleteness(): Promise<ValidationResult> {
   }
 }
 
+/**
+ * Validates the complete design token system exists. Tokens are the foundation
+ * of the design system's consistency, so all token files must be present to
+ * ensure proper theming and styling across components.
+ */
 async function validateDesignTokens(): Promise<ValidationResult> {
   const tokensPath = join(process.cwd(), DESIGN_SYSTEM_PATHS.tokens)
-  const requiredTokenFiles = ['colors.ts', 'spacing.ts', 'typography.ts', 'shadows.ts', 'animations.ts', 'index.ts']
+  const requiredTokenFiles = [
+    'colors.ts',
+    'spacing.ts',
+    'typography.ts',
+    'shadows.ts',
+    'animations.ts',
+    'index.ts',
+  ] as const
 
   const missingFiles: string[] = []
   for (const file of requiredTokenFiles) {
@@ -114,6 +131,11 @@ async function validateDesignTokens(): Promise<ValidationResult> {
   }
 }
 
+/**
+ * Validates complete design system documentation exists. Comprehensive docs are
+ * critical for developer adoption and proper usage of the design system across
+ * the team, preventing inconsistent implementations.
+ */
 async function validateDocumentation(): Promise<ValidationResult> {
   const docsPath = join(process.cwd(), DESIGN_SYSTEM_PATHS.docs)
   const requiredDocs = [
@@ -122,7 +144,7 @@ async function validateDocumentation(): Promise<ValidationResult> {
     'design-tokens.md',
     'accessibility.md',
     'migration-guide.md',
-  ]
+  ] as const
 
   const missingDocs: string[] = []
   for (const doc of requiredDocs) {
@@ -143,6 +165,11 @@ async function validateDocumentation(): Promise<ValidationResult> {
   }
 }
 
+/**
+ * Validates Storybook is properly configured. Storybook serves as living
+ * documentation and component playground, so proper configuration is essential
+ * for the design system development workflow.
+ */
 async function validateStorybookConfiguration(): Promise<ValidationResult> {
   const storybookPath = join(process.cwd(), '.storybook')
   const requiredFiles = [
@@ -176,6 +203,11 @@ async function validateStorybookConfiguration(): Promise<ValidationResult> {
   }
 }
 
+/**
+ * Orchestrates all design system validation checks and provides comprehensive
+ * reporting. Returns non-zero exit code on failure for CI/CD integration,
+ * ensuring the design system remains complete and properly configured.
+ */
 async function runValidation(): Promise<void> {
   consola.box('Design System Validation')
   consola.info('Validating Token Toilet Design System...\n')
