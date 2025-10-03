@@ -70,6 +70,64 @@ pnpm dev
 - Web3 wallet (MetaMask, WalletConnect, or Coinbase Wallet)
 - WalletConnect Project ID from [WalletConnect Cloud](https://cloud.walletconnect.com)
 
+## Design System
+
+Token Toilet features a comprehensive design system built specifically for Web3 DeFi applications. The system provides:
+
+- **🎨 Violet Brand Identity**: Complete color palette from `violet-50` to `violet-900` with semantic Web3 state tokens
+- **✨ Glass Morphism Aesthetic**: Beautiful backdrop blur effects with `bg-white/80 backdrop-blur-md` patterns
+- **🧩 Reusable Components**: 14+ production-ready UI components with TypeScript support
+- **🌓 Dark Mode Support**: Seamless theme switching with next-themes integration
+- **♿ Accessibility First**: WCAG 2.1 AA compliant components with comprehensive keyboard navigation
+- **🔧 Web3 Integration**: Specialized components for wallet buttons, address displays, network badges, and transaction cards
+
+### Design System Documentation
+
+Comprehensive guides for using and extending the design system:
+
+- **[Getting Started](docs/design-system/getting-started.md)** - Installation, quick start, and basic usage
+- **[Component Reference](docs/design-system/components.md)** - Complete API documentation for all components
+- **[Design Tokens](docs/design-system/design-tokens.md)** - Color palettes, spacing, typography, and shadows
+- **[Accessibility Guidelines](docs/design-system/accessibility.md)** - WCAG compliance and best practices
+- **[Migration Guide](docs/design-system/migration-guide.md)** - Converting existing components to design system
+
+### Quick Example
+
+```tsx
+import { AddressDisplay } from '@/components/ui/address-display'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { NetworkBadge } from '@/components/ui/network-badge'
+
+export function WalletCard({ address, chainId }) {
+  return (
+    <Card variant="default" elevation="medium" padding="lg">
+      <h3 className="text-lg font-semibold text-violet-600">Connected Wallet</h3>
+      <AddressDisplay address={address} showCopy showExternalLink />
+      <NetworkBadge chainId={chainId} />
+      <Button variant="primary" size="lg" onClick={handleDisconnect}>
+        Disconnect
+      </Button>
+    </Card>
+  )
+}
+```
+
+### Component Development
+
+Explore and develop components interactively with Storybook:
+
+```bash
+# Start Storybook development server
+pnpm storybook
+
+# Build static Storybook for deployment
+pnpm build-storybook
+
+# Validate design system completeness
+pnpm validate:design-system
+```
+
 ## Technical Stack
 
 - **Frontend**: Next.js 15 with App Router and TypeScript
