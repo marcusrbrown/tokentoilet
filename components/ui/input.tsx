@@ -82,7 +82,7 @@ export interface InputProps
 /**
  * Input component with Web3 address validation, formatting, and comprehensive interaction states
  */
-const Input = ({
+function Input({
   ref,
   className,
   containerClassName,
@@ -111,7 +111,7 @@ const Input = ({
   onBlur,
   id,
   ...props
-}: InputProps & {ref?: React.RefObject<HTMLInputElement | null>}) => {
+}: InputProps & {ref?: React.Ref<HTMLInputElement>}) {
   const [internalValue, setInternalValue] = useState<string>(typeof value === 'string' ? value : '')
   const [showPassword, setShowPassword] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
