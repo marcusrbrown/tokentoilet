@@ -59,10 +59,10 @@ Improve development experience by separating component exports from utility expo
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-009 | Create `components/ui/input-variants.ts` with inputVariants export | | |
-| TASK-010 | Update `components/ui/input.tsx` to import and re-export inputVariants | | |
-| TASK-011 | Run tests to verify Input component functionality | | |
-| TASK-012 | Verify lint warning eliminated for input.tsx:518 | | |
+| TASK-009 | Create `components/ui/input-variants.ts` with inputVariants export | ✅ | 2025-10-03 |
+| TASK-010 | Update `components/ui/input.tsx` to import inputVariants (no re-export) | ✅ | 2025-10-03 |
+| TASK-011 | Run tests to verify Input component functionality | ✅ | 2025-10-03 |
+| TASK-012 | Verify lint warning eliminated for input.tsx:518 | ✅ | 2025-10-03 |
 
 ### Phase 4: Extract Skeleton Variants
 
@@ -143,11 +143,9 @@ Improve development experience by separating component exports from utility expo
 
 ## 7. Risks & Assumptions
 
-- **RISK-001**: Breaking changes if consumers import variants directly from component files
-  - Mitigation: Re-export from component files for backwards compatibility
-- **RISK-002**: Potential circular dependency if not structured correctly
+- **RISK-001**: Potential circular dependency if not structured correctly
   - Mitigation: Variants files have no component imports, only utilities
-- **RISK-003**: Fast Refresh still not working due to other issues
+- **RISK-002**: Fast Refresh still not working due to other issues
   - Mitigation: Test in development mode after each phase
 - **ASSUMPTION-001**: All consuming code uses documented import paths
 - **ASSUMPTION-002**: No direct file path imports from node_modules

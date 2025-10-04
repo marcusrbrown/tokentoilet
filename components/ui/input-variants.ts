@@ -1,0 +1,139 @@
+import {cva} from 'class-variance-authority'
+
+/**
+ * Input component variants using class-variance-authority
+ * Provides comprehensive input styling with Web3 address validation and formatting
+ */
+export const inputVariants = cva(
+  // Base classes applied to all inputs
+  [
+    'flex',
+    'w-full',
+    'rounded-lg',
+    'border',
+    'bg-white/50',
+    'backdrop-blur-sm',
+    'px-3',
+    'py-2',
+    'text-sm',
+    'font-medium',
+    'placeholder:text-gray-400',
+    'dark:placeholder:text-gray-500',
+    'transition-all',
+    'duration-150',
+    'focus:outline-none',
+    'focus:ring-2',
+    'focus:ring-offset-2',
+    'focus:ring-offset-white',
+    'dark:focus:ring-offset-gray-900',
+    'disabled:cursor-not-allowed',
+    'disabled:opacity-50',
+    'dark:bg-gray-900/50',
+  ],
+  {
+    variants: {
+      variant: {
+        // Default glass morphism input
+        default: [
+          'border-gray-200',
+          'text-gray-900',
+          'focus:border-violet-500',
+          'focus:ring-violet-500',
+          'dark:border-gray-600',
+          'dark:text-gray-100',
+          'dark:focus:border-violet-400',
+          'dark:focus:ring-violet-400',
+        ],
+        // Solid input without glass effect
+        solid: [
+          'bg-white',
+          'border-gray-300',
+          'text-gray-900',
+          'focus:border-violet-500',
+          'focus:ring-violet-500',
+          'dark:bg-gray-800',
+          'dark:border-gray-600',
+          'dark:text-gray-100',
+          'dark:focus:border-violet-400',
+          'dark:focus:ring-violet-400',
+        ],
+        // Web3 variant with violet accent
+        web3: [
+          'border-violet-200',
+          'text-gray-900',
+          'focus:border-violet-500',
+          'focus:ring-violet-500',
+          'bg-violet-50/50',
+          'dark:border-violet-500/30',
+          'dark:text-gray-100',
+          'dark:bg-violet-900/20',
+          'dark:focus:border-violet-400',
+          'dark:focus:ring-violet-400',
+        ],
+        // Ghost variant with minimal styling
+        ghost: [
+          'border-transparent',
+          'bg-transparent',
+          'text-gray-900',
+          'focus:border-gray-300',
+          'focus:ring-gray-300',
+          'hover:bg-gray-50/50',
+          'dark:text-gray-100',
+          'dark:focus:border-gray-600',
+          'dark:focus:ring-gray-600',
+          'dark:hover:bg-gray-800/50',
+        ],
+      },
+      size: {
+        sm: ['h-9', 'px-2', 'py-1', 'text-xs'],
+        default: ['h-10', 'px-3', 'py-2', 'text-sm'],
+        lg: ['h-11', 'px-4', 'py-3', 'text-base'],
+        xl: ['h-12', 'px-5', 'py-3', 'text-lg'],
+      },
+      state: {
+        default: '',
+        error: [
+          'border-red-500',
+          'text-red-900',
+          'focus:border-red-500',
+          'focus:ring-red-500',
+          'bg-red-50/50',
+          'dark:border-red-400',
+          'dark:text-red-100',
+          'dark:bg-red-900/20',
+          'dark:focus:border-red-400',
+          'dark:focus:ring-red-400',
+        ],
+        success: [
+          'border-green-500',
+          'text-green-900',
+          'focus:border-green-500',
+          'focus:ring-green-500',
+          'bg-green-50/50',
+          'dark:border-green-400',
+          'dark:text-green-100',
+          'dark:bg-green-900/20',
+          'dark:focus:border-green-400',
+          'dark:focus:ring-green-400',
+        ],
+        warning: [
+          'border-yellow-500',
+          'text-yellow-900',
+          'focus:border-yellow-500',
+          'focus:ring-yellow-500',
+          'bg-yellow-50/50',
+          'dark:border-yellow-400',
+          'dark:text-yellow-100',
+          'dark:bg-yellow-900/20',
+          'dark:focus:border-yellow-400',
+          'dark:focus:ring-yellow-400',
+        ],
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+      state: 'default',
+    },
+  },
+)
