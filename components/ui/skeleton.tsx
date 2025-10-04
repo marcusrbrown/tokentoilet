@@ -29,7 +29,6 @@ export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement>, Var
 }
 
 const Skeleton = ({
-  ref,
   className,
   variant,
   size,
@@ -39,7 +38,7 @@ const Skeleton = ({
   lines = 1,
   responsive = false,
   ...props
-}: SkeletonProps & {ref?: React.RefObject<HTMLDivElement | null>}) => {
+}: SkeletonProps) => {
   const baseClasses = skeletonVariants({variant, size, animation})
 
   // Custom dimension overrides
@@ -55,19 +54,13 @@ const Skeleton = ({
   // Single skeleton
   if (lines === 1) {
     return (
-      <div
-        ref={ref}
-        className={cn(baseClasses, customClasses, className)}
-        aria-hidden="true"
-        data-testid="skeleton"
-        {...props}
-      />
+      <div className={cn(baseClasses, customClasses, className)} aria-hidden="true" data-testid="skeleton" {...props} />
     )
   }
 
   // Multiple skeleton lines with width variations
   return (
-    <div ref={ref} className={cn('space-y-2', className)} aria-hidden="true" data-testid="skeleton-group" {...props}>
+    <div className={cn('space-y-2', className)} aria-hidden="true" data-testid="skeleton-group" {...props}>
       {Array.from({length: lines}, (_, index) => (
         <div
           key={index}
@@ -86,13 +79,8 @@ const Skeleton = ({
 Skeleton.displayName = 'Skeleton'
 
 // Specialized Web3 skeleton components
-export const AddressSkeleton = ({
-  ref,
-  className,
-  ...props
-}: Omit<SkeletonProps, 'size' | 'variant'> & {ref?: React.RefObject<HTMLDivElement | null>}) => (
+export const AddressSkeleton = ({className, ...props}: Omit<SkeletonProps, 'size' | 'variant'>) => (
   <Skeleton
-    ref={ref}
     variant="web3"
     size="address"
     animation="shimmer"
@@ -103,13 +91,8 @@ export const AddressSkeleton = ({
 )
 AddressSkeleton.displayName = 'AddressSkeleton'
 
-export const TransactionHashSkeleton = ({
-  ref,
-  className,
-  ...props
-}: Omit<SkeletonProps, 'size' | 'variant'> & {ref?: React.RefObject<HTMLDivElement | null>}) => (
+export const TransactionHashSkeleton = ({className, ...props}: Omit<SkeletonProps, 'size' | 'variant'>) => (
   <Skeleton
-    ref={ref}
     variant="web3"
     size="hash"
     animation="shimmer"
@@ -120,13 +103,8 @@ export const TransactionHashSkeleton = ({
 )
 TransactionHashSkeleton.displayName = 'TransactionHashSkeleton'
 
-export const TokenAmountSkeleton = ({
-  ref,
-  className,
-  ...props
-}: Omit<SkeletonProps, 'size' | 'variant'> & {ref?: React.RefObject<HTMLDivElement | null>}) => (
+export const TokenAmountSkeleton = ({className, ...props}: Omit<SkeletonProps, 'size' | 'variant'>) => (
   <Skeleton
-    ref={ref}
     variant="web3"
     size="amount"
     animation="pulse"
@@ -137,13 +115,8 @@ export const TokenAmountSkeleton = ({
 )
 TokenAmountSkeleton.displayName = 'TokenAmountSkeleton'
 
-export const BalanceSkeleton = ({
-  ref,
-  className,
-  ...props
-}: Omit<SkeletonProps, 'size' | 'variant'> & {ref?: React.RefObject<HTMLDivElement | null>}) => (
+export const BalanceSkeleton = ({className, ...props}: Omit<SkeletonProps, 'size' | 'variant'>) => (
   <Skeleton
-    ref={ref}
     variant="web3"
     size="balance"
     animation="pulse"
@@ -154,13 +127,8 @@ export const BalanceSkeleton = ({
 )
 BalanceSkeleton.displayName = 'BalanceSkeleton'
 
-export const NetworkBadgeSkeleton = ({
-  ref,
-  className,
-  ...props
-}: Omit<SkeletonProps, 'size' | 'variant'> & {ref?: React.RefObject<HTMLDivElement | null>}) => (
+export const NetworkBadgeSkeleton = ({className, ...props}: Omit<SkeletonProps, 'size' | 'variant'>) => (
   <Skeleton
-    ref={ref}
     variant="web3"
     size="badge"
     animation="pulse"
@@ -171,13 +139,8 @@ export const NetworkBadgeSkeleton = ({
 )
 NetworkBadgeSkeleton.displayName = 'NetworkBadgeSkeleton'
 
-export const WalletButtonSkeleton = ({
-  ref,
-  className,
-  ...props
-}: Omit<SkeletonProps, 'size' | 'variant'> & {ref?: React.RefObject<HTMLDivElement | null>}) => (
+export const WalletButtonSkeleton = ({className, ...props}: Omit<SkeletonProps, 'size' | 'variant'>) => (
   <Skeleton
-    ref={ref}
     variant="web3"
     size="button"
     animation="pulse"
@@ -188,13 +151,8 @@ export const WalletButtonSkeleton = ({
 )
 WalletButtonSkeleton.displayName = 'WalletButtonSkeleton'
 
-export const TransactionCardSkeleton = ({
-  ref,
-  className,
-  ...props
-}: Omit<SkeletonProps, 'variant' | 'lines'> & {ref?: React.RefObject<HTMLDivElement | null>}) => (
+export const TransactionCardSkeleton = ({className, ...props}: Omit<SkeletonProps, 'variant' | 'lines'>) => (
   <div
-    ref={ref}
     className={cn(
       'p-4',
       'rounded-xl',
