@@ -2,7 +2,8 @@ import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {AppToaster, CustomToast, toastNotifications} from './toast'
+import {AppToaster, CustomToast} from './toast'
+import {toastNotifications} from './toast-notifications'
 
 // Mock react-hot-toast
 const mockToastCustom = vi.hoisted(() => vi.fn())
