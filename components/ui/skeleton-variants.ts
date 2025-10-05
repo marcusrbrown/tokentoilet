@@ -1,11 +1,6 @@
 import {cva} from 'class-variance-authority'
 
-/**
- * Skeleton component variants using class-variance-authority
- * Provides loading states for wallet operations and Web3 DeFi interactions
- */
 export const skeletonVariants = cva(
-  // Base classes applied to all skeletons
   ['inline-block', 'rounded', 'bg-gradient-to-r', 'animate-pulse', 'select-none', 'pointer-events-none'],
   {
     variants: {

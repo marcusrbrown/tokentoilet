@@ -2,14 +2,6 @@ import toast, {type Toast} from 'react-hot-toast'
 
 import {CustomToast, type CustomToastProps} from './toast'
 
-/**
- * Enhanced toast notification functions with Web3-specific presets
- *
- * Provides a comprehensive API for displaying toast notifications with
- * consistent styling and behavior across the application. Includes
- * specialized functions for Web3 transactions and wallet interactions.
- */
-
 // NOTE: Uses hash-based routing as placeholder until block explorer integration is added
 const createExplorerAction = (txHash: string | undefined): CustomToastProps['action'] | undefined => {
   if (txHash == null || txHash === '') {
