@@ -80,9 +80,10 @@ export function useTransactionQueue(options: UseTransactionQueueOptions = {}): U
     const queue = queueRef.current
     const listeners = listenersRef.current
 
-    // State updater using reducer pattern for complex state updates
+    // Loads transactions from external queue source (localStorage-backed)
     const loadTransactions = () => {
       const allTransactions = queue.getTransactions()
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Loading from external source, not deriving from previous state
       setTransactions(allTransactions)
     }
 
@@ -225,14 +226,16 @@ export function useTransactionQueue(options: UseTransactionQueueOptions = {}): U
     }
   }, [])
 
-  // Cleanup effect
+  // Cleanup effect: capture ref values to ensure cleanup uses correct references
   useEffect(() => {
+    const queue = queueRef.current
+    const listeners = listenersRef.current
+
     return () => {
-      // Clean up all event listeners on unmount
-      listenersRef.current.forEach(listener => {
-        queueRef.current.removeEventListener(listener)
+      listeners.forEach(listener => {
+        queue.removeEventListener(listener)
       })
-      listenersRef.current.clear()
+      listeners.clear()
     }
   }, [])
 
@@ -325,19 +328,18 @@ export function useChainTransactionQueue(chainId: SupportedChainId, options: Use
   }
 }
 
-// Hook for getting a single transaction with real-time updates
+// Hook for getting a single transaction with real-time updates via polling
 export function useTransaction(transactionId: string) {
   const {getTransaction} = useTransactionQueue()
   const [transaction, setTransaction] = useState<QueuedTransaction | null>(null)
 
+  // Polling pattern: fetch fresh data every second, not deriving from previous state
   useEffect(() => {
-    // Initial load
-    setTransaction(getTransaction(transactionId))
+    setTransaction(getTransaction(transactionId)) // eslint-disable-line react-hooks-extra/no-direct-set-state-in-use-effect -- Polling pattern
 
-    // Set up polling for updates
     const interval = setInterval(() => {
       setTransaction(getTransaction(transactionId))
-    }, 1000) // Update every second
+    }, 1000)
 
     return () => clearInterval(interval)
   }, [transactionId, getTransaction])

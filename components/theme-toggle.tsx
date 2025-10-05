@@ -9,9 +9,7 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false)
   const {theme, setTheme} = useTheme()
 
-  // Mount detection for SSR safety: ensures theme UI only renders after client hydration
-  // to prevent hydration mismatches. This is the standard next-themes pattern documented
-  // in Next.js best practices for preventing hydration errors with client-only state.
+  // Prevents hydration mismatch: Next.js SSR requires mount detection before rendering theme UI
   useEffect(() => {
     setMounted(true) // eslint-disable-line react-hooks-extra/no-direct-set-state-in-use-effect -- Standard Next.js SSR pattern
   }, [])
