@@ -9,10 +9,22 @@ import {CustomToast, type CustomToastProps} from './toast'
  * consistent styling and behavior across the application. Includes
  * specialized functions for Web3 transactions and wallet interactions.
  */
+
+// NOTE: Uses hash-based routing as placeholder until block explorer integration is added
+const createExplorerAction = (txHash: string | undefined): CustomToastProps['action'] | undefined => {
+  if (txHash == null || txHash === '') {
+    return undefined
+  }
+
+  return {
+    label: 'View on Explorer',
+    onClick: () => {
+      window.open(`#/tx/${txHash}`, '_blank')
+    },
+  }
+}
+
 export const toastNotifications = {
-  /**
-   * Show a success toast notification
-   */
   success: (message: string, options?: {title?: string; action?: CustomToastProps['action']}) => {
     return toast.custom(
       (t: Toast) => (
@@ -22,9 +34,6 @@ export const toastNotifications = {
     )
   },
 
-  /**
-   * Show an error toast notification
-   */
   error: (message: string, options?: {title?: string; action?: CustomToastProps['action']}) => {
     return toast.custom(
       (t: Toast) => (
@@ -34,9 +43,6 @@ export const toastNotifications = {
     )
   },
 
-  /**
-   * Show a warning toast notification
-   */
   warning: (message: string, options?: {title?: string; action?: CustomToastProps['action']}) => {
     return toast.custom(
       (t: Toast) => (
@@ -46,9 +52,6 @@ export const toastNotifications = {
     )
   },
 
-  /**
-   * Show an info toast notification
-   */
   info: (message: string, options?: {title?: string; action?: CustomToastProps['action']}) => {
     return toast.custom(
       (t: Toast) => (
@@ -58,9 +61,6 @@ export const toastNotifications = {
     )
   },
 
-  /**
-   * Show a Web3-branded toast notification
-   */
   web3: (message: string, options?: {title?: string; action?: CustomToastProps['action']}) => {
     return toast.custom(
       (t: Toast) => (
@@ -70,13 +70,7 @@ export const toastNotifications = {
     )
   },
 
-  /**
-   * Web3-specific transaction notifications
-   */
   transaction: {
-    /**
-     * Show transaction pending notification
-     */
     pending: (txHash?: string) => {
       return toast.custom(
         (t: Toast) => (
@@ -85,16 +79,7 @@ export const toastNotifications = {
             variant="warning"
             title="Transaction Pending"
             message="Your transaction is being processed..."
-            action={
-              txHash != null && txHash !== ''
-                ? {
-                    label: 'View on Explorer',
-                    onClick: () => {
-                      window.open(`#/tx/${txHash}`, '_blank')
-                    },
-                  }
-                : undefined
-            }
+            action={createExplorerAction(txHash)}
             dismissible={false}
           />
         ),
@@ -102,9 +87,6 @@ export const toastNotifications = {
       )
     },
 
-    /**
-     * Show transaction confirmed notification
-     */
     confirmed: (txHash?: string) => {
       return toast.custom(
         (t: Toast) => (
@@ -113,25 +95,13 @@ export const toastNotifications = {
             variant="success"
             title="Transaction Confirmed"
             message="Your transaction has been successfully confirmed!"
-            action={
-              txHash != null && txHash !== ''
-                ? {
-                    label: 'View on Explorer',
-                    onClick: () => {
-                      window.open(`#/tx/${txHash}`, '_blank')
-                    },
-                  }
-                : undefined
-            }
+            action={createExplorerAction(txHash)}
           />
         ),
         {duration: 6000, id: `tx-${txHash}`},
       )
     },
 
-    /**
-     * Show transaction failed notification
-     */
     failed: (error?: string, txHash?: string) => {
       return toast.custom(
         (t: Toast) => (
@@ -140,16 +110,7 @@ export const toastNotifications = {
             variant="error"
             title="Transaction Failed"
             message={error != null && error !== '' ? error : 'Your transaction could not be processed.'}
-            action={
-              txHash != null && txHash !== ''
-                ? {
-                    label: 'View on Explorer',
-                    onClick: () => {
-                      window.open(`#/tx/${txHash}`, '_blank')
-                    },
-                  }
-                : undefined
-            }
+            action={createExplorerAction(txHash)}
           />
         ),
         {duration: 8000, id: `tx-${txHash}`},
@@ -157,40 +118,25 @@ export const toastNotifications = {
     },
   },
 
-  /**
-   * Web3 wallet connection notifications
-   */
   wallet: {
-    /**
-     * Show wallet connection success
-     */
     connected: (walletName: string) => {
       return toastNotifications.success(`Connected to ${walletName}`, {
         title: 'Wallet Connected',
       })
     },
 
-    /**
-     * Show wallet disconnection
-     */
     disconnected: () => {
       return toastNotifications.info('Wallet disconnected', {
         title: 'Wallet Disconnected',
       })
     },
 
-    /**
-     * Show wallet connection error
-     */
     connectionError: (error: string) => {
       return toastNotifications.error(error, {
         title: 'Connection Failed',
       })
     },
 
-    /**
-     * Show network switch request
-     */
     networkSwitch: (networkName: string) => {
       return toastNotifications.warning(`Please switch to ${networkName}`, {
         title: 'Network Switch Required',
@@ -198,16 +144,10 @@ export const toastNotifications = {
     },
   },
 
-  /**
-   * Dismiss all toasts
-   */
   dismissAll: () => {
     toast.dismiss()
   },
 
-  /**
-   * Dismiss a specific toast by ID
-   */
   dismiss: (toastId: string) => {
     toast.dismiss(toastId)
   },
