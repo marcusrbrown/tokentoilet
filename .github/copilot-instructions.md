@@ -7,7 +7,7 @@ Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while s
 **Primary Documentation**: All core project documentation is referenced in `llms.txt` at the project root
 - **Product Specs**: `.ai/docs/prd.md` - comprehensive product requirements (715 lines)
 - **Development Plan**: `.ai/docs/plan.md` - detailed roadmap and progress tracking (384 lines)
-- **Design System**: `docs/design-system/getting-started.md` - complete component library guide (507 lines)
+- **Design System**: `docs/design-system/getting-started.md` - complete component library guide (534 lines)
 - **Design System Migration**: `docs/design-system/migration-guide.md` - component migration patterns (970 lines)
 - **Tailwind v4 Migration**: `.ai/docs/tailwind-v4-migration-guide.md` - CSS-first approach migration
 - **Contributing**: `CONTRIBUTING.md` - development workflow and coding standards (499 lines)
@@ -143,6 +143,14 @@ pnpm build-storybook  # Build static Storybook
 # Test files: component.test.ts co-located with source files
 ```
 
+**Validation & Quality Assurance**:
+```bash
+pnpm validate     # Run all checks: lint, type-check, test, design system, build
+pnpm validate:design-system  # Validate design system completeness
+pnpm validate:web3           # Validate Web3 integration patterns
+pnpm type-check   # TypeScript type checking without build
+```
+
 **Key Environment Setup**:
 - Environment variables in `.env.local` (see `.env.example` for template)
 - Web3 RPC endpoints configured in `lib/web3/config.ts` with Alchemy fallbacks
@@ -156,13 +164,15 @@ pnpm build-storybook  # Build static Storybook
 **Key Files**:
 - `lib/web3/config.ts` - WagmiAdapter with multi-chain RPC endpoints and Reown AppKit theming
 - `hooks/use-wallet.ts` - Complete wallet abstraction with NetworkValidationError types (305 lines)
-- `hooks/use-token-approval.ts` - Token approval workflow with gas estimation (340+ lines)
+- `hooks/use-token-approval.ts` - Token approval workflow with gas estimation (330 lines)
 - `hooks/use-wallet-persistence.ts` - LocalStorage-based wallet connection persistence
 - `vitest.config.ts` - jsdom environment with @ alias resolution
 - `vitest.setup.ts` - Global test mocks (matchMedia, canvas, React global)
 - `app/globals.css` - Complete Tailwind v4 configuration via @theme blocks (1039 lines)
-- `docs/design-system/getting-started.md` - Comprehensive design system documentation (507 lines)
+- `docs/design-system/getting-started.md` - Comprehensive design system documentation (534 lines)
 - `docs/design-system/migration-guide.md` - Component migration patterns (970 lines)
+- `scripts/validate-design-system.ts` - Automated design system validation script
+- `scripts/validate-web3-integration.ts` - Automated Web3 integration validation script
 
 ## Project-Specific Conventions
 
