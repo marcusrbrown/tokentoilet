@@ -1,9 +1,5 @@
 import {cva} from 'class-variance-authority'
 
-/**
- * Button component variants using class-variance-authority
- * Provides consistent styling for all button states and Web3 interactions
- */
 export const buttonVariants = cva(
   [
     'inline-flex',

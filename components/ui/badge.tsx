@@ -6,21 +6,9 @@ import React from 'react'
 import {badgeVariants} from './badge-variants'
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
-  /**
-   * Badge content - text to display
-   */
   children: React.ReactNode
-  /**
-   * Icon element to display alongside text
-   */
   icon?: React.ReactNode
-  /**
-   * Show colored dot indicator
-   */
   showDot?: boolean
-  /**
-   * Accessible label for screen readers
-   */
   'aria-label'?: string
 }
 

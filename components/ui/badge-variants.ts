@@ -1,9 +1,5 @@
 import {cva} from 'class-variance-authority'
 
-/**
- * Badge component variants using class-variance-authority
- * Provides consistent styling for connection states and network indicators
- */
 export const badgeVariants = cva(
   [
     'inline-flex',

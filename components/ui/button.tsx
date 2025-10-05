@@ -23,27 +23,12 @@ const LoadingSpinner = () => (
   </svg>
 )
 
-/**
- * Button component props interface extending HTML button attributes
- */
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  /**
-   * Render as child component instead of button
-   */
   asChild?: boolean
-  /**
-   * Loading state with spinner
-   */
   loading?: boolean
-  /**
-   * Icon to display before text
-   */
   leftIcon?: React.ReactNode
-  /**
-   * Icon to display after text
-   */
   rightIcon?: React.ReactNode
 }
 

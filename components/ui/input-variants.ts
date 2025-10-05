@@ -1,11 +1,6 @@
 import {cva} from 'class-variance-authority'
 
-/**
- * Input component variants using class-variance-authority
- * Provides comprehensive input styling with Web3 address validation and formatting
- */
 export const inputVariants = cva(
-  // Base classes applied to all inputs
   [
     'flex',
     'w-full',
