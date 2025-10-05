@@ -9,9 +9,9 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false)
   const {theme, setTheme} = useTheme()
 
-  // useEffect only runs on the client, so now we can safely show the UI
+  // Prevents hydration mismatch: Next.js SSR requires mount detection before rendering theme UI
   useEffect(() => {
-    setMounted(true)
+    setMounted(true) // eslint-disable-line react-hooks-extra/no-direct-set-state-in-use-effect -- Standard Next.js SSR pattern
   }, [])
 
   if (!mounted) {

@@ -9,6 +9,7 @@ const mockSetTheme = vi.fn()
 const mockUseTheme = vi.fn()
 
 vi.mock('next-themes', () => ({
+  // eslint-disable-next-line react-hooks-extra/no-unnecessary-use-prefix -- Mock must match actual hook name
   useTheme: () => mockUseTheme() as {theme: string; setTheme: (theme: string) => void; systemTheme?: string},
   ThemeProvider: ({children}: {children: React.ReactNode}) => <div data-testid="theme-provider">{children}</div>,
 }))
@@ -359,6 +360,7 @@ describe('Theme Integration', () => {
       // Mock AppKit hook to throw error
       vi.mocked(
         vi.doMock('@reown/appkit/react', () => ({
+          // eslint-disable-next-line react-hooks-extra/no-unnecessary-use-prefix -- Mock must match actual hook name
           useAppKitTheme: () => {
             throw new Error('AppKit not available')
           },
