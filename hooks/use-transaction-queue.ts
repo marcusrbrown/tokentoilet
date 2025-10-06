@@ -75,44 +75,37 @@ export function useTransactionQueue(options: UseTransactionQueueOptions = {}): U
   // Event listener references for cleanup
   const listenersRef = useRef<Set<TransactionQueueEventListener>>(new Set())
 
+  // Loads from localStorage-backed queue - not deriving from previous state
+  const loadTransactions = useCallback(() => {
+    try {
+      const allTransactions = queueRef.current.getTransactions()
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Loading from external localStorage-backed queue, not deriving from previous state
+      setTransactions(() => allTransactions)
+    } catch (error) {
+      console.error('Failed to load transactions from queue:', error)
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Error handling fallback
+      setTransactions(() => [])
+    }
+  }, [])
+
   // Initialize queue and set up event listeners
   useEffect(() => {
-    const queue = queueRef.current
-    const listeners = listenersRef.current
-
-    // Loads transactions from external queue source (localStorage-backed)
-    const loadTransactions = () => {
-      const allTransactions = queue.getTransactions()
-      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Loading from external source, not deriving from previous state
-      setTransactions(allTransactions)
-    }
-
-    // Initial load of transactions
     loadTransactions()
 
-    // Event listener for all queue events
     const eventListener: TransactionQueueEventListener = _event => {
-      // Update transactions on any queue change
       loadTransactions()
     }
 
-    queue.addEventListener(eventListener)
-    listeners.add(eventListener)
+    queueRef.current.addEventListener(eventListener)
+    listenersRef.current.add(eventListener)
+  }, [loadTransactions])
 
-    // Cleanup on unmount
-    return () => {
-      queue.removeEventListener(eventListener)
-      listeners.delete(eventListener)
-    }
-  }, []) // Empty dependency array is correct here
-
-  // Cleanup effect
+  // Cleanup: capture ref values to avoid stale closure issues
   useEffect(() => {
     const queue = queueRef.current
     const listeners = listenersRef.current
 
     return () => {
-      // Clean up all event listeners on unmount
       listeners.forEach(listener => {
         queue.removeEventListener(listener)
       })
@@ -133,17 +126,31 @@ export function useTransactionQueue(options: UseTransactionQueueOptions = {}): U
   // Queue management functions
   const addTransaction = useCallback(
     (transaction: Omit<QueuedTransaction, 'id' | 'submittedAt' | 'retryCount' | 'status'>) => {
-      return queueRef.current.addTransaction(transaction)
+      try {
+        return queueRef.current.addTransaction(transaction)
+      } catch (error) {
+        console.error('Failed to add transaction to queue:', error)
+        throw error
+      }
     },
     [],
   )
 
   const removeTransaction = useCallback((id: string) => {
-    return queueRef.current.removeTransaction(id)
+    try {
+      return queueRef.current.removeTransaction(id)
+    } catch (error) {
+      console.error('Failed to remove transaction from queue:', error)
+      return false
+    }
   }, [])
 
   const clearQueue = useCallback((chainId?: SupportedChainId) => {
-    queueRef.current.clearQueue(chainId)
+    try {
+      queueRef.current.clearQueue(chainId)
+    } catch (error) {
+      console.error('Failed to clear queue:', error)
+    }
   }, [])
 
   // Transaction query functions
@@ -333,16 +340,24 @@ export function useTransaction(transactionId: string) {
   const {getTransaction} = useTransactionQueue()
   const [transaction, setTransaction] = useState<QueuedTransaction | null>(null)
 
-  // Polling pattern: fetch fresh data every second, not deriving from previous state
+  // Polling: fetches fresh data from queue every second
+  const fetchAndUpdateTransaction = useCallback(() => {
+    try {
+      const tx = getTransaction(transactionId)
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Polling from external queue source, not deriving from previous state
+      setTransaction(_prev => tx)
+    } catch (error) {
+      console.error('Failed to fetch transaction:', error)
+      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Error handling fallback
+      setTransaction(_prev => null)
+    }
+  }, [getTransaction, transactionId])
+
   useEffect(() => {
-    setTransaction(getTransaction(transactionId)) // eslint-disable-line react-hooks-extra/no-direct-set-state-in-use-effect -- Polling pattern
-
-    const interval = setInterval(() => {
-      setTransaction(getTransaction(transactionId))
-    }, 1000)
-
+    fetchAndUpdateTransaction()
+    const interval = setInterval(fetchAndUpdateTransaction, 1000)
     return () => clearInterval(interval)
-  }, [transactionId, getTransaction])
+  }, [fetchAndUpdateTransaction])
 
   return transaction
 }
