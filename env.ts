@@ -1,19 +1,18 @@
 import {createEnv} from '@t3-oss/env-nextjs'
 import {vercel} from '@t3-oss/env-nextjs/presets-zod'
 import {PHASE_PRODUCTION_BUILD} from 'next/constants.js'
-import {isCI, isTest, env as stdEnv} from 'std-env'
+import {isCI, isTest} from 'std-env'
 import {z} from 'zod'
 
-const isPhaseProductionBuild = stdEnv.NEXT_BUILD_ENV_PHASE === PHASE_PRODUCTION_BUILD
+const isPhaseProductionBuild = process.env.NEXT_BUILD_ENV_PHASE === PHASE_PRODUCTION_BUILD
 const skipValidation =
   isPhaseProductionBuild ||
   isCI ||
   isTest ||
-  (typeof stdEnv.SKIP_ENV_VALIDATION === 'string' && stdEnv.SKIP_ENV_VALIDATION.length > 0)
+  (typeof process.env.SKIP_ENV_VALIDATION === 'string' && process.env.SKIP_ENV_VALIDATION.length > 0)
 
 // Custom validation schemas for Web3 endpoints
 const rpcUrlSchema = z
-  .string()
   .url('Must be a valid URL')
   .refine(url => url.startsWith('https://'), 'RPC endpoints must use HTTPS in production')
 
@@ -25,7 +24,7 @@ const walletConnectProjectIdSchema = z
 export const schemas = {
   // @keep-sorted
   client: {
-    NEXT_PUBLIC_APP_URL: z.string().url('Must be a valid URL'),
+    NEXT_PUBLIC_APP_URL: z.url('Must be a valid URL'),
     NEXT_PUBLIC_ARBITRUM_RPC_URL: rpcUrlSchema.optional(),
     NEXT_PUBLIC_ENABLE_ANALYTICS: z
       .string()
@@ -52,17 +51,17 @@ export const env = createEnv({
 
   experimental__runtimeEnv: {
     // App URLs and Public Config
-    NEXT_PUBLIC_APP_URL: stdEnv.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: stdEnv.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
 
     // Optional RPC endpoint overrides
-    NEXT_PUBLIC_ETHEREUM_RPC_URL: stdEnv.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-    NEXT_PUBLIC_POLYGON_RPC_URL: stdEnv.NEXT_PUBLIC_POLYGON_RPC_URL,
-    NEXT_PUBLIC_ARBITRUM_RPC_URL: stdEnv.NEXT_PUBLIC_ARBITRUM_RPC_URL,
+    NEXT_PUBLIC_ETHEREUM_RPC_URL: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
+    NEXT_PUBLIC_POLYGON_RPC_URL: process.env.NEXT_PUBLIC_POLYGON_RPC_URL,
+    NEXT_PUBLIC_ARBITRUM_RPC_URL: process.env.NEXT_PUBLIC_ARBITRUM_RPC_URL,
 
     // Feature flags
-    NEXT_PUBLIC_ENABLE_ANALYTICS: stdEnv.NEXT_PUBLIC_ENABLE_ANALYTICS,
-    NEXT_PUBLIC_ENABLE_TESTNETS: stdEnv.NEXT_PUBLIC_ENABLE_TESTNETS,
+    NEXT_PUBLIC_ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS,
+    NEXT_PUBLIC_ENABLE_TESTNETS: process.env.NEXT_PUBLIC_ENABLE_TESTNETS,
   },
 
   skipValidation,
