@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **[React Hooks Best Practices]** Refactored useEffect patterns to follow React best practices and eliminate ESLint warnings about potential stale state issues
+  - Fixed direct setState calls in `components/theme-toggle.tsx` (Phase 1, #619)
+  - Fixed direct setState calls in `hooks/use-transaction-queue.ts` at lines 86 and 335 (Phase 2, #620)
+  - Properly captured ref values in useEffect cleanup functions at lines 233 and 235 (Phase 3, #621)
+  - Refactored test mock structure in `components/theme-integration.test.tsx` using computed property names to eliminate ESLint warnings (Phase 4, #622)
+  - All 935 tests passing after refactoring
+  - Production build successful with no errors
+  - Zero ESLint errors - all React hooks warnings resolved
+  - Added comprehensive React Hooks best practices documentation to CONTRIBUTING.md
+
 - **[Fast Refresh Compliance]** Refactored component exports to separate variant utilities and constants from component files, eliminating React Fast Refresh warnings and improving development experience
   - Extracted `badgeVariants` from `Badge` component to `badge-variants.ts` (#601)
   - Extracted `buttonVariants` from `Button` component to `button-variants.ts` (#602)

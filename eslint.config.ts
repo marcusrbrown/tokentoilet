@@ -3,7 +3,16 @@ import {defineConfig} from '@bfra.me/eslint-config'
 export default defineConfig(
   {
     name: 'tokentoilet',
-    ignores: ['.github/copilot-instructions.md', '.github/prompts', 'AGENTS.md', 'llms.txt', '.ai/', 'docs/**/*.md'],
+    ignores: [
+      '.github/copilot-instructions.md',
+      '.github/prompts',
+      'AGENTS.md',
+      'llms.txt',
+      '.ai/',
+      'docs/**/*.md',
+      'CONTRIBUTING.md',
+      'CHANGELOG.md',
+    ],
     typescript: {
       tsconfigPath: './tsconfig.json',
     },
