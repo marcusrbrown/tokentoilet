@@ -96,22 +96,20 @@ export function useTransactionQueue(options: UseTransactionQueueOptions = {}): U
       loadTransactions()
     }
 
-    queueRef.current.addEventListener(eventListener)
-    listenersRef.current.add(eventListener)
-  }, [loadTransactions])
-
-  // Cleanup: capture ref values to avoid stale closure issues
-  useEffect(() => {
     const queue = queueRef.current
     const listeners = listenersRef.current
 
+    queue.addEventListener(eventListener)
+    listeners.add(eventListener)
+
+    // Cleanup: capture ref values to avoid stale closure issues
     return () => {
       listeners.forEach(listener => {
         queue.removeEventListener(listener)
       })
       listeners.clear()
     }
-  }, [])
+  }, [loadTransactions])
 
   // Filtered transaction lists
   const pendingTransactions = useMemo(() => transactions.filter(tx => tx.status === 'pending'), [transactions])
@@ -230,19 +228,6 @@ export function useTransactionQueue(options: UseTransactionQueueOptions = {}): U
     return () => {
       queueRef.current.removeEventListener(listener)
       listenersRef.current.delete(listener)
-    }
-  }, [])
-
-  // Cleanup effect: capture ref values to ensure cleanup uses correct references
-  useEffect(() => {
-    const queue = queueRef.current
-    const listeners = listenersRef.current
-
-    return () => {
-      listeners.forEach(listener => {
-        queue.removeEventListener(listener)
-      })
-      listeners.clear()
     }
   }, [])
 
