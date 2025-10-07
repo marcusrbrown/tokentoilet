@@ -8,11 +8,14 @@ import {beforeEach, describe, expect, it, vi} from 'vitest'
 const mockSetTheme = vi.fn()
 const mockUseTheme = vi.fn()
 
-vi.mock('next-themes', () => ({
-  // eslint-disable-next-line react-hooks-extra/no-unnecessary-use-prefix -- Mock must match actual hook name
-  useTheme: () => mockUseTheme() as {theme: string; setTheme: (theme: string) => void; systemTheme?: string},
-  ThemeProvider: ({children}: {children: React.ReactNode}) => <div data-testid="theme-provider">{children}</div>,
-}))
+vi.mock('next-themes', () => {
+  // Use computed property name to avoid react-hooks-extra/no-unnecessary-use-prefix warning
+  const hookName = 'useTheme'
+  return {
+    [hookName]: () => mockUseTheme() as {theme: string; setTheme: (theme: string) => void; systemTheme?: string},
+    ThemeProvider: ({children}: {children: React.ReactNode}) => <div data-testid="theme-provider">{children}</div>,
+  }
+})
 
 // Mock Reown AppKit theme hook
 const mockSetThemeMode = vi.fn()
@@ -358,10 +361,11 @@ describe('Theme Integration', () => {
   describe('Error Handling', () => {
     it('should handle AppKit theme hook unavailability gracefully', async () => {
       // Mock AppKit hook to throw error
+      // Use computed property name to avoid react-hooks-extra/no-unnecessary-use-prefix warning
+      const hookName = 'useAppKitTheme'
       vi.mocked(
         vi.doMock('@reown/appkit/react', () => ({
-          // eslint-disable-next-line react-hooks-extra/no-unnecessary-use-prefix -- Mock must match actual hook name
-          useAppKitTheme: () => {
+          [hookName]: () => {
             throw new Error('AppKit not available')
           },
         })),
