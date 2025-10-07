@@ -233,6 +233,86 @@ if (!isConnected) {
 - Use network validation with auto-switching
 - Handle network-specific RPC configurations
 
+### React Hooks Best Practices
+
+Follow these patterns to avoid common pitfalls and maintain clean, bug-free hooks:
+
+#### UseEffect State Updates
+
+**Always use functional updates** when setting state in `useEffect` that depends on previous state:
+
+```tsx
+// ❌ AVOID: Direct state updates in useEffect
+useEffect(() => {
+  setCount(count + 1)  // Stale closure risk
+}, [dependency])
+
+// ✅ PREFER: Functional updates
+useEffect(() => {
+  setCount(prev => prev + 1)  // Always uses latest value
+}, [dependency])
+```
+
+**Exception**: Direct updates are acceptable when loading external data that doesn't derive from previous state:
+
+```tsx
+// ✅ ACCEPTABLE: Loading from external source
+useEffect(() => {
+  const data = localStorage.getItem('key')
+  setData(data)  // Not deriving from previous state
+}, [])
+```
+
+#### Ref Cleanup in Effects
+
+**Capture ref values at effect execution time** for use in cleanup functions:
+
+```tsx
+// ❌ AVOID: Using ref.current directly in cleanup
+useEffect(() => {
+  const interval = setInterval(() => {
+    queueRef.current.process()
+  }, 1000)
+
+  return () => {
+    clearInterval(interval)
+    queueRef.current.cleanup()  // May be null at cleanup time
+  }
+}, [])
+
+// ✅ PREFER: Capture ref value at effect execution
+useEffect(() => {
+  const queue = queueRef.current  // Capture now
+  const interval = setInterval(() => {
+    queue.process()
+  }, 1000)
+
+  return () => {
+    clearInterval(interval)
+    queue.cleanup()  // Uses captured value
+  }
+}, [])
+```
+
+#### Test Mocking with React Hooks
+
+When mocking hooks in tests, **use computed property names** to avoid ESLint warnings:
+
+```tsx
+// ❌ AVOID: Direct property names trigger react-hooks-extra/no-unnecessary-use-prefix
+vi.mock('next-themes', () => ({
+  useTheme: () => mockUseTheme(),  // Lint warning!
+}))
+
+// ✅ PREFER: Computed property names
+vi.mock('next-themes', () => {
+  const hookName = 'useTheme'
+  return {
+    [hookName]: () => mockUseTheme(),  // No warning
+  }
+})
+```
+
 ## Testing Requirements
 
 ### Test Coverage Standards
