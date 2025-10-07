@@ -106,9 +106,77 @@ vi.mock('@/hooks/use-token-approval', () => ({
   })),
 }))
 
+// CRITICAL: Use computed property names for hook mocks to avoid ESLint warnings
+vi.mock('next-themes', () => {
+  const hookName = 'useTheme'
+  return {
+    [hookName]: () => mockUseTheme(),  // No react-hooks-extra/no-unnecessary-use-prefix warning
+  }
+})
+
 // Test files co-located with source: component.test.ts, component.test.tsx
 // E2E workflow tests in: components/web3/__tests__/token-workflows.e2e.test.tsx
 // Focus: wallet states, error boundaries, network validation, approval workflows
+```
+
+### React Hooks Best Practices (Critical)
+```tsx
+// ALWAYS use functional updates when setting state in useEffect
+// ❌ AVOID: Direct state updates (stale closure risk)
+useEffect(() => {
+  setCount(count + 1)
+}, [dependency])
+
+// ✅ CORRECT: Functional updates (always uses latest value)
+useEffect(() => {
+  setCount(prev => prev + 1)
+}, [dependency])
+
+// Exception: Direct updates acceptable when loading external data
+useEffect(() => {
+  const data = localStorage.getItem('key')
+  // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Loading from external source
+  setData(() => data)  // Not deriving from previous state
+}, [])
+
+// ALWAYS capture ref values at effect execution time for cleanup
+// ❌ AVOID: Using ref.current directly in cleanup
+useEffect(() => {
+  const interval = setInterval(() => queueRef.current.process(), 1000)
+  return () => {
+    clearInterval(interval)
+    queueRef.current.cleanup()  // May be null at cleanup time
+  }
+}, [])
+
+// ✅ CORRECT: Capture ref value at effect execution
+useEffect(() => {
+  const queue = queueRef.current  // Capture now
+  const interval = setInterval(() => queue.process(), 1000)
+  return () => {
+    clearInterval(interval)
+    queue.cleanup()  // Uses captured value
+  }
+}, [])
+```
+
+### Fast Refresh Compliance
+```tsx
+// Component exports must be separated from utility exports
+// to prevent React Fast Refresh warnings
+
+// ❌ AVOID: Exporting utilities from component files
+export const Badge = () => { /* ... */ }
+export const badgeVariants = cva(/* ... */)  // Causes Fast Refresh warning
+
+// ✅ CORRECT: Separate files for variants
+// components/ui/badge-variants.ts
+export const badgeVariants = cva(/* ... */)
+
+// components/ui/badge.tsx
+import { badgeVariants } from './badge-variants'
+export const Badge = () => { /* ... */ }
+export { badgeVariants }  // Re-export for convenience
 ```
 
 ### Component Structure & Address Formatting
@@ -118,12 +186,16 @@ vi.mock('@/hooks/use-token-approval', () => ({
 
 // Consistent address formatting pattern used throughout
 const displayAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
+// Example: "0x1234...7890"
 
 // Error boundaries around all Web3 operations with graceful fallbacks
 // Network info from NETWORK_INFO mapping in useWallet hook
+// Component class available: .address-display with monospace font
 ```
 
 ## Development Workflow
+
+**Package Manager**: pnpm@10.18.0 (enforced via packageManager field)
 
 **Local Development**:
 ```bash
@@ -187,6 +259,7 @@ pnpm type-check   # TypeScript type checking without build
 - Test files use pattern: `component.test.ts` alongside source files
 - Comprehensive wallet state testing: connected, connecting, error states
 - Mock patterns: `vi.mock('wagmi')` and `vi.mock('@reown/appkit/react')`
+- Use computed property names for hook mocks to avoid ESLint warnings
 - Focus on error boundaries and network validation scenarios
 - Wallet-specific test files: MetaMask, WalletConnect, Coinbase Wallet
 
