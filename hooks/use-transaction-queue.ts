@@ -233,19 +233,6 @@ export function useTransactionQueue(options: UseTransactionQueueOptions = {}): U
     }
   }, [])
 
-  // Cleanup effect: capture ref values to ensure cleanup uses correct references
-  useEffect(() => {
-    const queue = queueRef.current
-    const listeners = listenersRef.current
-
-    return () => {
-      listeners.forEach(listener => {
-        queue.removeEventListener(listener)
-      })
-      listeners.clear()
-    }
-  }, [])
-
   return {
     // Transaction queue state
     transactions,
