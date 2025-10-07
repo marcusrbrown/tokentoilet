@@ -8,6 +8,7 @@ Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20,
 
 - [Main README](readme.md): Primary project documentation, features overview, and getting started guide
 - [Contributing Guide](CONTRIBUTING.md): Comprehensive contributing guidelines, development workflow, and coding standards
+- [Changelog](CHANGELOG.md): Project version history, notable changes, and release notes following semantic versioning
 - [MVP Strategy](mvp.md): Implementation priorities and development approach for the minimum viable product
 - [Legacy Concept](legacy.md): Original project concept and humorous explanation of the "toilet, fountain, and sprinkler" ecosystem
 - [Design System Guide](docs/design-system/getting-started.md): Comprehensive design system documentation with components, tokens, and Web3 patterns
