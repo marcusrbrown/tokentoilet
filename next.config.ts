@@ -2,6 +2,7 @@ import type {NextConfig} from 'next'
 import type {Configuration} from 'webpack'
 import path from 'node:path'
 import url from 'node:url'
+import createBundleAnalyzer from '@next/bundle-analyzer'
 import {PHASE_PRODUCTION_BUILD} from 'next/constants.js'
 import {env} from 'std-env'
 import {buildEnv} from './config/build-env'
@@ -58,6 +59,18 @@ const nextConfig: NextConfig = {
   },
 }
 
+/**
+ * Bundle analyzer configuration for webpack bundle size analysis.
+ * Enable with NEXT_BUILD_ENV_ANALYZE=true to generate analysis reports.
+ * Reports are output to .next/analyze/ directory (client.html, nodejs.html, edge.html).
+ *
+ * @see https://github.com/vercel/next.js/tree/canary/packages/next-bundle-analyzer
+ */
+const withBundleAnalyzer = createBundleAnalyzer({
+  enabled: buildEnv.NEXT_BUILD_ENV_ANALYZE,
+  openAnalyzer: false,
+})
+
 export default async (phase: string) => {
   env.NEXT_BUILD_ENV_PHASE = phase
 
@@ -67,5 +80,5 @@ export default async (phase: string) => {
     await tsImport('./env.ts', import.meta.url)
   }
 
-  return nextConfig
+  return withBundleAnalyzer(nextConfig)
 }
