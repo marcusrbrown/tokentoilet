@@ -1,38 +1,41 @@
 ---
-goal: Implement Dynamic Wallet Provider Loading for Bundle Optimization
-version: 1.1
+goal: Implement Module-Level Dynamic Imports for Bundle Optimization
+version: 2.0
 date_created: 2025-10-01
 last_updated: 2025-10-09
 owner: marcusrbrown
-status: 'Blocked - Architectural Decision Required'
-tags: ['feature', 'performance', 'optimization', 'bundle-size', 'web3', 'blocked']
+status: 'In Progress'
+tags: ['feature', 'performance', 'optimization', 'bundle-size', 'web3']
 ---
 
-# Implement Dynamic Wallet Provider Loading for Bundle Optimization
+# Implement Module-Level Dynamic Imports for Bundle Optimization
 
-![Status: Blocked](https://img.shields.io/badge/status-Blocked-red)
+![Status: In Progress](https://img.shields.io/badge/status-In%20Progress-yellow)
 
-Reduce initial bundle size by implementing dynamic imports for wallet provider code. Currently, all wallet providers (MetaMask, WalletConnect, Coinbase) are loaded upfront in the main bundle. This feature will lazy-load wallet providers only when users initiate connection.
+**Revised Approach (Option B)**: Reduce initial bundle size through strategic module-level dynamic imports in application code. After architectural analysis revealed AppKit's WagmiAdapter requirement (which auto-bundles connectors), this approach focuses on lazy-loading Web3 interactions and UI components rather than connector-level splitting.
+
+**Previous Approach (Deprecated)**: Original plan to replace WagmiAdapter with custom dynamic connectors proved architecturally incompatible with Reown AppKit. See [issue #641](https://github.com/marcusrbrown/tokentoilet/issues/641#issuecomment-3383768032) for detailed analysis.
 
 ## 1. Requirements & Constraints
 
-- **REQ-001**: Reduce initial bundle size from 537KB to target < 450KB (15-25% reduction)
-- **REQ-002**: Implement dynamic imports for wallet provider connectors
+**Revised Targets (Option B - Module-Level Imports):**
+- **REQ-001**: Reduce initial bundle size from 537KB to ~487KB (50-100 KB / 10-18% reduction)
+- **REQ-002**: Implement dynamic imports for Web3 UI components and utilities
 - **REQ-003**: Maintain all existing wallet connection functionality
-- **REQ-004**: Provide seamless loading states during wallet provider loading
+- **REQ-004**: Provide seamless loading states during component loading
 - **REQ-005**: No regression in wallet connection speed or user experience
-- **REQ-006**: All 914 tests must continue passing
+- **REQ-006**: All 935 tests must continue passing
 - **SEC-001**: Ensure no security vulnerabilities introduced by code splitting
-- **SEC-002**: Validate wallet provider integrity before execution
+- **SEC-002**: Validate module integrity before execution
 - **CON-001**: Must work with Next.js App Router and Server Components
-- **CON-002**: Must maintain compatibility with Wagmi v2 and Reown AppKit
+- **CON-002**: Must maintain compatibility with Wagmi v2 and Reown AppKit (WagmiAdapter required)
 - **CON-003**: Changes must not break multi-chain support
-- **GUD-001**: Follow Next.js dynamic import patterns
+- **GUD-001**: Follow Next.js dynamic import patterns (next/dynamic)
 - **GUD-002**: Implement proper error boundaries for loading failures
 - **GUD-003**: Add telemetry for bundle size monitoring
-- **PAT-001**: Use React.lazy() for component-level code splitting
+- **PAT-001**: Use next/dynamic for component-level code splitting
 - **PAT-002**: Use dynamic import() for utility-level code splitting
-- **PAT-003**: Implement fallback UI during loading states
+- **PAT-003**: Implement fallback UI during loading states with Suspense
 
 ## 2. Implementation Steps
 
@@ -49,30 +52,21 @@ Reduce initial bundle size by implementing dynamic imports for wallet provider c
 | TASK-005 | Calculate expected savings from dynamic loading strategy | ✅ | 2025-10-07 |
 | TASK-006 | Create baseline metrics document for comparison | ✅ | 2025-10-07 |
 
-### Phase 2: Implement Dynamic Connector Loading
+### Phase 2: Implement Module-Level Dynamic Imports (Revised)
 
-- GOAL-002: Create dynamic import wrappers for wallet connectors
+- GOAL-002: Implement strategic dynamic imports for Web3 components and utilities
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-007 | Create `lib/web3/connectors/dynamic-metamask.ts` with lazy MetaMask connector | ✅ | 2025-10-08 |
-| TASK-008 | Create `lib/web3/connectors/dynamic-walletconnect.ts` with lazy WalletConnect | ✅ | 2025-10-08 |
-| TASK-009 | Create `lib/web3/connectors/dynamic-coinbase.ts` with lazy Coinbase connector | ✅ | 2025-10-08 |
-| TASK-010 | Implement connector factory with loading states and error handling | ✅ | 2025-10-08 |
-| TASK-011 | Update `lib/web3/config.ts` to use dynamic connectors | 🚫 | 2025-10-09 |
-| TASK-012 | Add TypeScript types for dynamic connector loading | ✅ | 2025-10-08 |
+| TASK-007 | ~~Create dynamic connector infrastructure~~ (Deprecated - removed due to AppKit constraints) | 🗑️ | 2025-10-09 |
+| TASK-008 | ~~Create dynamic connector infrastructure~~ (Deprecated - removed due to AppKit constraints) | 🗑️ | 2025-10-09 |
+| TASK-009 | ~~Create dynamic connector infrastructure~~ (Deprecated - removed due to AppKit constraints) | 🗑️ | 2025-10-09 |
+| TASK-010 | ~~Implement connector factory~~ (Deprecated - removed due to AppKit constraints) | 🗑️ | 2025-10-09 |
+| TASK-011 | ~~Update config.ts~~ (Not feasible - AppKit requires WagmiAdapter) | 🚫 | 2025-10-09 |
+| TASK-012 | ~~Add dynamic connector types~~ (Deprecated - removed due to AppKit constraints) | 🗑️ | 2025-10-09 |
 
-**⚠️ CRITICAL BLOCKER:** TASK-011 is blocked due to architectural constraints. After researching Reown AppKit documentation and type definitions, discovered that:
-
-1. AppKit REQUIRES `WagmiAdapter` - no way to use standard Wagmi `createConfig`
-2. `WagmiAdapter` internally bundles all connectors (WalletConnect, Coinbase, Injected) automatically
-3. Custom connectors are ADDITIVE only, not replacements
-
-**Original approach (Option A) is not feasible.** See [issue #641 comment](https://github.com/marcusrbrown/tokentoilet/issues/641#issuecomment-3383768032) for detailed analysis and revised options:
-- **Option B (Recommended)**: Module-level dynamic imports (~50-100 KB reduction)
-- **Option C (High Risk)**: Fork/patch WagmiAdapter (~250-310 KB reduction)
-
-**Awaiting architectural decision** before proceeding with Phase 3-7. Dynamic connector infrastructure (TASK-007 through TASK-010) remains valid for future use if Option C is chosen.
+**📋 Decision: Option B Selected (2025-10-09)**
+User selected Option B (module-level dynamic imports) and requested removal of unused dynamic connector infrastructure. Pivoting to component and utility-level code splitting that works within AppKit's architectural constraints.
 
 ### Phase 3: Update useWallet Hook for Dynamic Loading
 
