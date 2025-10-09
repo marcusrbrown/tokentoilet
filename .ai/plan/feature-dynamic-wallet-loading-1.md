@@ -1,16 +1,16 @@
 ---
 goal: Implement Dynamic Wallet Provider Loading for Bundle Optimization
-version: 1.0
+version: 1.1
 date_created: 2025-10-01
-last_updated: 2025-10-07
+last_updated: 2025-10-09
 owner: marcusrbrown
-status: 'In Progress'
-tags: ['feature', 'performance', 'optimization', 'bundle-size', 'web3']
+status: 'Blocked - Architectural Decision Required'
+tags: ['feature', 'performance', 'optimization', 'bundle-size', 'web3', 'blocked']
 ---
 
 # Implement Dynamic Wallet Provider Loading for Bundle Optimization
 
-![Status: In Progress](https://img.shields.io/badge/status-In%20Progress-yellow)
+![Status: Blocked](https://img.shields.io/badge/status-Blocked-red)
 
 Reduce initial bundle size by implementing dynamic imports for wallet provider code. Currently, all wallet providers (MetaMask, WalletConnect, Coinbase) are loaded upfront in the main bundle. This feature will lazy-load wallet providers only when users initiate connection.
 
@@ -55,12 +55,24 @@ Reduce initial bundle size by implementing dynamic imports for wallet provider c
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-007 | Create `lib/web3/connectors/dynamic-metamask.ts` with lazy MetaMask connector | | |
-| TASK-008 | Create `lib/web3/connectors/dynamic-walletconnect.ts` with lazy WalletConnect | | |
-| TASK-009 | Create `lib/web3/connectors/dynamic-coinbase.ts` with lazy Coinbase connector | | |
-| TASK-010 | Implement connector factory with loading states and error handling | | |
-| TASK-011 | Update `lib/web3/config.ts` to use dynamic connectors | | |
-| TASK-012 | Add TypeScript types for dynamic connector loading | | |
+| TASK-007 | Create `lib/web3/connectors/dynamic-metamask.ts` with lazy MetaMask connector | ✅ | 2025-10-08 |
+| TASK-008 | Create `lib/web3/connectors/dynamic-walletconnect.ts` with lazy WalletConnect | ✅ | 2025-10-08 |
+| TASK-009 | Create `lib/web3/connectors/dynamic-coinbase.ts` with lazy Coinbase connector | ✅ | 2025-10-08 |
+| TASK-010 | Implement connector factory with loading states and error handling | ✅ | 2025-10-08 |
+| TASK-011 | Update `lib/web3/config.ts` to use dynamic connectors | 🚫 | 2025-10-09 |
+| TASK-012 | Add TypeScript types for dynamic connector loading | ✅ | 2025-10-08 |
+
+**⚠️ CRITICAL BLOCKER:** TASK-011 is blocked due to architectural constraints. After researching Reown AppKit documentation and type definitions, discovered that:
+
+1. AppKit REQUIRES `WagmiAdapter` - no way to use standard Wagmi `createConfig`
+2. `WagmiAdapter` internally bundles all connectors (WalletConnect, Coinbase, Injected) automatically
+3. Custom connectors are ADDITIVE only, not replacements
+
+**Original approach (Option A) is not feasible.** See [issue #641 comment](https://github.com/marcusrbrown/tokentoilet/issues/641#issuecomment-3383768032) for detailed analysis and revised options:
+- **Option B (Recommended)**: Module-level dynamic imports (~50-100 KB reduction)
+- **Option C (High Risk)**: Fork/patch WagmiAdapter (~250-310 KB reduction)
+
+**Awaiting architectural decision** before proceeding with Phase 3-7. Dynamic connector infrastructure (TASK-007 through TASK-010) remains valid for future use if Option C is chosen.
 
 ### Phase 3: Update useWallet Hook for Dynamic Loading
 
@@ -177,22 +189,77 @@ Reduce initial bundle size by implementing dynamic imports for wallet provider c
 - **TEST-013**: Test wallet connection speed (baseline vs optimized)
 - **TEST-014**: Verify all 914 existing tests still pass
 
-## 7. Risks & Assumptions
+## 7. Architectural Constraints & Findings (2025-10-09)
 
-- **RISK-001**: Network latency causing slow connector loading on poor connections
-  - Mitigation: Implement aggressive prefetching on hover/interaction
+### AppKit/WagmiAdapter Architecture
+
+**Critical Discovery**: The original approach (Option A) to replace WagmiAdapter with standard Wagmi `createConfig` is **architecturally impossible** with Reown AppKit.
+
+**Key Constraints:**
+1. **AppKit Requires WagmiAdapter**: `createAppKit()` MUST use the `adapters` parameter with a `WagmiAdapter` instance
+   - Source: [@reown/appkit-adapter-wagmi TypeScript definitions](https://github.com/reown-com/appkit)
+   - No `wagmiConfig` option exists in `CreateAppKit` interface
+
+2. **WagmiAdapter Auto-Bundles Connectors**: Internal implementation automatically includes:
+   - WalletConnect connector (~80-100 KB)
+   - Coinbase Wallet connector (~150-180 KB)
+   - Injected connector for MetaMask (~20-30 KB)
+   - Total: ~250-310 KB bundled regardless of configuration
+
+3. **Custom Connectors Are Additive Only**: The `connectors` option in `createAppKit()` adds ADDITIONAL connectors, not replacements
+   - Cannot override or disable built-in connectors
+   - Dynamic connector factory (TASK-007 through TASK-010) cannot be used as replacements
+
+**Evidence:**
+```typescript
+// From @reown/appkit-adapter-wagmi/dist/types/src/client.d.ts
+export declare class WagmiAdapter extends AdapterBlueprint {
+    wagmiChains: readonly [Chain, ...Chain[]] | undefined;
+    wagmiConfig: Config;
+    constructor(configParams: Partial<CreateConfigParameters> & {
+        networks: AppKitNetwork[];
+        pendingTransactionsFilter?: PendingTransactionsFilter;
+        projectId: string;
+        customRpcUrls?: CustomRpcUrlMap;
+    });
+    // ... internal methods that bundle connectors
+    private addWagmiConnectors;
+    private addThirdPartyConnectors;
+}
+```
+
+**Implications:**
+- Original optimization target (250-310 KB reduction) unachievable without forking library
+- Dynamic connector infrastructure (Phase 2) remains useful for Option C approach
+- Phase 3-7 blocked pending decision on Option B vs Option C
+
+### Revised Optimization Approaches
+
+See [GitHub issue #641 comment](https://github.com/marcusrbrown/tokentoilet/issues/641#issuecomment-3383768032) for detailed analysis of:
+- **Option B**: Module-level dynamic imports (50-100 KB, recommended)
+- **Option C**: Fork/patch WagmiAdapter (250-310 KB, high risk)
+
+## 8. Risks & Assumptions
+
+- **RISK-001**: ⚠️ **CRITICAL** - AppKit architecture prevents aggressive bundle optimization
+  - Impact: Cannot achieve original 250-310 KB reduction without library fork
+  - Mitigation: Pivot to Option B (module-level imports) or Option C (fork)
 - **RISK-002**: Dynamic imports failing in certain browser environments
   - Mitigation: Comprehensive error boundaries with fallback to static loading
-- **RISK-003**: Wagmi/Reown AppKit incompatibility with async connector initialization
-  - Mitigation: Test thoroughly in development, verify with library maintainers
+- **RISK-003**: ✅ **VALIDATED** - Wagmi/Reown AppKit incompatibility confirmed
+  - Status: Architectural research completed, constraints documented
+  - Decision: Awaiting user input on Option B vs C
 - **RISK-004**: Increased complexity in error handling and debugging
   - Mitigation: Enhanced logging and telemetry for dynamic loading
 - **RISK-005**: Cache invalidation issues with split chunks
   - Mitigation: Proper cache-busting strategies with Next.js build IDs
+- **RISK-006**: ⚠️ **NEW** - Maintenance burden if Option C (forking) chosen
+  - Impact: Must track upstream WagmiAdapter changes
+  - Mitigation: Use patch-package with comprehensive test coverage
 - **ASSUMPTION-001**: Users typically connect only one wallet provider per session
 - **ASSUMPTION-002**: Network latency for dynamic imports < 200ms on good connections
 - **ASSUMPTION-003**: Bundle analyzer accurately represents production bundle sizes
-- **ASSUMPTION-004**: Wagmi connectors support lazy initialization
+- **ASSUMPTION-004**: ❌ **INVALIDATED** - Wagmi connectors do NOT support lazy initialization within AppKit constraints
 
 ## 8. Related Specifications / Further Reading
 
