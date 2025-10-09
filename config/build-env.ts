@@ -60,6 +60,11 @@ const schema = {
     .describe('The build phase'),
 
   /**
+   * Enable bundle analysis for webpack bundle size inspection
+   */
+  NEXT_BUILD_ENV_ANALYZE: zTruthyStringToBoolean(false).describe('Enable bundle analysis'),
+
+  /**
    * Disable telemetry
    */
   NEXT_TELEMETRY_DISABLED: zTruthyStringToBoolean(isCI).describe('Disable Next.js telemetry'),
