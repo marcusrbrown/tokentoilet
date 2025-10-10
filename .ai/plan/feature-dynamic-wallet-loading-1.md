@@ -1,8 +1,8 @@
 ---
 goal: Implement Module-Level Dynamic Imports for Bundle Optimization
-version: 2.0
+version: 2.2
 date_created: 2025-10-01
-last_updated: 2025-10-09
+last_updated: 2025-10-08
 owner: marcusrbrown
 status: 'In Progress'
 tags: ['feature', 'performance', 'optimization', 'bundle-size', 'web3']
@@ -68,44 +68,44 @@ tags: ['feature', 'performance', 'optimization', 'bundle-size', 'web3']
 **📋 Decision: Option B Selected (2025-10-09)**
 User selected Option B (module-level dynamic imports) and requested removal of unused dynamic connector infrastructure. Pivoting to component and utility-level code splitting that works within AppKit's architectural constraints.
 
-### Phase 3: Update useWallet Hook for Dynamic Loading
+### Phase 3: Implement Dynamic Imports for Web3 Components
 
-- GOAL-003: Enhance useWallet hook to handle async connector initialization
-
-| Task | Description | Completed | Date |
-|------|-------------|-----------|------|
-| TASK-013 | Add loading state for wallet provider initialization in `hooks/use-wallet.ts` | | |
-| TASK-014 | Implement connector pre-loading on wallet button hover (prefetch) | | |
-| TASK-015 | Add error handling for failed connector loading | | |
-| TASK-016 | Update wallet connection flow to await connector loading | | |
-| TASK-017 | Add telemetry for connector load times | | |
-| TASK-018 | Update useWallet TypeScript types for new loading states | | |
-
-### Phase 4: UI Components for Loading States
-
-- GOAL-004: Implement loading indicators and error boundaries
+- GOAL-003: Implement strategic dynamic imports for non-critical Web3 components and utilities
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-019 | Create `WalletLoadingSpinner` component for connector initialization | | |
-| TASK-020 | Update `WalletButton` to show loading state during connector load | | |
-| TASK-021 | Add error boundary for wallet connector loading failures | | |
-| TASK-022 | Implement retry mechanism for failed connector loads | | |
-| TASK-023 | Add user-friendly error messages for loading failures | | |
-| TASK-024 | Update Storybook stories for loading states | | |
+| TASK-013 | Analyze Web3 components usage patterns and identify code-splitting candidates (TokenList, TokenDetail, TransactionQueue, WalletDashboard, etc.) | ✅ | 2025-10-08 |
+| TASK-014 | Create dynamic wrapper components using `next/dynamic` for 10+ non-critical Web3 components | ✅ | 2025-10-08 |
+| TASK-015 | Implement Suspense boundaries with loading skeletons for dynamically imported components | ✅ | 2025-10-08 |
+| TASK-016 | Identify and implement dynamic imports for Web3 utility modules (token-discovery, token-metadata, token-price) | ⏭️ | Deferred to Phase 4 |
+| TASK-017 | Update component imports throughout the application to use dynamic wrappers where appropriate | ⏭️ | Not applicable (no app pages yet) |
+| TASK-018 | Run bundle analysis to validate 50-100 KB reduction target achieved | ✅ | 2025-10-08 |
 
-### Phase 5: Testing Dynamic Loading
+### Phase 4: Create Loading States and Error Boundaries
+
+- GOAL-004: Implement loading indicators and error boundaries for dynamic components
+
+| Task | Description | Completed | Date |
+|------|-------------|-----------|------|
+| TASK-019 | Create reusable loading skeleton components for Web3 features (TokenListSkeleton, WalletDashboardSkeleton) | | |
+| TASK-020 | Implement error boundary component for dynamic import failures with retry mechanism | | |
+| TASK-021 | Add fallback UI components for graceful degradation when dynamic imports fail | | |
+| TASK-022 | Create loading state components for transaction-related dynamic imports | | |
+| TASK-023 | Update Storybook stories to document loading and error states | | |
+| TASK-024 | Add telemetry for tracking dynamic import performance and failures | | |
+
+### Phase 5: Testing Dynamic Component Loading
 
 - GOAL-005: Comprehensive testing of dynamic import functionality
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-025 | Update test mocks to handle dynamic imports in Vitest | | |
-| TASK-026 | Add tests for connector loading states | | |
-| TASK-027 | Add tests for connector loading errors | | |
-| TASK-028 | Add tests for connector prefetch on hover | | |
-| TASK-029 | Update all wallet-specific tests (MetaMask, WalletConnect, Coinbase) | | |
-| TASK-030 | Run full test suite: verify 914/914 passing | | |
+| TASK-025 | Update Vitest configuration to handle next/dynamic imports in test environment | | |
+| TASK-026 | Add tests for dynamic component loading states and Suspense boundaries | | |
+| TASK-027 | Add tests for dynamic import error handling and fallback UI | | |
+| TASK-028 | Verify all existing component tests pass with dynamic wrappers | | |
+| TASK-029 | Add integration tests for dynamic component rendering in user flows | | |
+| TASK-030 | Run full test suite: verify 935/935 tests passing (updated count from plan frontmatter) | | |
 
 ### Phase 6: Performance Validation
 
@@ -126,12 +126,12 @@ User selected Option B (module-level dynamic imports) and requested removal of u
 
 | Task | Description | Completed | Date |
 |------|-------------|-----------|------|
-| TASK-037 | Update architecture documentation with dynamic loading pattern | | |
-| TASK-038 | Add code comments explaining dynamic import strategy | | |
-| TASK-039 | Update CONTRIBUTING.md with dynamic import guidelines | | |
-| TASK-040 | Create deployment guide with rollback plan | | |
-| TASK-041 | Update CHANGELOG.md with performance improvements | | |
-| TASK-042 | Create monitoring dashboard for bundle size tracking | | |
+| TASK-037 | Update architecture documentation with module-level dynamic loading patterns | | |
+| TASK-038 | Add code comments explaining dynamic import strategy and Suspense boundaries | | |
+| TASK-039 | Update CONTRIBUTING.md with guidelines for when to use dynamic imports | | |
+| TASK-040 | Document bundle size improvements and performance metrics | | |
+| TASK-041 | Update CHANGELOG.md with performance improvements and breaking changes (if any) | | |
+| TASK-042 | Create monitoring strategy for tracking bundle size regression | | |
 
 ## 3. Alternatives
 
@@ -154,34 +154,34 @@ User selected Option B (module-level dynamic imports) and requested removal of u
 
 ## 5. Files
 
-- **FILE-001**: `next.config.ts` - MODIFIED: Add bundle analyzer configuration
-- **FILE-002**: `lib/web3/connectors/dynamic-metamask.ts` - NEW: Dynamic MetaMask connector
-- **FILE-003**: `lib/web3/connectors/dynamic-walletconnect.ts` - NEW: Dynamic WalletConnect
-- **FILE-004**: `lib/web3/connectors/dynamic-coinbase.ts` - NEW: Dynamic Coinbase connector
-- **FILE-005**: `lib/web3/connectors/index.ts` - NEW: Connector factory with loading
-- **FILE-006**: `lib/web3/config.ts` - MODIFIED: Use dynamic connectors
-- **FILE-007**: `hooks/use-wallet.ts` - MODIFIED: Handle async connector initialization
-- **FILE-008**: `components/web3/wallet-button.tsx` - MODIFIED: Show loading states
-- **FILE-009**: `components/web3/wallet-loading-spinner.tsx` - NEW: Loading indicator
-- **FILE-010**: `components/web3/wallet-error-boundary.tsx` - NEW: Error boundary for loading
-- **FILE-011**: `vitest.setup.ts` - MODIFIED: Mock dynamic imports for tests
+- **FILE-001**: `next.config.ts` - MODIFIED: Add bundle analyzer configuration (✅ Phase 1)
+- **FILE-002**: ~~`lib/web3/connectors/*`~~ - REMOVED: Dynamic connector infrastructure (deprecated)
+- **FILE-003**: `components/web3/dynamic/token-list.tsx` - NEW: Dynamic wrapper for TokenList
+- **FILE-004**: `components/web3/dynamic/token-detail.tsx` - NEW: Dynamic wrapper for TokenDetail
+- **FILE-005**: `components/web3/dynamic/transaction-queue.tsx` - NEW: Dynamic wrapper for TransactionQueue
+- **FILE-006**: `components/web3/dynamic/wallet-dashboard.tsx` - NEW: Dynamic wrapper for WalletDashboard
+- **FILE-007**: `components/web3/dynamic/index.ts` - NEW: Barrel exports for dynamic components
+- **FILE-008**: `components/ui/skeletons/token-list-skeleton.tsx` - NEW: Loading skeleton for TokenList
+- **FILE-009**: `components/ui/skeletons/wallet-dashboard-skeleton.tsx` - NEW: Loading skeleton for WalletDashboard
+- **FILE-010**: `components/web3/dynamic-import-error-boundary.tsx` - NEW: Error boundary for dynamic imports
+- **FILE-011**: `vitest.setup.ts` - MODIFIED: Mock next/dynamic for tests
 
 ## 6. Testing
 
-- **TEST-001**: Test dynamic import of MetaMask connector
-- **TEST-002**: Test dynamic import of WalletConnect connector
-- **TEST-003**: Test dynamic import of Coinbase connector
-- **TEST-004**: Test connector loading states in UI
-- **TEST-005**: Test connector loading error handling
-- **TEST-006**: Test connector prefetch on button hover
-- **TEST-007**: Test wallet connection flow with dynamic loading
-- **TEST-008**: Test multi-chain support with dynamic connectors
-- **TEST-009**: Test fallback behavior when dynamic load fails
-- **TEST-010**: Verify bundle size < 450KB in production build
-- **TEST-011**: Verify no increase in Time to First Byte (TTFB)
+- **TEST-001**: Test dynamic import of TokenList component with Suspense boundary
+- **TEST-002**: Test dynamic import of TransactionQueue component with loading state
+- **TEST-003**: Test dynamic import of WalletDashboard component with skeleton loader
+- **TEST-004**: Test dynamic component loading states render correctly
+- **TEST-005**: Test dynamic import error handling and fallback UI
+- **TEST-006**: Test error boundary catches and handles failed dynamic imports
+- **TEST-007**: Test user flows work correctly with dynamically loaded components
+- **TEST-008**: Test that critical path components (WalletButton, providers) remain static
+- **TEST-009**: Test Suspense boundaries don't cause layout shift
+- **TEST-010**: Verify bundle size reduced by 50-100 KB (target: ~487KB from 537KB baseline)
+- **TEST-011**: Verify no increase in Time to First Byte (TTFB) or First Contentful Paint (FCP)
 - **TEST-012**: Verify Lighthouse performance score improvement
-- **TEST-013**: Test wallet connection speed (baseline vs optimized)
-- **TEST-014**: Verify all 914 existing tests still pass
+- **TEST-013**: Test component loading time on slow connections (< 200ms target)
+- **TEST-014**: Verify all 935 existing tests still pass with dynamic imports
 
 ## 7. Architectural Constraints & Findings (2025-10-09)
 
@@ -247,13 +247,18 @@ See [GitHub issue #641 comment](https://github.com/marcusrbrown/tokentoilet/issu
   - Mitigation: Enhanced logging and telemetry for dynamic loading
 - **RISK-005**: Cache invalidation issues with split chunks
   - Mitigation: Proper cache-busting strategies with Next.js build IDs
-- **RISK-006**: ⚠️ **NEW** - Maintenance burden if Option C (forking) chosen
-  - Impact: Must track upstream WagmiAdapter changes
-  - Mitigation: Use patch-package with comprehensive test coverage
-- **ASSUMPTION-001**: Users typically connect only one wallet provider per session
+- **RISK-006**: ✅ **RESOLVED** - Option B selected, no forking required
+- **RISK-007**: ⚠️ **NEW** - Dynamic imports may cause layout shift if loading states not properly handled
+  - Impact: Poor user experience, CLS (Cumulative Layout Shift) regression
+  - Mitigation: Use fixed-height skeleton loaders matching component dimensions
+- **RISK-008**: ⚠️ **NEW** - Over-aggressive code splitting could increase total load time
+  - Impact: More network requests, potential performance regression on slow connections
+  - Mitigation: Only split components not needed on initial page load
+- **ASSUMPTION-001**: ✅ **UPDATED** - Non-critical Web3 components are not needed on initial page load
 - **ASSUMPTION-002**: Network latency for dynamic imports < 200ms on good connections
 - **ASSUMPTION-003**: Bundle analyzer accurately represents production bundle sizes
 - **ASSUMPTION-004**: ❌ **INVALIDATED** - Wagmi connectors do NOT support lazy initialization within AppKit constraints
+- **ASSUMPTION-005**: ✅ **NEW** - Most users will interact with at most 2-3 dynamically loaded components per session
 
 ## 8. Related Specifications / Further Reading
 
