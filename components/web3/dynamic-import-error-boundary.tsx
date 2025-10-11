@@ -54,7 +54,6 @@ export class DynamicImportErrorBoundary extends Component<
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Dynamic import error:', error, errorInfo)
 
-    // Log to telemetry service if available
     if (typeof window !== 'undefined' && 'gtag' in window) {
       ;(window as {gtag?: (...args: unknown[]) => void}).gtag?.('event', 'exception', {
         description: `Dynamic import error: ${error.message}`,
@@ -67,10 +66,6 @@ export class DynamicImportErrorBoundary extends Component<
     this.clearRetryTimeout()
   }
 
-  /**
-   * Clears any pending retry timeout to prevent memory leaks.
-   * Called during unmount and before starting a new retry.
-   */
   private clearRetryTimeout() {
     if (this.retryTimeoutId !== undefined) {
       clearTimeout(this.retryTimeoutId)
@@ -78,11 +73,6 @@ export class DynamicImportErrorBoundary extends Component<
     }
   }
 
-  /**
-   * Handles retry attempts with exponential backoff.
-   * Backoff pattern: 1s → 2s → 4s → 8s (max).
-   * Prevents multiple simultaneous retry attempts by clearing existing timeouts.
-   */
   handleRetry = () => {
     const {maxRetries = 3, onMaxRetriesReached} = this.props
     const {retryCount, error} = this.state
@@ -100,7 +90,6 @@ export class DynamicImportErrorBoundary extends Component<
 
     this.setState({isRetrying: true})
 
-    // Exponential backoff: 1s, 2s, 4s, 8s (max)
     const backoffMs = Math.min(1000 * 2 ** retryCount, 8000)
 
     this.retryTimeoutId = setTimeout(() => {
