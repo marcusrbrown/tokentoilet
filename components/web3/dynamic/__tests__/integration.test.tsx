@@ -105,16 +105,15 @@ describe('Dynamic Component Integration Tests - User Flows (TASK-029)', () => {
       expect(loadTime).toBeLessThan(MAX_TEST_LOAD_TIME_MS)
     })
 
-    it('should cache dynamic imports for subsequent uses', async () => {
-      const start1 = performance.now()
-      await import('@/components/web3/dynamic/token-list')
-      const time1 = performance.now() - start1
+    it('should allow repeated imports of same component', async () => {
+      // Dynamic imports are cached by the module system - this verifies
+      // that repeated imports work correctly without timing assertions
+      const import1 = await import('@/components/web3/dynamic/token-list')
+      const import2 = await import('@/components/web3/dynamic/token-list')
 
-      const start2 = performance.now()
-      await import('@/components/web3/dynamic/token-list')
-      const time2 = performance.now() - start2
-
-      expect(time2).toBeLessThanOrEqual(time1)
+      // Both imports should return the same module
+      expect(import1).toBe(import2)
+      expect(import1.DynamicTokenList).toBe(import2.DynamicTokenList)
     })
   })
 
