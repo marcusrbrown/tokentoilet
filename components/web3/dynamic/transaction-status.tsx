@@ -2,21 +2,21 @@
 
 import type {ComponentProps} from 'react'
 
-import {GenericSkeleton} from '@/components/ui/skeletons'
+import {TransactionStatusSkeleton} from '@/components/ui/skeletons'
 import dynamic from 'next/dynamic'
 import {Suspense} from 'react'
 
 const TransactionStatusCardComponent = dynamic(
   async () => import('../transaction-status').then(mod => mod.TransactionStatusCard),
   {
-    loading: () => <GenericSkeleton height="h-64" />,
+    loading: () => <TransactionStatusSkeleton />,
     ssr: false,
   },
 )
 
 export function DynamicTransactionStatusCard(props: ComponentProps<typeof TransactionStatusCardComponent>) {
   return (
-    <Suspense fallback={<GenericSkeleton height="h-64" />}>
+    <Suspense fallback={<TransactionStatusSkeleton />}>
       <TransactionStatusCardComponent {...props} />
     </Suspense>
   )
