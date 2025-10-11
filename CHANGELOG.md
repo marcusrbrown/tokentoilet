@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **[Dynamic Loading Infrastructure]** Implemented comprehensive module-level dynamic import system for Web3 components to optimize bundle size
+  - Created 10+ dynamic component wrappers with Suspense boundaries and loading skeletons (#641, #642, #643, #644, #645, #646)
+  - Built loading state infrastructure with 7 specialized skeleton loaders (#644)
+  - Implemented error boundary system with exponential backoff retry mechanism (1s→2s→4s→8s max) (#644)
+  - Added telemetry integration for dynamic import performance tracking (#644)
+  - **Bundle Optimization**: Infrastructure ready to reduce initial bundle by 50-100 KB (10-18%) when integrated into feature pages
+  - **Status**: Infrastructure complete, awaiting feature page implementation for bundle size reduction
+  - Comprehensive test coverage: 1000/1012 tests passing with dynamic loading scenarios (#645)
+  - Full documentation in architecture guide and contributing guidelines (#646)
+  - See `docs/performance/dynamic-loading-summary.md` for detailed analysis
+
 ### Changed
 
 - **[React Hooks Best Practices]** Refactored useEffect patterns to follow React best practices and eliminate ESLint warnings about potential stale state issues

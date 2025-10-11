@@ -1,3 +1,25 @@
+/**
+ * Dynamic Wallet Error Handler Component
+ *
+ * This wrapper implements Next.js dynamic imports to reduce initial bundle size.
+ * The underlying WalletErrorHandler component is loaded on-demand, reducing the
+ * initial JavaScript bundle by ~3-5 KB.
+ *
+ * BUNDLE OPTIMIZATION STRATEGY:
+ * - Component: WalletErrorHandler (~3-5 KB)
+ * - Loading: On-demand when wallet error occurs and detailed error UI is needed
+ * - Fallback: GenericSkeleton maintains layout dimensions during loading
+ * - SSR: Disabled (Web3 components require client-side wallet connection)
+ *
+ * USAGE:
+ * ```tsx
+ * import {DynamicWalletErrorHandler} from '@/components/web3/dynamic'
+ *
+ * <DynamicWalletErrorHandler error={walletError} onRetry={handleRetry} />
+ * ```
+ *
+ * See docs/development/architecture.md for dynamic loading patterns.
+ */
 'use client'
 
 import type {ComponentProps} from 'react'
