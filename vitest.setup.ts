@@ -10,6 +10,38 @@ expect.extend(matchers)
 // Make React available globally for tests
 globalThis.React = React
 
+// Mock next/dynamic for testing
+// In test environment, bypass code splitting and return components directly
+// This allows us to test component behavior without dealing with React.lazy complexity
+vi.mock('next/dynamic', () => ({
+  default: (importFunc: () => Promise<any>, options?: {loading?: React.ComponentType; ssr?: boolean}) => {
+    // Return a wrapper component that renders the imported component directly
+    return (props: any) => {
+      const [Component, setComponent] = React.useState<React.ComponentType<any> | null>(null)
+
+      React.useEffect(() => {
+        importFunc()
+          .then((mod: any) => {
+            // Handle both module objects {default: Component} and direct component exports
+            // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- Module format detection
+            const ComponentToRender = mod && typeof mod === 'object' && 'default' in mod ? mod.default : mod
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Setting component state
+            setComponent(() => ComponentToRender)
+          })
+          .catch((error: Error) => {
+            console.error('Failed to load dynamic component:', error)
+          })
+      }, [])
+
+      if (Component === null) {
+        return options?.loading ? React.createElement(options.loading) : null
+      }
+
+      return React.createElement(Component, props)
+    }
+  },
+}))
+
 // Mock window.matchMedia for tests
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
