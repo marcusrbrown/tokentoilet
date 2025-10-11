@@ -233,6 +233,149 @@ if (!isConnected) {
 - Use network validation with auto-switching
 - Handle network-specific RPC configurations
 
+### Dynamic Imports for Bundle Optimization
+
+Token Toilet implements module-level dynamic imports to optimize bundle size and improve performance. When building features, follow these guidelines to determine when to use dynamic imports.
+
+#### When to Use Dynamic Imports
+
+**Use dynamic imports for components that are:**
+
+- ✅ Not needed on initial page load (token lists, dashboards, transaction queues)
+- ✅ Heavy third-party libraries (>10 KB) used in specific features
+- ✅ Admin panels or settings accessed less frequently
+- ✅ Modal dialogs and overlays triggered by user interaction
+- ✅ Data visualization or chart components
+
+**DO NOT use dynamic imports for:**
+
+- ❌ Critical path components (navigation, layout, header, footer)
+- ❌ Wallet connection infrastructure (`WalletButton`, Web3 providers)
+- ❌ Core UI components (buttons, inputs, cards used everywhere)
+- ❌ Above-the-fold content
+- ❌ Small components (<5 KB) where overhead exceeds benefit
+
+#### Decision Tree
+
+```text
+Is the component needed on initial page load?
+├─ YES → Use static import
+└─ NO → Is the component larger than 5-10 KB?
+    ├─ YES → Use dynamic import
+    └─ NO → Use static import (overhead not worth it)
+```
+
+#### Using Existing Dynamic Components
+
+Token Toilet provides pre-built dynamic wrappers for Web3 components in `components/web3/dynamic/`:
+
+```tsx
+// Use the dynamic wrapper, not the original component
+import {DynamicTokenList} from '@/components/web3/dynamic'
+
+export default function TokensPage() {
+  return (
+    <div>
+      <h1>Your Tokens</h1>
+      {/* Component loads on-demand, reducing initial bundle */}
+      <DynamicTokenList onSelectToken={handleTokenSelect} />
+    </div>
+  )
+}
+```
+
+**Available Dynamic Components:**
+
+- `DynamicTokenList` - Token management interface (~10-15 KB)
+- `DynamicTokenDetail` - Token detail view (~8-12 KB)
+- `DynamicTokenSelection` - Token selection UI (~8-12 KB)
+- `DynamicTokenApproval` - Token approval workflow (~6-10 KB)
+- `DynamicTransactionQueue` - Transaction management (~5-8 KB)
+- `DynamicTransactionStatusCard` - Transaction status display (~4-6 KB)
+- `DynamicWalletDashboard` - Wallet overview (~12-18 KB)
+- `DynamicWalletSwitcher` - Wallet switching interface (~4-6 KB)
+- `DynamicWalletConnectionModal` - Connection modal (~7-10 KB)
+- `DynamicWalletErrorHandler` - Error handling UI (~3-5 KB)
+
+#### Creating New Dynamic Components
+
+When creating new heavy components, follow this pattern:
+
+```tsx
+/**
+ * components/web3/dynamic/my-component.tsx
+ */
+'use client'
+
+import type {ComponentProps} from 'react'
+import dynamic from 'next/dynamic'
+import {Suspense} from 'react'
+import {GenericSkeleton} from '@/components/ui/skeletons'
+
+// Dynamic import with loading skeleton
+const MyComponentImpl = dynamic(
+  async () => import('../my-component').then(mod => mod.MyComponent),
+  {
+    loading: () => <GenericSkeleton height="h-64" />,
+    ssr: false, // Disable SSR for Web3 components
+  }
+)
+
+// Wrapper with Suspense boundary
+export function DynamicMyComponent(props: ComponentProps<typeof MyComponentImpl>) {
+  return (
+    <Suspense fallback={<GenericSkeleton height="h-64" />}>
+      <MyComponentImpl {...props} />
+    </Suspense>
+  )
+}
+```
+
+#### Loading States
+
+Every dynamic component should have a matching skeleton loader:
+
+- **Matches dimensions**: Prevents layout shift during loading
+- **Glass morphism styling**: Consistent with design system
+- **Visual feedback**: Shows loading progress to users
+
+Create specific skeletons in `components/ui/skeletons/` or use `GenericSkeleton` for simple cases.
+
+#### Prefetching Strategy
+
+For anticipated user interactions, prefetch components on hover:
+
+```tsx
+import {prefetch} from 'next/dynamic'
+
+<button
+  onMouseEnter={() => prefetch(() => import('@/components/web3/dynamic/token-detail'))}
+  onClick={handleViewDetails}
+>
+  View Details
+</button>
+```
+
+#### Testing Dynamic Components
+
+Dynamic imports are automatically mocked in the test environment. Test the wrapper as you would any component:
+
+```tsx
+import {render, screen, waitFor} from '@testing-library/react'
+import {DynamicTokenList} from './token-list'
+
+it('renders token list after loading', async () => {
+  render(<DynamicTokenList onSelectToken={mockHandler} />)
+
+  // Wait for dynamic component to load
+  await waitFor(() => {
+    expect(screen.getByRole('list')).toBeInTheDocument()
+  })
+})
+```
+
+For more details, see [Dynamic Loading Architecture](docs/development/architecture.md#dynamic-loading-architecture).
+
 ### React Hooks Best Practices
 
 Follow these patterns to avoid common pitfalls and maintain clean, bug-free hooks:
