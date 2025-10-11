@@ -20,6 +20,22 @@ interface DynamicImportErrorBoundaryState {
   isRetrying: boolean
 }
 
+/**
+ * Error boundary for dynamic imports with exponential backoff retry mechanism.
+ *
+ * Catches errors from dynamically loaded components and provides:
+ * - User-friendly error UI with retry functionality
+ * - Exponential backoff (1s → 2s → 4s → 8s max)
+ * - Configurable max retries (default: 3)
+ * - Telemetry tracking for dynamic import failures
+ *
+ * @example
+ * ```tsx
+ * <DynamicImportErrorBoundary maxRetries={3} onRetry={() => console.log('Retrying...')}>
+ *   <DynamicComponent />
+ * </DynamicImportErrorBoundary>
+ * ```
+ */
 export class DynamicImportErrorBoundary extends Component<
   DynamicImportErrorBoundaryProps,
   DynamicImportErrorBoundaryState
@@ -48,11 +64,25 @@ export class DynamicImportErrorBoundary extends Component<
   }
 
   componentWillUnmount() {
+    this.clearRetryTimeout()
+  }
+
+  /**
+   * Clears any pending retry timeout to prevent memory leaks.
+   * Called during unmount and before starting a new retry.
+   */
+  private clearRetryTimeout() {
     if (this.retryTimeoutId !== undefined) {
       clearTimeout(this.retryTimeoutId)
+      this.retryTimeoutId = undefined
     }
   }
 
+  /**
+   * Handles retry attempts with exponential backoff.
+   * Backoff pattern: 1s → 2s → 4s → 8s (max).
+   * Prevents multiple simultaneous retry attempts by clearing existing timeouts.
+   */
   handleRetry = () => {
     const {maxRetries = 3, onMaxRetriesReached} = this.props
     const {retryCount, error} = this.state
@@ -65,9 +95,12 @@ export class DynamicImportErrorBoundary extends Component<
       return
     }
 
+    // Prevent multiple simultaneous retry attempts
+    this.clearRetryTimeout()
+
     this.setState({isRetrying: true})
 
-    // Exponential backoff: 1s, 2s, 4s, 8s...
+    // Exponential backoff: 1s, 2s, 4s, 8s (max)
     const backoffMs = Math.min(1000 * 2 ** retryCount, 8000)
 
     this.retryTimeoutId = setTimeout(() => {

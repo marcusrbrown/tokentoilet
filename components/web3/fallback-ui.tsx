@@ -14,7 +14,15 @@ interface FallbackUIProps {
   }
 }
 
+/**
+ * Generic fallback UI component for failed dynamic imports.
+ *
+ * Displays error state with clear title/message and optional action.
+ * Uses glass morphism design system for consistent styling.
+ */
 export function FallbackUI({title, message, action}: FallbackUIProps) {
+  const hasExternalLink = action?.href !== undefined && action.href !== ''
+
   return (
     <Card variant="default" className="w-full" padding="lg">
       <div className="flex flex-col items-center justify-center space-y-4 py-8 text-center">
@@ -24,7 +32,7 @@ export function FallbackUI({title, message, action}: FallbackUIProps) {
           <p className="max-w-md text-sm text-gray-600 dark:text-gray-400">{message}</p>
         </div>
         {action &&
-          (action.href !== undefined && action.href !== '' ? (
+          (hasExternalLink ? (
             <a
               href={action.href}
               target="_blank"
@@ -44,6 +52,10 @@ export function FallbackUI({title, message, action}: FallbackUIProps) {
   )
 }
 
+/**
+ * Fallback UI for TokenList component failure.
+ * Provides page refresh action to attempt recovery.
+ */
 export function TokenListFallback() {
   return (
     <FallbackUI
@@ -57,6 +69,10 @@ export function TokenListFallback() {
   )
 }
 
+/**
+ * Fallback UI for WalletDashboard component failure.
+ * Reassures users wallet is still connected and functional.
+ */
 export function WalletDashboardFallback() {
   return (
     <FallbackUI
@@ -70,6 +86,10 @@ export function WalletDashboardFallback() {
   )
 }
 
+/**
+ * Fallback UI for TransactionQueue component failure.
+ * Provides external explorer link as alternative.
+ */
 export function TransactionQueueFallback() {
   return (
     <FallbackUI
@@ -83,6 +103,10 @@ export function TransactionQueueFallback() {
   )
 }
 
+/**
+ * Fallback UI for TokenDetail component failure.
+ * Provides navigation back to previous page.
+ */
 export function TokenDetailFallback() {
   return (
     <FallbackUI
