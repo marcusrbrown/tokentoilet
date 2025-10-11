@@ -53,6 +53,8 @@ legacy.md
 !.ai/analysis/*
 !.ai/docs/
 !.ai/docs/*
+!.ai/metrics/
+!.ai/metrics/*
 !.ai/notes/
 !.ai/notes/*
 !.ai/plan/
