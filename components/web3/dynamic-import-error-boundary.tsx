@@ -9,40 +9,93 @@ interface DynamicImportErrorBoundaryProps {
   children: ReactNode
   fallback?: ReactNode
   onRetry?: () => void
+  maxRetries?: number
+  onMaxRetriesReached?: (error: Error) => void
 }
 
 interface DynamicImportErrorBoundaryState {
   hasError: boolean
   error?: Error
+  retryCount: number
+  isRetrying: boolean
 }
 
 export class DynamicImportErrorBoundary extends Component<
   DynamicImportErrorBoundaryProps,
   DynamicImportErrorBoundaryState
 > {
+  private retryTimeoutId?: NodeJS.Timeout
+
   constructor(props: DynamicImportErrorBoundaryProps) {
     super(props)
-    this.state = {hasError: false}
+    this.state = {hasError: false, retryCount: 0, isRetrying: false}
   }
 
-  static getDerivedStateFromError(error: Error): DynamicImportErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): Partial<DynamicImportErrorBoundaryState> {
     return {hasError: true, error}
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Dynamic import error:', error, errorInfo)
+
+    // Log to telemetry service if available
+    if (typeof window !== 'undefined' && 'gtag' in window) {
+      ;(window as {gtag?: (...args: unknown[]) => void}).gtag?.('event', 'exception', {
+        description: `Dynamic import error: ${error.message}`,
+        fatal: false,
+      })
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.retryTimeoutId !== undefined) {
+      clearTimeout(this.retryTimeoutId)
+    }
   }
 
   handleRetry = () => {
-    this.setState({hasError: false, error: undefined})
-    this.props.onRetry?.()
+    const {maxRetries = 3, onMaxRetriesReached} = this.props
+    const {retryCount, error} = this.state
+
+    if (retryCount >= maxRetries) {
+      console.error(`Max retries (${maxRetries}) reached for dynamic import`)
+      if (error) {
+        onMaxRetriesReached?.(error)
+      }
+      return
+    }
+
+    this.setState({isRetrying: true})
+
+    // Exponential backoff: 1s, 2s, 4s, 8s...
+    const backoffMs = Math.min(1000 * 2 ** retryCount, 8000)
+
+    this.retryTimeoutId = setTimeout(() => {
+      this.setState(
+        {
+          hasError: false,
+          error: undefined,
+          retryCount: retryCount + 1,
+          isRetrying: false,
+        },
+        () => {
+          this.props.onRetry?.()
+        },
+      )
+    }, backoffMs)
   }
 
   render(): ReactNode {
-    if (this.state.hasError) {
+    const {maxRetries = 3} = this.props
+    const {hasError, error, retryCount, isRetrying} = this.state
+
+    if (hasError) {
       if (this.props.fallback !== undefined) {
         return this.props.fallback
       }
+
+      const canRetry = retryCount < maxRetries
+      const nextBackoffSec = Math.min(2 ** retryCount, 8)
 
       return (
         <Card variant="default" className="w-full" padding="lg">
@@ -53,14 +106,23 @@ export class DynamicImportErrorBoundary extends Component<
               <p className="max-w-md text-sm text-gray-600 dark:text-gray-400">
                 There was a problem loading this part of the application. This might be due to a network issue.
               </p>
-              {this.state.error && (
-                <p className="text-xs text-gray-500 dark:text-gray-500">{this.state.error.message}</p>
+              {error && <p className="text-xs text-gray-500 dark:text-gray-500">{error.message}</p>}
+              {retryCount > 0 && (
+                <p className="text-xs text-gray-500 dark:text-gray-500">
+                  Retry attempt {retryCount} of {maxRetries}
+                </p>
               )}
             </div>
-            <Button variant="outline" size="sm" onClick={this.handleRetry}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Try Again
-            </Button>
+            {canRetry ? (
+              <Button variant="outline" size="sm" onClick={this.handleRetry} disabled={isRetrying}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
+                {isRetrying ? `Retrying in ${nextBackoffSec}s...` : 'Try Again'}
+              </Button>
+            ) : (
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Maximum retry attempts reached. Please refresh the page.
+              </div>
+            )}
           </div>
         </Card>
       )
