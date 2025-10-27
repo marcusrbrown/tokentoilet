@@ -15,6 +15,14 @@ import {ChevronDown, DollarSign, Wallet} from 'lucide-react'
 import Image from 'next/image'
 import React, {useCallback, useId, useMemo, useState} from 'react'
 
+const isNonEmpty = (value: string | null | undefined): value is string => {
+  return value != null && value !== ''
+}
+
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  e.currentTarget.style.display = 'none'
+}
+
 /**
  * Token input component variants using class-variance-authority
  * Provides specialized input for token amounts with selection and validation
@@ -274,9 +282,9 @@ const TokenInput = ({
 
   // Determine the current state based on validation and props
   const currentVariant = useMemo(() => {
-    if (error != null && error.length > 0) return 'error'
-    if (warning != null && warning.length > 0) return 'default'
-    if (success != null && success.length > 0) return 'success'
+    if (isNonEmpty(error)) return 'error'
+    if (isNonEmpty(warning)) return 'default'
+    if (isNonEmpty(success)) return 'success'
     if (validationResult.message != null && !validationResult.isValid) return 'error'
     if (validationResult.message != null && validationResult.isValid) return 'success'
     return variant || 'default'
@@ -299,13 +307,7 @@ const TokenInput = ({
 
   // Balance display
   const balanceDisplay = useMemo(() => {
-    if (
-      !showBalance ||
-      selectedToken?.balance === null ||
-      selectedToken?.balance === undefined ||
-      selectedToken?.balance === ''
-    )
-      return null
+    if (!showBalance || !isNonEmpty(selectedToken?.balance)) return null
     return formatTokenAmount(rawToDecimal(selectedToken.balance, selectedToken.decimals), selectedToken.decimals)
   }, [selectedToken, showBalance])
 
@@ -335,7 +337,7 @@ const TokenInput = ({
 
   // Handle max button click
   const handleMaxClick = useCallback(() => {
-    if (selectedToken?.balance !== null && selectedToken?.balance !== undefined && selectedToken?.balance !== '') {
+    if (isNonEmpty(selectedToken?.balance)) {
       const maxValue = rawToDecimal(selectedToken.balance, selectedToken.decimals)
       if (!isControlled) {
         setInternalValue(maxValue)
@@ -386,27 +388,18 @@ const TokenInput = ({
                 className="h-auto p-1 text-left"
               >
                 <div className="flex items-center gap-2">
-                  {selectedToken?.logoUrl !== null &&
-                    selectedToken?.logoUrl !== undefined &&
-                    selectedToken?.logoUrl !== '' && (
-                      <Image
-                        src={selectedToken.logoUrl}
-                        alt={selectedToken.symbol}
-                        width={20}
-                        height={20}
-                        className="h-5 w-5 rounded-full"
-                        onError={e => {
-                          // Hide image on error
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
-                    )}
+                  {isNonEmpty(selectedToken?.logoUrl) && (
+                    <Image
+                      src={selectedToken.logoUrl}
+                      alt={selectedToken.symbol}
+                      width={20}
+                      height={20}
+                      className="h-5 w-5 rounded-full"
+                      onError={handleImageError}
+                    />
+                  )}
                   <span className="font-medium">
-                    {selectedToken?.symbol !== null &&
-                    selectedToken?.symbol !== undefined &&
-                    selectedToken?.symbol !== ''
-                      ? selectedToken.symbol
-                      : 'Select Token'}
+                    {isNonEmpty(selectedToken?.symbol) ? selectedToken.symbol : 'Select Token'}
                   </span>
                   <ChevronDown className="h-4 w-4" />
                 </div>
@@ -423,23 +416,21 @@ const TokenInput = ({
                         onClick={() => handleTokenSelect(token)}
                         className="flex w-full items-center gap-2 rounded p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
-                        {token.logoUrl !== null && token.logoUrl !== undefined && token.logoUrl !== '' && (
+                        {isNonEmpty(token.logoUrl) && (
                           <Image
                             src={token.logoUrl}
                             alt={token.symbol}
                             width={20}
                             height={20}
                             className="h-5 w-5 rounded-full"
-                            onError={e => {
-                              e.currentTarget.style.display = 'none'
-                            }}
+                            onError={handleImageError}
                           />
                         )}
                         <div className="flex-1">
                           <div className="font-medium">{token.symbol}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">{token.name}</div>
                         </div>
-                        {token.balance !== null && token.balance !== undefined && token.balance !== '' && (
+                        {isNonEmpty(token.balance) && (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             {formatTokenAmount(rawToDecimal(token.balance, token.decimals), token.decimals, 4)}
                           </div>
@@ -453,29 +444,23 @@ const TokenInput = ({
           ) : (
             selectedToken && (
               <div className="flex items-center gap-2">
-                {selectedToken !== null &&
-                  selectedToken !== undefined &&
-                  selectedToken.logoUrl !== null &&
-                  selectedToken.logoUrl !== undefined &&
-                  selectedToken.logoUrl !== '' && (
-                    <Image
-                      src={selectedToken.logoUrl}
-                      alt={selectedToken.symbol}
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 rounded-full"
-                      onError={e => {
-                        e.currentTarget.style.display = 'none'
-                      }}
-                    />
-                  )}
+                {isNonEmpty(selectedToken?.logoUrl) && (
+                  <Image
+                    src={selectedToken.logoUrl}
+                    alt={selectedToken.symbol}
+                    width={20}
+                    height={20}
+                    className="h-5 w-5 rounded-full"
+                    onError={handleImageError}
+                  />
+                )}
                 <span className="font-medium text-sm">{selectedToken.symbol}</span>
               </div>
             )
           )}
 
           {/* Balance display */}
-          {showBalance && balanceDisplay !== null && balanceDisplay !== undefined && balanceDisplay !== '' && (
+          {showBalance && isNonEmpty(balanceDisplay) && (
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                 <Wallet className="h-3 w-3" />
@@ -513,7 +498,7 @@ const TokenInput = ({
           </div>
 
           {/* USD value display */}
-          {usdValue !== null && usdValue !== undefined && usdValue !== '' && (
+          {isNonEmpty(usdValue) && (
             <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
               <DollarSign className="h-4 w-4" />
               <span>{usdValue}</span>
@@ -523,7 +508,7 @@ const TokenInput = ({
       </div>
 
       {/* Helper text / validation message */}
-      {displayMessage != null && displayMessage.length > 0 && (
+      {isNonEmpty(displayMessage) && (
         <p
           id={helperId}
           className={cn(
@@ -531,12 +516,9 @@ const TokenInput = ({
             {
               'text-red-600 dark:text-red-400': currentVariant === 'error',
               'text-green-600 dark:text-green-400': currentVariant === 'success',
-              'text-yellow-600 dark:text-yellow-400': warning != null && warning.length > 0,
+              'text-yellow-600 dark:text-yellow-400': isNonEmpty(warning),
               'text-gray-500 dark:text-gray-400':
-                currentVariant === 'default' &&
-                (error === null || error === undefined || error === '') &&
-                (success === null || success === undefined || success === '') &&
-                (warning === null || warning === undefined || warning === ''),
+                currentVariant === 'default' && !isNonEmpty(error) && !isNonEmpty(success) && !isNonEmpty(warning),
             },
             helperClassName,
           )}

@@ -239,6 +239,12 @@ function Input({
     (showClearButton && currentValue.length > 0) ||
     (showPasswordToggle && type === 'password')
 
+  const actionButtonClassName = cn(
+    'inline-flex h-5 w-5 items-center justify-center rounded transition-colors',
+    'hover:bg-gray-100 dark:hover:bg-gray-700',
+    'focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1',
+  )
+
   return (
     <div className={cn('w-full', containerClassName)}>
       {label != null && label.length > 0 && (
@@ -297,9 +303,7 @@ function Input({
                   })
                 }}
                 className={cn(
-                  'inline-flex h-5 w-5 items-center justify-center rounded transition-colors',
-                  'hover:bg-gray-100 dark:hover:bg-gray-700',
-                  'focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1',
+                  actionButtonClassName,
                   copySuccess ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500',
                 )}
                 title={copySuccess ? 'Copied!' : 'Copy to clipboard'}
@@ -314,10 +318,8 @@ function Input({
                 type="button"
                 onClick={handleClear}
                 className={cn(
-                  'inline-flex h-5 w-5 items-center justify-center rounded transition-colors',
+                  actionButtonClassName,
                   'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300',
-                  'hover:bg-gray-100 dark:hover:bg-gray-700',
-                  'focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1',
                 )}
                 title="Clear input"
               >
@@ -331,10 +333,8 @@ function Input({
                 type="button"
                 onClick={togglePasswordVisibility}
                 className={cn(
-                  'inline-flex h-5 w-5 items-center justify-center rounded transition-colors',
+                  actionButtonClassName,
                   'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300',
-                  'hover:bg-gray-100 dark:hover:bg-gray-700',
-                  'focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1',
                 )}
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
