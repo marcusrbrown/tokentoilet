@@ -138,11 +138,15 @@ export function TokenAmountInput({
   const {address, chainId, isConnected} = useWallet()
 
   // Use ref for validation callback timing
-  const validationCallbackRef = useRef(onValidationChange)
-  validationCallbackRef.current = onValidationChange
+  const validationCallbackRef = useRef<((result: ValidationResult) => void) | undefined>(onValidationChange)
+  useEffect(() => {
+    validationCallbackRef.current = onValidationChange
+  }, [onValidationChange])
 
-  const balanceCallbackRef = useRef(onBalanceVerificationChange)
-  balanceCallbackRef.current = onBalanceVerificationChange
+  const balanceCallbackRef = useRef<((status: BalanceVerification) => void) | undefined>(onBalanceVerificationChange)
+  useEffect(() => {
+    balanceCallbackRef.current = onBalanceVerificationChange
+  }, [onBalanceVerificationChange])
 
   // Real-time balance verification
   const {

@@ -13,7 +13,7 @@ import {cn} from '@/lib/utils'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {ChevronDown, DollarSign, Wallet} from 'lucide-react'
 import Image from 'next/image'
-import React, {useCallback, useMemo, useState} from 'react'
+import React, {useCallback, useId, useMemo, useState} from 'react'
 
 /**
  * Token input component variants using class-variance-authority
@@ -285,21 +285,17 @@ const TokenInput = ({
   // Display message
   const displayMessage = error ?? warning ?? success ?? validationResult.message ?? helperText
 
-  // Generate unique ID for accessibility
-  const inputId = id ?? `token-input-${Math.random().toString(36).slice(2, 9)}`
+  // Generate unique ID for accessibility (use stable React id instead of Math.random)
+  const generatedId = useId()
+  const inputId = id ?? `token-input-${generatedId.replaceAll(':', '')}`
   const helperId = `${inputId}-helper`
 
   // USD value calculation
-  const usdValue = useMemo(() => {
-    if (
-      !showUsdValue ||
-      selectedToken?.price === null ||
-      selectedToken?.price === undefined ||
-      selectedToken?.price === 0
-    )
-      return null
-    return calculateUsdValue(currentValue, selectedToken.price)
-  }, [currentValue, selectedToken?.price, showUsdValue])
+  const tokenPrice = selectedToken?.price ?? null
+  const usdValue =
+    !showUsdValue || tokenPrice === null || tokenPrice === undefined || tokenPrice === 0
+      ? null
+      : calculateUsdValue(currentValue, tokenPrice)
 
   // Balance display
   const balanceDisplay = useMemo(() => {

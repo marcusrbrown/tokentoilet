@@ -329,19 +329,23 @@ export function useTransaction(transactionId: string) {
   const fetchAndUpdateTransaction = useCallback(() => {
     try {
       const tx = getTransaction(transactionId)
-      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Polling from external queue source, not deriving from previous state
+
       setTransaction(_prev => tx)
     } catch (error) {
       console.error('Failed to fetch transaction:', error)
-      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Error handling fallback
+
       setTransaction(_prev => null)
     }
   }, [getTransaction, transactionId])
 
   useEffect(() => {
-    fetchAndUpdateTransaction()
+    // Schedule the initial fetch asynchronously to avoid calling setState synchronously within the effect
+    const timeout = setTimeout(fetchAndUpdateTransaction, 0)
     const interval = setInterval(fetchAndUpdateTransaction, 1000)
-    return () => clearInterval(interval)
+    return () => {
+      clearTimeout(timeout)
+      clearInterval(interval)
+    }
   }, [fetchAndUpdateTransaction])
 
   return transaction

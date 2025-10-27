@@ -2,7 +2,7 @@ import type {VariantProps} from 'class-variance-authority'
 import {cn, formatAddress, isValidAddress} from '@/lib/utils'
 
 import {AlertCircle, Check, Copy, Eye, EyeOff, X} from 'lucide-react'
-import React, {useMemo, useState} from 'react'
+import React, {useId, useMemo, useState} from 'react'
 
 import {inputVariants} from './input-variants'
 
@@ -173,7 +173,8 @@ function Input({
   const displayMessage = error ?? warning ?? success ?? validationResult.message ?? helperText
 
   // Generate unique ID for accessibility
-  const inputId = id ?? `input-${Math.random().toString(36).slice(2, 9)}`
+  const generatedId = useId()
+  const inputId = id ?? `input-${generatedId}`
   const helperId = `${inputId}-helper`
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
