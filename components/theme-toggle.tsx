@@ -11,7 +11,12 @@ export function ThemeToggle() {
 
   // Prevents hydration mismatch: Next.js SSR requires mount detection before rendering theme UI
   useEffect(() => {
-    setMounted(true) // eslint-disable-line react-hooks-extra/no-direct-set-state-in-use-effect -- Standard Next.js SSR pattern
+    // Defer the state update to avoid calling setState synchronously inside the effect,
+    // which can cause cascading renders and performance issues.
+    const id = setTimeout(() => {
+      setMounted(true)
+    }, 0)
+    return () => clearTimeout(id)
   }, [])
 
   if (!mounted) {
