@@ -9,6 +9,9 @@ onlyBuiltDependencies:
 overrides:
   '@metamask/sdk-communication-layer@>=0.16.0 <=0.33.0': '>=0.33.1'
   '@metamask/sdk@>=0.16.0 <=0.33.0': '>=0.33.1'
+  hono@<4.10.3: '>=4.10.3'
+  hono@>=1.1.0 <4.10.2: '>=4.10.2'
   jiti: <2.2.0
+  vite@>=7.1.0 <=7.1.10: '>=7.1.11'
 
 shamefullyHoist: true
