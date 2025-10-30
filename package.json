@@ -48,7 +48,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
-    "@bfra.me/eslint-config": "^0.33.0",
+    "@bfra.me/eslint-config": "^0.35.0",
     "@bfra.me/prettier-config": "^0.16.0",
     "@eslint-react/eslint-plugin": "^2.0.0",
     "@eslint/eslintrc": "^3.3.1",
