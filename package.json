@@ -71,7 +71,7 @@
     "@types/node": "22.18.10",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/ui": "^4.0.0",
     "autoprefixer": "10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -92,7 +92,7 @@
     "tsx": "^4.20.5",
     "typescript": "5.9.3",
     "viem": "^2.23.0",
-    "vitest": "^3.2.4",
+    "vitest": "^4.0.0",
     "vitest-axe": "^0.1.0"
   },
   "packageManager": "pnpm@10.19.0"
