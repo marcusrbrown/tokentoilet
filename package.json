@@ -95,5 +95,5 @@
     "vitest": "^4.0.0",
     "vitest-axe": "^0.1.0"
   },
-  "packageManager": "pnpm@10.19.0"
+  "packageManager": "pnpm@10.20.0"
 }
