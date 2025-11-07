@@ -54,7 +54,7 @@
   "devDependencies": {
     "@bfra.me/eslint-config": "^0.50.0",
     "@bfra.me/prettier-config": "^0.16.0",
-    "@eslint-react/eslint-plugin": "^2.0.0",
+    "@eslint-react/eslint-plugin": "^4.2.1",
     "@next/bundle-analyzer": "^16.0.0",
     "@next/eslint-plugin-next": "^16.0.0",
     "@storybook/addon-essentials": "9.0.0-alpha.12",
@@ -79,7 +79,7 @@
     "autoprefixer": "10.4.27",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "eslint": "9.39.4",
+    "eslint": "10.1.0",
     "eslint-config-next": "16.2.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
