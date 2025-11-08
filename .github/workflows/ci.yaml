@@ -52,8 +52,8 @@ jobs:
       - name: Setup Project
         uses: ./.github/actions/setup
 
-      - name: Run Tests
-        run: pnpm test
+      - name: Run Tests with Coverage
+        run: pnpm test:coverage
 
       - name: Upload Coverage Reports
         if: always()
