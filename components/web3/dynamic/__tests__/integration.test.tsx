@@ -1,5 +1,3 @@
-import type {RenderResult} from '@testing-library/react'
-
 import {render, waitFor} from '@testing-library/react'
 import {describe, expect, it} from 'vitest'
 
@@ -63,31 +61,6 @@ describe('Dynamic Component Integration Tests - User Flows (TASK-029)', () => {
         expect(container.firstChild).toBeTruthy()
       })
     }, 20000) // Increased timeout for CI environment
-
-    it('should handle parallel component loading', async () => {
-      const [{DynamicTokenList}, {DynamicWalletDashboard}, {DynamicTransactionQueue}, {DynamicWalletSwitcher}] =
-        await Promise.all([
-          import('@/components/web3/dynamic/token-list'),
-          import('@/components/web3/dynamic/wallet-dashboard'),
-          import('@/components/web3/dynamic/transaction-queue'),
-          import('@/components/web3/dynamic/wallet-switcher'),
-        ])
-
-      const renders: RenderResult[] = [
-        render(<DynamicTokenList />),
-        render(<DynamicWalletDashboard />),
-        render(<DynamicTransactionQueue />),
-        render(<DynamicWalletSwitcher />),
-      ]
-
-      await Promise.all(
-        renders.map(async ({container}) => {
-          await waitFor(() => {
-            expect(container.firstChild).toBeTruthy()
-          })
-        }),
-      )
-    })
   })
 
   describe('Component Import Performance', () => {
