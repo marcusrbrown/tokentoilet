@@ -7,9 +7,10 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
-    // Mitigate CI EPIPE errors by using forks pool which is more stable
-    pool: 'forks',
-    // Reduce workers in CI to prevent resource exhaustion and EPIPE errors
+    // Use threads pool to avoid EPIPE errors in CI
+    // Threads pool is more stable than forks for worker communication
+    pool: 'threads',
+    // Reduce workers in CI to prevent resource exhaustion
     maxWorkers: isCI ? 3 : undefined,
     // Increase timeout for CI environment (worker pool communication can be slower)
     testTimeout: isCI ? 30000 : 10000,
