@@ -10,6 +10,39 @@ expect.extend(matchers)
 // Make React available globally for tests
 globalThis.React = React
 
+// Ensure localStorage is properly initialized for all tests
+// jsdom provides it, but we need to ensure it's available
+if (globalThis.localStorage === undefined) {
+  const localStorageMock = (() => {
+    let store: Record<string, string> = {}
+    return {
+      getItem: (key: string) => store[key] ?? null,
+      setItem: (key: string, value: string) => {
+        store[key] = value
+      },
+      removeItem: (key: string) => {
+        delete store[key]
+      },
+      clear: () => {
+        store = {}
+      },
+      get length() {
+        return Object.keys(store).length
+      },
+      key: (index: number) => {
+        const keys = Object.keys(store)
+        return keys[index] ?? null
+      },
+    }
+  })()
+
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: localStorageMock,
+    writable: true,
+    configurable: true,
+  })
+}
+
 // Mock next/dynamic for testing
 // In test environment, bypass code splitting and return components directly
 // This allows us to test component behavior without dealing with React.lazy complexity

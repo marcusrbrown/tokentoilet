@@ -14,6 +14,7 @@
     "storybook": "storybook dev -p 6006",
     "test": "vitest run",
     "test:bench": "vitest bench",
+    "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "type-check": "tsc --noEmit",
     "validate": "pnpm run lint && pnpm run type-check && pnpm run test && pnpm run validate:design-system && pnpm run build-storybook",
@@ -71,7 +72,8 @@
     "@types/node": "22.18.13",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
-    "@vitest/ui": "^4.0.0",
+    "@vitest/coverage-v8": "^4.0.7",
+    "@vitest/ui": "^4.0.7",
     "autoprefixer": "10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -92,7 +94,7 @@
     "tsx": "^4.20.5",
     "typescript": "5.9.3",
     "viem": "^2.23.0",
-    "vitest": "^4.0.0",
+    "vitest": "^4.0.7",
     "vitest-axe": "^0.1.0"
   },
   "packageManager": "pnpm@10.20.0"
