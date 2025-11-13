@@ -1,6 +1,8 @@
 import type {StorybookConfig} from '@storybook/nextjs'
 import * as path from 'node:path'
 
+const modulePath = path.dirname(new URL(import.meta.url).pathname)
+
 const config: StorybookConfig = {
   stories: [
     '../components/**/*.stories.@(js|jsx|mjs|ts|tsx)',
@@ -62,11 +64,11 @@ const config: StorybookConfig = {
     if (config.resolve) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        '@': path.resolve(__dirname, '../'),
-        '@/components': path.resolve(__dirname, '../components'),
-        '@/lib': path.resolve(__dirname, '../lib'),
-        '@/hooks': path.resolve(__dirname, '../hooks'),
-        '@/app': path.resolve(__dirname, '../app'),
+        '@': path.resolve(modulePath, '../'),
+        '@/components': path.resolve(modulePath, '../components'),
+        '@/lib': path.resolve(modulePath, '../lib'),
+        '@/hooks': path.resolve(modulePath, '../hooks'),
+        '@/app': path.resolve(modulePath, '../app'),
       }
 
       // Ensure TypeScript and design token files are processed correctly

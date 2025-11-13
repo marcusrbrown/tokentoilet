@@ -2,6 +2,7 @@
   "name": "tokentoilet",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "bootstrap": "pnpm install --prefer-offline --loglevel warn",
     "build": "next build",

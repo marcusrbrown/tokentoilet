@@ -1,6 +1,8 @@
-import {resolve} from 'node:path'
+import path from 'node:path'
 import {isCI} from 'std-env'
 import {defineConfig} from 'vitest/config'
+
+const modulePath = path.dirname(new URL(import.meta.url).pathname)
 
 export default defineConfig({
   test: {
@@ -47,7 +49,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, '.'),
+      '@': path.resolve(modulePath, '.'),
     },
   },
 })
