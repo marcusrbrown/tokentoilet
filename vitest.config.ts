@@ -18,13 +18,10 @@ export default defineConfig({
     testTimeout: isCI ? 30000 : 10000,
     // Increase hook timeout for CI
     hookTimeout: isCI ? 15000 : 10000,
-    // Pass Node.js arguments to worker processes for better memory management
-    execArgv: isCI ? ['--max-old-space-size=4096'] : [],
     // Coverage configuration
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      reportsDirectory: './coverage',
       include: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}', 'hooks/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}'],
       exclude: [
         '**/*.test.{ts,tsx}',
