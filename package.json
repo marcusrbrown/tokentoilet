@@ -71,7 +71,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "24.10.0",
-    "@types/react": "19.2.2",
+    "@types/react": "19.2.3",
     "@types/react-dom": "19.2.2",
     "@vitest/coverage-v8": "^4.0.7",
     "@vitest/ui": "^4.0.7",
