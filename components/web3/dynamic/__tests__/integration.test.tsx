@@ -1,5 +1,88 @@
+import type {Address} from 'viem'
+
 import {render, waitFor} from '@testing-library/react'
-import {describe, expect, it} from 'vitest'
+import {describe, expect, it, vi} from 'vitest'
+
+// Mock wagmi hooks
+vi.mock('wagmi', () => ({
+  useAccount: vi.fn(() => ({
+    address: '0x1234567890123456789012345678901234567890' as Address,
+    isConnected: true,
+    connector: {id: 'metamask', name: 'MetaMask'},
+  })),
+  useChainId: vi.fn(() => 1),
+  useConfig: vi.fn(() => ({})),
+  useReadContract: vi.fn(),
+  useWriteContract: vi.fn(),
+  useEstimateGas: vi.fn(),
+  useSwitchChain: vi.fn(() => ({
+    switchChain: vi.fn(),
+    isPending: false,
+  })),
+  useDisconnect: vi.fn(() => ({
+    disconnect: vi.fn(),
+  })),
+  useConnect: vi.fn(() => ({
+    connect: vi.fn(),
+    connectors: [],
+    isPending: false,
+  })),
+  useConnections: vi.fn(() => []),
+}))
+
+// Mock Reown AppKit
+vi.mock('@reown/appkit/react', () => ({
+  useAppKit: vi.fn(() => ({
+    open: vi.fn(),
+  })),
+}))
+
+// Mock wallet switcher hook
+vi.mock('@/hooks/use-wallet-switcher', () => ({
+  useWalletSwitcher: vi.fn(() => ({
+    connectedWallets: [],
+    activeWallet: null,
+    isSwitching: false,
+    isConnecting: false,
+    availableConnectors: [],
+    switchToWallet: vi.fn(),
+    connectNewWallet: vi.fn(),
+    disconnectWallet: vi.fn(),
+    openWalletModal: vi.fn(),
+  })),
+}))
+
+// Mock token discovery hook
+vi.mock('@/hooks/use-token-discovery', () => ({
+  useTokenDiscovery: vi.fn(() => ({
+    tokens: [],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  })),
+}))
+
+// Mock transaction queue hook
+vi.mock('@/hooks/use-transaction-queue', () => ({
+  useTransactionQueue: vi.fn(() => ({
+    queue: [],
+    isProcessing: false,
+    addTransaction: vi.fn(),
+    removeTransaction: vi.fn(),
+    clearQueue: vi.fn(),
+  })),
+  useChainTransactionQueue: vi.fn(() => ({
+    queue: [],
+    isProcessing: false,
+    addTransaction: vi.fn(),
+    removeTransaction: vi.fn(),
+    clearQueue: vi.fn(),
+  })),
+  useTransaction: vi.fn(() => ({
+    transaction: null,
+    isProcessing: false,
+  })),
+}))
 
 describe('Dynamic Component Integration Tests - User Flows (TASK-029)', () => {
   describe('Sequential Component Loading', () => {
