@@ -12,6 +12,7 @@ overrides:
   hono@<4.10.3: '>=4.10.3'
   hono@>=1.1.0 <4.10.2: '>=4.10.2'
   jiti: <2.2.0
+  js-yaml@<4.1.1: '>=4.1.1'
   vite@>=7.1.0 <=7.1.10: '>=7.1.11'
 
 shamefullyHoist: true
