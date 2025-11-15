@@ -24,11 +24,6 @@ const schema = {
   NEXT_BUILD_ENV_TYPECHECK: zTruthyStringToBoolean(!isCI).describe('Perform type checking as a build step'),
 
   /**
-   * Lint source files as a build step
-   */
-  NEXT_BUILD_ENV_LINT: zTruthyStringToBoolean(!isCI).describe('Lint source files as a build step'),
-
-  /**
    * Enable the Content Security Policy
    */
   NEXT_BUILD_ENV_CSP: zTruthyStringToBoolean(true).describe('Enable the Content Security Policy'),

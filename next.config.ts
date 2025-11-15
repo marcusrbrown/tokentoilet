@@ -43,10 +43,6 @@ const nextConfig: NextConfig = {
     tsconfigPath: buildEnv.NEXT_BUILD_ENV_TSCONFIG,
   },
 
-  eslint: {
-    ignoreDuringBuilds: !buildEnv.NEXT_BUILD_ENV_LINT,
-  },
-
   webpack: (config: Configuration) => {
     // Ignore react-native async-storage import from MetaMask SDK (web-only app)
     if (config.resolve) {
