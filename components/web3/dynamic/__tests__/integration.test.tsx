@@ -1,6 +1,9 @@
+import type {ReactNode} from 'react'
 import type {Address} from 'viem'
 
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {render, waitFor} from '@testing-library/react'
+import React from 'react'
 import {describe, expect, it, vi} from 'vitest'
 
 // Mock wagmi hooks
@@ -66,6 +69,7 @@ vi.mock('@/hooks/use-token-discovery', () => ({
 vi.mock('@/hooks/use-transaction-queue', () => ({
   useTransactionQueue: vi.fn(() => ({
     queue: [],
+    transactions: [], // Add transactions array for TransactionQueue component
     isProcessing: false,
     addTransaction: vi.fn(),
     removeTransaction: vi.fn(),
@@ -73,6 +77,7 @@ vi.mock('@/hooks/use-transaction-queue', () => ({
   })),
   useChainTransactionQueue: vi.fn(() => ({
     queue: [],
+    transactions: [], // Add transactions array for TransactionQueue component
     isProcessing: false,
     addTransaction: vi.fn(),
     removeTransaction: vi.fn(),
@@ -84,11 +89,28 @@ vi.mock('@/hooks/use-transaction-queue', () => ({
   })),
 }))
 
+// Create a wrapper for React Query
+function createWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+      },
+    },
+  })
+
+  return function Wrapper({children}: {children: ReactNode}) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  }
+}
+
 describe('Dynamic Component Integration Tests - User Flows (TASK-029)', () => {
   describe('Sequential Component Loading', () => {
     it('should dynamically import and render TokenList component', async () => {
       const {DynamicTokenList} = await import('@/components/web3/dynamic/token-list')
-      const {container} = render(<DynamicTokenList />)
+      const Wrapper = createWrapper()
+      const {container} = render(<DynamicTokenList />, {wrapper: Wrapper})
 
       await waitFor(() => {
         expect(container.firstChild).toBeTruthy()
@@ -97,7 +119,8 @@ describe('Dynamic Component Integration Tests - User Flows (TASK-029)', () => {
 
     it('should dynamically import and render WalletDashboard component', async () => {
       const {DynamicWalletDashboard} = await import('@/components/web3/dynamic/wallet-dashboard')
-      const {container} = render(<DynamicWalletDashboard />)
+      const Wrapper = createWrapper()
+      const {container} = render(<DynamicWalletDashboard />, {wrapper: Wrapper})
 
       await waitFor(() => {
         expect(container.firstChild).toBeTruthy()
@@ -106,7 +129,8 @@ describe('Dynamic Component Integration Tests - User Flows (TASK-029)', () => {
 
     it('should dynamically import and render TransactionQueue component', async () => {
       const {DynamicTransactionQueue} = await import('@/components/web3/dynamic/transaction-queue')
-      const {container} = render(<DynamicTransactionQueue />)
+      const Wrapper = createWrapper()
+      const {container} = render(<DynamicTransactionQueue />, {wrapper: Wrapper})
 
       await waitFor(() => {
         expect(container.firstChild).toBeTruthy()
@@ -115,7 +139,8 @@ describe('Dynamic Component Integration Tests - User Flows (TASK-029)', () => {
 
     it('should dynamically import and render WalletSwitcher component', async () => {
       const {DynamicWalletSwitcher} = await import('@/components/web3/dynamic/wallet-switcher')
-      const {container} = render(<DynamicWalletSwitcher />)
+      const Wrapper = createWrapper()
+      const {container} = render(<DynamicWalletSwitcher />, {wrapper: Wrapper})
 
       await waitFor(() => {
         expect(container.firstChild).toBeTruthy()
@@ -129,7 +154,8 @@ describe('Dynamic Component Integration Tests - User Flows (TASK-029)', () => {
       const {DynamicTokenList} = await import('@/components/web3/dynamic/token-list')
       const {DynamicTransactionQueue} = await import('@/components/web3/dynamic/transaction-queue')
 
-      const {rerender, container} = render(<DynamicWalletDashboard />)
+      const Wrapper = createWrapper()
+      const {rerender, container} = render(<DynamicWalletDashboard />, {wrapper: Wrapper})
       await waitFor(() => {
         expect(container.firstChild).toBeTruthy()
       })
@@ -163,9 +189,10 @@ describe('Dynamic Component Integration Tests - User Flows (TASK-029)', () => {
     it('should allow multiple instances of same dynamic component', async () => {
       const {DynamicTokenList} = await import('@/components/web3/dynamic/token-list')
 
-      const instance1 = render(<DynamicTokenList />)
-      const instance2 = render(<DynamicTokenList />)
-      const instance3 = render(<DynamicTokenList />)
+      const Wrapper = createWrapper()
+      const instance1 = render(<DynamicTokenList />, {wrapper: Wrapper})
+      const instance2 = render(<DynamicTokenList />, {wrapper: Wrapper})
+      const instance3 = render(<DynamicTokenList />, {wrapper: Wrapper})
 
       await Promise.all([
         waitFor(() => expect(instance1.container.firstChild).toBeTruthy()),
