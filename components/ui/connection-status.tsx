@@ -62,8 +62,7 @@ const connectionStatusVariants = cva(
 )
 
 export interface ConnectionStatusProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof connectionStatusVariants> {
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof connectionStatusVariants> {
   /** Show network switching button when on unsupported network */
   showNetworkSwitch?: boolean
   /** Show detailed error messages */

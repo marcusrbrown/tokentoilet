@@ -123,8 +123,7 @@ const NETWORK_CONFIG = {
 } as const
 
 export interface NetworkBadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof networkBadgeVariants> {
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof networkBadgeVariants> {
   /**
    * Whether to show network switching functionality
    */

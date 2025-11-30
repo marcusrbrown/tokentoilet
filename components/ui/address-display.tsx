@@ -136,8 +136,7 @@ const actionButtonVariants = cva(
 )
 
 export interface AddressDisplayProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof addressDisplayVariants> {
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof addressDisplayVariants> {
   /**
    * The Ethereum address to display
    */

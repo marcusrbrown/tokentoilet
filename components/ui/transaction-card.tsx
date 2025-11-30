@@ -70,7 +70,8 @@ const transactionCardVariants = cva(['group', 'relative', 'transition-all', 'dur
 })
 
 export interface TransactionCardProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'onClick'>,
+  extends
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'onClick'>,
     VariantProps<typeof transactionCardVariants> {
   /** Transaction data to display */
   transaction: TransactionData
