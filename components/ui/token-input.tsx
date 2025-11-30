@@ -108,8 +108,7 @@ const tokenInputVariants = cva(
 const DEFAULT_TOKENS: TokenData[] = []
 
 export interface TokenInputProps
-  extends Omit<React.ComponentPropsWithoutRef<'div'>, 'onChange'>,
-    VariantProps<typeof tokenInputVariants> {
+  extends Omit<React.ComponentPropsWithoutRef<'div'>, 'onChange'>, VariantProps<typeof tokenInputVariants> {
   /**
    * Input label for accessibility
    */

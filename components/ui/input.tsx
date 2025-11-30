@@ -7,8 +7,7 @@ import React, {useId, useMemo, useState} from 'react'
 import {inputVariants} from './input-variants'
 
 export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
-    VariantProps<typeof inputVariants> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>, VariantProps<typeof inputVariants> {
   /**
    * Helper text to display below the input
    */

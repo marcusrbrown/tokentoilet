@@ -119,8 +119,7 @@ const charitySelectorVariants = cva(
 const DEFAULT_CHARITIES: CharityData[] = []
 
 export interface CharitySelectorProps
-  extends Omit<React.ComponentPropsWithoutRef<'div'>, 'onChange'>,
-    VariantProps<typeof charitySelectorVariants> {
+  extends Omit<React.ComponentPropsWithoutRef<'div'>, 'onChange'>, VariantProps<typeof charitySelectorVariants> {
   /**
    * Component label for accessibility
    */

@@ -35,7 +35,8 @@ const transactionStatusVariants = cva(['group', 'relative', 'transition-all', 'd
 })
 
 export interface TransactionStatusProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'onClick'>,
+  extends
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'children' | 'onClick'>,
     VariantProps<typeof transactionStatusVariants> {
   /** Queued transaction to display */
   transaction: QueuedTransaction
