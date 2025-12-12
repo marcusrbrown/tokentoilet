@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   productionBrowserSourceMaps: buildEnv.NEXT_BUILD_ENV_SOURCEMAPS,
 
+  turbopack: {
+    resolveAlias: {
+      pino: 'pino/browser',
+      'thread-stream': path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
+      'sonic-boom': path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
+    },
+  },
+
   // @link https://nextjs.org/docs/pages/api-reference/next-config-js/httpAgentOptions
   httpAgentOptions: {
     // ⚠️ keepAlive might introduce memory-leaks for long-running servers (ie: on docker)
@@ -49,6 +57,9 @@ const nextConfig: NextConfig = {
       config.resolve.alias = {
         ...config.resolve.alias,
         '@react-native-async-storage/async-storage': false,
+        pino: 'pino/browser',
+        'thread-stream': path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
+        'sonic-boom': path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
       }
     }
     return config
