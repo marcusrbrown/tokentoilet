@@ -44,8 +44,24 @@ vi.mock('@reown/appkit/react', () => ({
 // Mock wallet switcher hook
 vi.mock('@/hooks/use-wallet-switcher', () => ({
   useWalletSwitcher: vi.fn(() => ({
-    connectedWallets: [],
-    activeWallet: null,
+    connectedWallets: [
+      {
+        id: 'metamask-1-0x1234567890123456789012345678901234567890',
+        address: '0x1234567890123456789012345678901234567890' as Address,
+        chainId: 1,
+        connector: {id: 'metamask', name: 'MetaMask'},
+        isActive: true,
+        isSupported: true,
+      },
+    ],
+    activeWallet: {
+      id: 'metamask-1-0x1234567890123456789012345678901234567890',
+      address: '0x1234567890123456789012345678901234567890' as Address,
+      chainId: 1,
+      connector: {id: 'metamask', name: 'MetaMask'},
+      isActive: true,
+      isSupported: true,
+    },
     isSwitching: false,
     isConnecting: false,
     availableConnectors: [],
