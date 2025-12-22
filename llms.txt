@@ -16,9 +16,8 @@ Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20,
 
 ## Specifications
 
-- [Product Requirements Document](.ai/docs/prd.md): Comprehensive product specifications, technical architecture, and user experience requirements
-- [Development Plan](.ai/docs/plan.md): Detailed development roadmap, current progress tracking, and implementation phases
-- [Tailwind v4 Migration Guide](.ai/docs/tailwind-v4-migration-guide.md): Complete migration documentation from Tailwind v3 to v4 CSS-first approach
+- [Product Requirements Document](docs/prd.md): Comprehensive product specifications, technical architecture, and user experience requirements
+- [Development Plan](docs/plan.md): Detailed development roadmap, current progress tracking, and implementation phases
 
 ## Development
 
@@ -43,6 +42,3 @@ Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20,
 
 - [PostCSS Configuration](postcss.config.mjs): CSS processing configuration for Tailwind CSS integration
 - [Vitest Setup](vitest.setup.ts): Test environment setup and global configuration
-- [Tailwind v4 Migration Timeline](.ai/docs/tailwind-v4-migration-timeline.md): Historical migration progress and timeline documentation
-- [CSS Regression Testing Checklist](.ai/docs/css-regression-testing-checklist.md): Quality assurance checklist for CSS and visual testing
-- [Tailwind v4 Fix Resolution](.ai/docs/tailwind-v4-fix-resolution.md): Technical resolution documentation for migration issues

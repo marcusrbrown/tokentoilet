@@ -5,11 +5,10 @@ Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while s
 ## Documentation Structure
 
 **Primary Documentation**: All core project documentation is referenced in `llms.txt` at the project root
-- **Product Specs**: `.ai/docs/prd.md` - comprehensive product requirements (715 lines)
-- **Development Plan**: `.ai/docs/plan.md` - detailed roadmap and progress tracking (384 lines)
+- **Product Specs**: `docs/prd.md` - comprehensive product requirements (715 lines)
+- **Development Plan**: `docs/plan.md` - detailed roadmap and progress tracking (384 lines)
 - **Design System**: `docs/design-system/getting-started.md` - complete component library guide (534 lines)
 - **Design System Migration**: `docs/design-system/migration-guide.md` - component migration patterns (970 lines)
-- **Tailwind v4 Migration**: `.ai/docs/tailwind-v4-migration-guide.md` - CSS-first approach migration
 - **Contributing**: `CONTRIBUTING.md` - development workflow and coding standards (499 lines)
 
 **Always reference `llms.txt` first** when looking for project context - it provides structured links to all relevant documentation.
@@ -324,9 +323,8 @@ const displayAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
 
 ## Reference Documentation
 **Always start with `llms.txt`** - it provides structured navigation to:
-- Product requirements in `.ai/docs/prd.md` (715 lines)
-- Development roadmap in `.ai/docs/plan.md` (384 lines)
-- Tailwind v4 migration guide in `.ai/docs/tailwind-v4-migration-guide.md`
+- Product requirements in `docs/prd.md` (715 lines)
+- Development roadmap in `docs/plan.md` (384 lines)
 - Design system guide in `docs/design-system/getting-started.md` (507 lines)
 - Design system migration guide in `docs/design-system/migration-guide.md` (970 lines)
 - Contributing guidelines in `CONTRIBUTING.md` (499 lines)

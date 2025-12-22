@@ -155,5 +155,4 @@ Improve development experience by separating component exports from utility expo
 
 - [React Fast Refresh Documentation](https://nextjs.org/docs/architecture/fast-refresh)
 - [ESLint react-refresh/only-export-components Rule](https://github.com/ArnaudBarre/eslint-plugin-react-refresh)
-- [Audit Report - Outstanding Issues Section](/.ai/docs/audit-report-2025-10-01.md)
 - [Class Variance Authority Documentation](https://cva.style/docs)
