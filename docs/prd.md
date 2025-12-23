@@ -2,22 +2,29 @@
 
 > A Web3 solution for cleaning up your digital wallet while supporting charitable causes
 
-**Version:** 1.0  
-**Date:** May 3, 2025  
-**Author:** Product Development Team
+**Version:** 2.0  
+**Date:** December 22, 2025  
+**Author:** Product Development Team  
+**Status:** Draft - Pending Review
+
+---
 
 ## Table of Contents
+
 1. [Product Overview](#1-product-overview)
 2. [Target Audience](#2-target-audience)
-3. [Core Features & Functionality](#3-core-features--functionality)
-4. [Technical Architecture](#4-technical-architecture)
-5. [User Interface & Experience](#5-user-interface--experience)
-6. [Data Model](#6-data-model)
-7. [Development Phases](#7-development-phases)
-8. [Security Considerations](#8-security-considerations)
-9. [Future Enhancements](#9-future-enhancements)
-10. [Technical Challenges & Mitigations](#10-technical-challenges--mitigations)
+3. [Success Metrics](#3-success-metrics)
+4. [Core Features & Functionality](#4-core-features--functionality)
+5. [Technical Architecture](#5-technical-architecture)
+6. [Non-Functional Requirements](#6-non-functional-requirements)
+7. [User Interface & Experience](#7-user-interface--experience)
+8. [Data Model](#8-data-model)
+9. [Development Phases](#9-development-phases)
+10. [Security Considerations](#10-security-considerations)
 11. [Business Considerations](#11-business-considerations)
+12. [Technical Challenges & Mitigations](#12-technical-challenges--mitigations)
+13. [Future Enhancements](#13-future-enhancements)
+14. [Appendix](#14-appendix)
 
 ---
 
@@ -25,23 +32,56 @@
 
 ### 1.1 Vision
 
-Token Toilet is a revival of a Web3 concept that provides crypto enthusiasts with a fun, interactive way to dispose of unwanted tokens while contributing to charitable causes. By combining gamification elements with charitable giving, Token Toilet creates value from otherwise abandoned or unwanted digital assets.
+Token Toilet is a Web3 platform that provides crypto enthusiasts with a fun, interactive way to dispose of unwanted tokens while contributing to charitable causes. By combining gamification elements with charitable giving, Token Toilet creates value from otherwise abandoned or unwanted digital assets.
 
-### 1.2 Objectives
+### 1.2 Problem Statement
 
-1. Create a secure platform for users to dispose of unwanted tokens (ERC-20, ERC-721, etc.)
-2. Implement a gamified "blind box" mechanism that incentivizes user participation
-3. Facilitate charitable donations from user contributions
-4. Support multiple blockchain networks to maximize accessibility
-5. Provide a seamless, engaging user experience with modern blockchain standards
-6. Generate verifiable on-chain receipts of contribution
+Crypto wallets accumulate digital clutter over time:
+- Abandoned governance tokens from defunct DAOs
+- Airdropped tokens with no clear utility
+- NFTs from discontinued projects
+- Tokens from failed or compromised protocols
 
-### 1.3 Key Value Propositions
+Currently, users either ignore these tokens (cluttering their wallet) or send them to burn addresses (creating no value). Token Toilet transforms this "waste" into charitable impact.
 
-- **For Token Donors:** A fun, animated way to clean up wallets while potentially helping charitable causes
-- **For Blind Box Players:** An entertaining chance to receive random tokens with potential value
-- **For Charities:** A novel source of crypto donations without technical barriers
-- **For the Ecosystem:** Reduction of abandoned tokens and increased token utility
+### 1.3 Objectives
+
+| # | Objective | Success Indicator |
+|---|-----------|-------------------|
+| 1 | Create a secure platform for disposing of unwanted tokens | Zero security incidents in first 6 months |
+| 2 | Implement a gamified "blind box" mechanism | >30% repeat usage rate |
+| 3 | Facilitate charitable donations | $10K+ in donations within first quarter |
+| 4 | Support multiple blockchain networks | 3 chains at launch (Ethereum, Polygon, Arbitrum) |
+| 5 | Provide seamless user experience | <3 clicks to complete disposal |
+| 6 | Generate verifiable on-chain receipts | 100% of disposals have NFT receipts |
+
+### 1.4 Key Value Propositions
+
+| Stakeholder | Value |
+|-------------|-------|
+| **Token Donors** | Clean up wallet + support charity + fun experience |
+| **Blind Box Players** | Entertainment + potential valuable returns |
+| **Charities** | Novel crypto donation source without technical barriers |
+| **Ecosystem** | Reduced token abandonment + increased utility |
+
+### 1.5 Scope
+
+#### In Scope (MVP)
+- ERC-20 and ERC-721 token disposal
+- Ethereum, Polygon, and Arbitrum support
+- MetaMask, WalletConnect, and Coinbase Wallet integration
+- Basic blind box contribution mechanism
+- Single charity integration (The Giving Block)
+- NFT proof of disposal
+- Core animations (flush, reveal)
+
+#### Out of Scope (MVP)
+- Solana/SPL token support (Phase 2)
+- ERC-1155 support (Phase 2)
+- Multiple charity selection (Phase 2)
+- Custom donation allocation sliders (Phase 2)
+- Mobile native application (Phase 3)
+- DAO governance (Phase 3)
 
 ---
 
@@ -49,376 +89,480 @@ Token Toilet is a revival of a Web3 concept that provides crypto enthusiasts wit
 
 ### 2.1 Primary User Segments
 
-1. **Crypto Enthusiasts**
-   - Web3 participants with multiple tokens/NFTs
-   - Individuals who have accumulated unwanted or low-value tokens
-   - Users interested in cleaning up their digital wallets
-
-2. **Charitable Givers**
-   - Crypto holders who want to contribute to causes
-   - Users interested in tax-efficient giving through crypto
-   - Impact-driven community members
-
-3. **Blockchain Gamers**
-   - Users who enjoy gamified crypto experiences
-   - Players attracted to chance-based rewards
-   - NFT collectors seeking new assets
+| Segment | Description | Size Estimate |
+|---------|-------------|---------------|
+| **Crypto Enthusiasts** | Web3 participants with cluttered wallets | Large (primary) |
+| **Charitable Givers** | Crypto holders wanting tax-efficient giving | Medium |
+| **Blockchain Gamers** | Users enjoying gamified crypto experiences | Medium |
 
 ### 2.2 User Personas
 
-**Alice - The Wallet Cleaner**
-- Has been in crypto since 2017
-- Accumulated dozens of tokens from airdrops, failed projects, and experiments
-- Wants to clean up her wallet but doesn't want to just burn tokens
-- Values efficiency and straightforward UX
+#### Alice - The Wallet Cleaner
+- **Background:** In crypto since 2017, DeFi power user
+- **Pain Point:** Dozens of worthless tokens cluttering her wallet
+- **Goal:** Clean wallet efficiently while doing something positive
+- **Technical Comfort:** High - uses multiple wallets, understands approvals
+- **Success Criteria:** Complete disposal in <2 minutes
 
-**Bob - The Charitable Gamer**
-- Regularly donates to causes
-- Enjoys gamified experiences in crypto
-- Willing to participate for entertainment value with the upside of potentially valuable returns
-- Values transparency in charitable giving
+#### Bob - The Charitable Gamer
+- **Background:** Regular donor, enjoys gamification
+- **Pain Point:** Wants fun ways to contribute to causes
+- **Goal:** Entertainment with charitable upside
+- **Technical Comfort:** Medium - familiar with MetaMask
+- **Success Criteria:** Engaging experience with clear impact visibility
 
-**Carol - The NFT Enthusiast**
-- Collects NFTs across multiple chains
-- Has unwanted NFTs from discontinued projects
-- Interested in obtaining proof of contribution NFTs
-- Values unique digital assets and project storytelling
+#### Carol - The NFT Enthusiast
+- **Background:** Collects NFTs, values provenance
+- **Pain Point:** Unwanted NFTs from discontinued projects
+- **Goal:** Dispose of NFTs and receive proof of contribution
+- **Technical Comfort:** Medium-High - understands NFT standards
+- **Success Criteria:** Unique, collectible receipt NFT
 
 ---
 
-## 3. Core Features & Functionality
+## 3. Success Metrics
 
-### 3.1 Token Disposal ("Toilet")
+### 3.1 Key Performance Indicators (KPIs)
 
-**Description:** A mechanism for users to safely dispose of any unwanted tokens or NFTs.
+| Category | Metric | Target | Measurement |
+|----------|--------|--------|-------------|
+| **Acquisition** | Monthly Active Users | 1,000+ by month 3 | Analytics |
+| **Engagement** | Tokens Disposed per Session | 5+ average | On-chain data |
+| **Retention** | 30-Day Return Rate | >25% | Analytics |
+| **Impact** | Total Charitable Donations | $10K+ by month 3 | On-chain data |
+| **Technical** | Transaction Success Rate | >98% | Monitoring |
+| **Technical** | Average Transaction Time | <30 seconds | Monitoring |
+| **UX** | Task Completion Rate | >90% | Analytics |
 
-**Acceptance Criteria:**
-- Support for ERC-20, ERC-721, and other common token standards
-- Multi-chain compatibility (Ethereum, Polygon, Solana initially)
-- Wallet connection with support for major providers (MetaMask, WalletConnect, etc.)
-- Visual confirmation of disposal with engaging animation
-- Transaction status monitoring with clear feedback
-- On-chain record of disposal for verification
+### 3.2 North Star Metric
 
-### 3.2 Random Token Distribution ("Fountain")
+**Total Charitable Value Generated** = Sum of all donations + estimated value of disposed tokens redirected to charity
 
-**Description:** A system that provides users with random tokens in exchange for a contribution.
+---
 
-**Acceptance Criteria:**
-- Accept stablecoin contributions (DAI, USDC, etc.)
-- Blind box mechanism for random token distribution
-- Transparent odds and potential rewards display
-- Engaging animation for the reveal process
-- Transaction status monitoring with clear feedback
-- Prevention of gaming or exploitation of the system
+## 4. Core Features & Functionality
 
-### 3.3 Charity Integration ("Sprinkler")
+### 4.1 Wallet Integration
 
-**Description:** A system to manage and distribute charitable donations from user contributions.
+**Description:** Secure connection to users' blockchain wallets using Reown AppKit.
+
+**Priority:** Must Have
 
 **Acceptance Criteria:**
-- Integration with reputable crypto donation platforms (e.g., The Giving Block, Every.org)
-- Supported charities list with descriptions
-- Transparent tracking of donation amounts
-- Option for users to allocate donation percentages (optional for MVP)
-- Compliance with relevant donation regulations
-- On-chain verification of donations
+| # | Criterion | Measurable Target |
+|---|-----------|-------------------|
+| 1 | Support wallet providers | MetaMask, WalletConnect, Coinbase Wallet |
+| 2 | Connection time | <2 seconds average |
+| 3 | Session persistence | Survive page refresh |
+| 4 | Network support | Ethereum, Polygon, Arbitrum |
+| 5 | Chain switching | Seamless with user confirmation |
+| 6 | Error recovery | Clear messaging + retry option for all failure modes |
 
-### 3.4 NFT Proof of Disposal
+**User Stories:**
+- As a user, I can connect my wallet with one click so that I can access my tokens
+- As a user, I can switch networks so that I can dispose of tokens across chains
+- As a user, I see clear error messages when connection fails so that I can resolve issues
 
-**Description:** NFT receipts that serve as proof of contribution and disposal.
-
-**Acceptance Criteria:**
-- Automatic NFT minting upon successful donation/disposal
-- Metadata including transaction details, tokens disposed, and charitable impact
-- Visual design reflecting the Token Toilet theme
-- Potential utility within the Token Toilet ecosystem
-- Multi-chain support for NFT minting
-
-### 3.5 Wallet Integration
-
-**Description:** Secure connection to users' blockchain wallets.
-
-**Acceptance Criteria:**
-- Support for multiple wallet providers (MetaMask, WalletConnect, etc.)
-- Multi-chain wallet support
-- Clear display of connected wallet status
-- Token discovery and balance checking
-- Transaction signing and confirmation flows
-- Proper error handling for connection issues
-
-### 3.6 Token Discovery and Selection
+### 4.2 Token Discovery and Selection
 
 **Description:** Interface for users to browse and select tokens in their wallet.
 
+**Priority:** Must Have
+
 **Acceptance Criteria:**
-- Automatic discovery of tokens across supported chains
-- Visual display of token metadata (name, symbol, balance)
-- Filtering and sorting options
-- Selection mechanism for disposal
-- Balance verification before transaction
-- Support for batch selection of multiple tokens
+| # | Criterion | Measurable Target |
+|---|-----------|-------------------|
+| 1 | Discovery time | <5 seconds for wallets with up to 100 tokens |
+| 2 | Token metadata | Display name, symbol, balance, icon |
+| 3 | Filtering | By chain, by value, by type (ERC-20/721) |
+| 4 | Sorting | By balance, name, recent activity |
+| 5 | Batch selection | Select multiple tokens simultaneously |
+| 6 | Balance accuracy | Real-time within 30 seconds |
+
+**User Stories:**
+- As a user, I can see all my tokens across supported chains so that I can decide what to dispose
+- As a user, I can filter and sort tokens so that I can find specific items quickly
+- As a user, I can select multiple tokens at once so that I can dispose efficiently
+
+### 4.3 Token Disposal ("Toilet")
+
+**Description:** Mechanism for users to safely dispose of unwanted tokens or NFTs.
+
+**Priority:** Must Have
+
+**Acceptance Criteria:**
+| # | Criterion | Measurable Target |
+|---|-----------|-------------------|
+| 1 | Token standards | ERC-20, ERC-721 |
+| 2 | Approval workflow | Clear explanation, one-click approve |
+| 3 | Batch disposal | Up to 10 tokens per transaction |
+| 4 | Transaction feedback | Real-time status updates |
+| 5 | Confirmation | Clear summary before execution |
+| 6 | Animation | Engaging flush animation (<3 seconds) |
+| 7 | Receipt | NFT minted upon completion |
+
+**User Stories:**
+- As a user, I can approve and dispose of tokens in a simple flow so that cleanup is frictionless
+- As a user, I see an engaging flush animation so that the experience is memorable
+- As a user, I receive confirmation and receipt so that I have proof of disposal
+
+### 4.4 Random Token Distribution ("Fountain")
+
+**Description:** System providing users with random tokens in exchange for stablecoin contribution.
+
+**Priority:** Should Have (MVP Phase 2)
+
+**Acceptance Criteria:**
+| # | Criterion | Measurable Target |
+|---|-----------|-------------------|
+| 1 | Accepted contributions | USDC, DAI |
+| 2 | Minimum contribution | $1 equivalent |
+| 3 | Odds display | Transparent before contribution |
+| 4 | Randomness | Verifiable on-chain (Chainlink VRF) |
+| 5 | Animation | Engaging reveal (<5 seconds) |
+| 6 | Anti-gaming | Rate limiting, Sybil resistance |
+
+### 4.5 Charity Integration ("Sprinkler")
+
+**Description:** System to manage and distribute charitable donations.
+
+**Priority:** Must Have
+
+**Acceptance Criteria:**
+| # | Criterion | Measurable Target |
+|---|-----------|-------------------|
+| 1 | Integration partner | The Giving Block API |
+| 2 | Charity display | Name, description, logo, category |
+| 3 | Donation tracking | Real-time on-chain verification |
+| 4 | Reporting | Transparent donation history |
+| 5 | Compliance | Meets donation platform requirements |
+
+### 4.6 NFT Proof of Disposal
+
+**Description:** NFT receipts as proof of contribution and disposal.
+
+**Priority:** Should Have
+
+**Acceptance Criteria:**
+| # | Criterion | Measurable Target |
+|---|-----------|-------------------|
+| 1 | Automatic minting | 100% of successful disposals |
+| 2 | Metadata | Transaction hash, tokens disposed, timestamp, charity impact |
+| 3 | Visual design | Token Toilet branding, unique per disposal |
+| 4 | Standard | ERC-721 compliant |
+| 5 | Gas efficiency | <$5 mint cost on Ethereum at 30 gwei |
 
 ---
 
-## 4. Technical Architecture
+## 5. Technical Architecture
 
-### 4.1 Technology Stack
+### 5.1 Technology Stack
 
-- **Frontend:**
-  - Next.js 14 with TypeScript
-  - Tailwind CSS for styling
-  - ethers.js/web3.js for blockchain interaction
-  - Web3Modal/WalletConnect for wallet connections
+**Frontend:**
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Next.js | 16.x | App Router, SSR, API routes |
+| React | 19.x | UI framework |
+| TypeScript | 5.9+ | Type safety |
+| Tailwind CSS | 4.x | Styling with glass morphism design system |
+| Wagmi | 2.x | React hooks for Ethereum |
+| Reown AppKit | 1.7+ | Wallet connection (formerly Web3Modal) |
+| Viem | 2.x | TypeScript Ethereum library |
+| TanStack Query | 5.x | Server state management |
 
-- **Smart Contracts:**
-  - Solidity for Ethereum/EVM chains
-  - Rust for Solana programs
-  - OpenZeppelin libraries for standard implementations
+**Smart Contracts:**
+| Technology | Purpose |
+|------------|---------|
+| Solidity | 0.8.20+ | EVM contract development |
+| OpenZeppelin | 5.x | Secure contract primitives |
+| Hardhat/Foundry | Development and testing |
+| Chainlink VRF | Verifiable randomness |
 
-- **Backend/Services:**
-  - Serverless functions for API endpoints
-  - IPFS for decentralized storage
-  - The Graph for indexing (optional for MVP)
+**Infrastructure:**
+| Technology | Purpose |
+|------------|---------|
+| Vercel | Frontend hosting |
+| IPFS | Decentralized NFT metadata storage |
+| Alchemy/Infura | RPC providers |
+| GitHub Actions | CI/CD |
 
-- **DevOps:**
-  - GitHub Actions for CI/CD
-  - Vercel for hosting
-  - Hardhat/Foundry for contract development
+### 5.2 Smart Contract Architecture
 
-### 4.2 Smart Contract Architecture
-
-#### 4.2.1 TokenToilet.sol
+#### 5.2.1 TokenToilet.sol
 
 **Purpose:** Accepts and processes token disposals.
 
-**Key Functions:**
-- `flushToken(address tokenAddress, uint256 amount)`: Process ERC-20 token disposal
-- `flushNFT(address nftAddress, uint256 tokenId)`: Process NFT disposal
-- `batchFlush(address[] tokenAddresses, uint256[] amounts)`: Process multiple tokens
-- `getTokensInToilet()`: Return current tokens available in the pool
+```solidity
+interface ITokenToilet {
+    function flushToken(address token, uint256 amount) external;
+    function flushNFT(address nft, uint256 tokenId) external;
+    function batchFlush(address[] calldata tokens, uint256[] calldata amounts) external;
+    function getTokensInToilet() external view returns (TokenInfo[] memory);
+    
+    event TokenFlushed(address indexed user, address indexed token, uint256 amount);
+    event NFTFlushed(address indexed user, address indexed nft, uint256 tokenId);
+}
+```
 
-#### 4.2.2 TokenFountain.sol
+#### 5.2.2 TokenFountain.sol
 
-**Purpose:** Manages the random token distribution mechanism.
+**Purpose:** Manages random token distribution.
 
-**Key Functions:**
-- `contributeToBlinBox(uint256 amount)`: Accept stablecoin contribution
-- `claimRandomToken()`: Distribute random token from pool
-- `getOdds()`: Return current distribution probabilities
-- `getAvailableRewards()`: Return tokens available for distribution
+```solidity
+interface ITokenFountain {
+    function contribute(uint256 amount) external;
+    function claimRandomToken() external;
+    function getOdds() external view returns (uint256[] memory);
+    function getAvailableRewards() external view returns (TokenInfo[] memory);
+    
+    event Contribution(address indexed user, uint256 amount);
+    event RewardClaimed(address indexed user, address indexed token, uint256 amount);
+}
+```
 
-#### 4.2.3 CharitySprinkler.sol
+#### 5.2.3 CharitySprinkler.sol
 
 **Purpose:** Manages charitable donation distribution.
 
-**Key Functions:**
-- `registerCharity(address charityAddress)`: Add supported charity
-- `distributeToCharity(address charityAddress, uint256 amount)`: Send funds to charity
-- `getSupportedCharities()`: Return list of supported charities
-- `getDonationHistory()`: Return historical donations
+```solidity
+interface ICharitySprinkler {
+    function registerCharity(address charity, string calldata name) external;
+    function distributeToCharity(address charity, uint256 amount) external;
+    function getSupportedCharities() external view returns (CharityInfo[] memory);
+    function getDonationHistory(address charity) external view returns (Donation[] memory);
+    
+    event CharityRegistered(address indexed charity, string name);
+    event DonationMade(address indexed charity, uint256 amount);
+}
+```
 
-#### 4.2.4 ProofOfDisposal.sol
+#### 5.2.4 ProofOfDisposal.sol
 
-**Purpose:** Manages the NFT receipt system.
+**Purpose:** ERC-721 NFT receipt system.
 
-**Key Functions:**
-- `mintReceiptNFT(address user, address[] tokens, uint256[] amounts)`: Create disposal receipt
-- `tokenURI(uint256 tokenId)`: Return metadata for a receipt NFT
-- `getUserReceipts(address user)`: Return all receipts for a user
+```solidity
+interface IProofOfDisposal {
+    function mintReceipt(address user, DisposalInfo calldata info) external returns (uint256);
+    function tokenURI(uint256 tokenId) external view returns (string memory);
+    function getUserReceipts(address user) external view returns (uint256[] memory);
+    
+    event ReceiptMinted(address indexed user, uint256 indexed tokenId);
+}
+```
 
-### 4.3 System Architecture Diagram
+### 5.3 System Architecture Diagram
 
 ```
 ┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
 │                 │         │                 │         │                 │
-│  User Wallets   │◄────────┤  Token Toilet   │◄────────┤  Charity Orgs   │
+│  User Wallets   │◄────────┤  Token Toilet   │────────►│  Charity Orgs   │
 │  (MetaMask,     │         │  Web Interface  │         │  (The Giving    │
-│   WalletConnect)│         │  (Next.js)      │         │   Block, etc.)  │
-│                 │         │                 │         │                 │
-└────────┬────────┘         └────────┬────────┘         └────────▲────────┘
-         │                           │                           │
-         │                           ▼                           │
-         │                  ┌─────────────────┐                 │
-         │                  │                 │                 │
-         └────────────────► │  Smart         │─────────────────┘
-                           │  Contracts      │
-                           │                 │
-                           └────────┬────────┘
-                                    │
-                                    ▼
-                           ┌─────────────────┐
-                           │                 │
-                           │  Blockchain     │
-                           │  Networks       │
-                           │  (ETH, Polygon, │
-                           │   Solana)       │
-                           │                 │
-                           └─────────────────┘
+│   WalletConnect,│         │  (Next.js 16)   │         │   Block)        │
+│   Coinbase)     │         │                 │         │                 │
+└────────┬────────┘         └────────┬────────┘         └─────────────────┘
+         │                           │
+         │  Reown AppKit             │  Wagmi + Viem
+         │                           │
+         └───────────┬───────────────┘
+                     │
+                     ▼
+            ┌─────────────────┐
+            │                 │
+            │  Smart          │
+            │  Contracts      │
+            │  (Solidity)     │
+            │                 │
+            └────────┬────────┘
+                     │
+        ┌────────────┼────────────┐
+        ▼            ▼            ▼
+   ┌─────────┐  ┌─────────┐  ┌─────────┐
+   │Ethereum │  │ Polygon │  │Arbitrum │
+   │ Mainnet │  │  PoS    │  │   One   │
+   └─────────┘  └─────────┘  └─────────┘
 ```
 
-### 4.4 Integration Points
+### 5.4 Integration Points
 
-1. **Blockchain RPC Providers**
-   - Infura/Alchemy for Ethereum and Polygon
-   - RPC endpoints for Solana
-
-2. **Wallet Providers**
-   - Web3Modal/WalletConnect for multi-wallet support
-   - Chain-specific wallet adapters
-
-3. **Charity Platforms**
-   - The Giving Block API for charity integration
-   - Every.org API as alternative
-
-4. **Token Metadata Services**
-   - Token Lists for supported tokens
-   - NFT metadata standards
-
-5. **Historical Data (Optional for MVP)**
-   - Etherscan API for token history
-   - Similar explorers for other chains
+| Integration | Provider | Purpose |
+|-------------|----------|---------|
+| Wallet Connection | Reown AppKit | Multi-wallet, multi-chain support |
+| RPC Providers | Alchemy, Infura | Blockchain queries |
+| Charity Platform | The Giving Block | Donation processing |
+| Token Metadata | Token Lists, CoinGecko | Token information |
+| NFT Storage | IPFS via Pinata | Receipt metadata |
+| Randomness | Chainlink VRF | Fair distribution |
 
 ---
 
-## 5. User Interface & Experience
+## 6. Non-Functional Requirements
 
-### 5.1 Design Principles
+### 6.1 Performance
 
-- **Playful but Professional:** Casino-inspired elements with clean, modern UI
-- **Intuitive Flows:** Clear user journeys with minimal steps
-- **Responsive Design:** Full functionality across devices
-- **Animated Feedback:** Engaging animations for key actions
-- **Transparent Information:** Clear display of all relevant data
+| Metric | Target | Priority |
+|--------|--------|----------|
+| Initial Page Load (LCP) | <2.5 seconds | Must Have |
+| Time to Interactive | <3 seconds | Must Have |
+| Token Discovery | <5 seconds (100 tokens) | Must Have |
+| Transaction Submission | <2 seconds | Must Have |
+| Animation Frame Rate | 60 fps | Should Have |
+| Bundle Size (JS) | <500KB gzipped | Should Have |
 
-### 5.2 Key User Flows
+### 6.2 Scalability
 
-#### 5.2.1 Token Disposal Flow
+| Metric | Target |
+|--------|--------|
+| Concurrent Users | 1,000+ |
+| Tokens per Wallet | Support up to 1,000 |
+| Transactions per Hour | 10,000+ |
 
-1. Connect wallet
-2. Browse and select tokens for disposal
-3. Approve token spending (if required)
-4. Confirm disposal
-5. Watch toilet flush animation
-6. Receive NFT receipt
+### 6.3 Availability
 
-#### 5.2.2 Blind Box Flow
+| Metric | Target |
+|--------|--------|
+| Uptime | 99.9% |
+| Recovery Time | <1 hour |
+| Data Durability | On-chain (100%) |
 
-1. Connect wallet
-2. Select stablecoin and amount
-3. View potential rewards and odds
-4. Confirm contribution
-5. Watch fountain animation
-6. Reveal and receive random token
-7. View charity impact
+### 6.4 Accessibility
 
-#### 5.2.3 Charity Selection Flow (Future Enhancement)
+| Requirement | Standard |
+|-------------|----------|
+| WCAG Compliance | Level AA |
+| Keyboard Navigation | Full support |
+| Screen Reader | Compatible |
+| Color Contrast | 4.5:1 minimum |
 
-1. Connect wallet
-2. View charity options
-3. Adjust allocation sliders
-4. Confirm preferences
-5. View impact dashboard
+### 6.5 Browser Support
 
-### 5.3 UI Components
-
-1. **Wallet Connection Module**
-   - Chain selector
-   - Wallet options
-   - Connection status
-
-2. **Token Discovery Panel**
-   - Token list with icons and balances
-   - Search and filter controls
-   - Selection mechanism
-
-3. **Toilet Visualization**
-   - Token queue display
-   - Flush mechanism
-   - Animation area
-
-4. **Fountain Visualization**
-   - Contribution input
-   - Odds display
-   - Animation area
-   - Reward reveal
-
-5. **Transaction Status Monitor**
-   - Progress indicators
-   - Success/failure messages
-   - Transaction links
-
-6. **Charity Dashboard**
-   - Organization list
-   - Impact metrics
-   - Allocation controls (future)
-
-### 5.4 Animation Concepts
-
-1. **Toilet Flush Animation**
-   - Selected tokens spiral down a drain
-   - Water swirl effect
-   - Satisfying "flush" sound
-   - Completion confirmation
-
-2. **Fountain Animation**
-   - Water bubbling effect
-   - Token rising from fountain
-   - Reveal effect with sparkles
-   - Success celebration
+| Browser | Minimum Version |
+|---------|-----------------|
+| Chrome | 90+ |
+| Firefox | 88+ |
+| Safari | 14+ |
+| Edge | 90+ |
 
 ---
 
-## 6. Data Model
+## 7. User Interface & Experience
 
-### 6.1 Token Metadata
+### 7.1 Design System
+
+Token Toilet uses an established design system with:
+
+| Element | Specification |
+|---------|---------------|
+| **Primary Color** | Violet palette (violet-50 to violet-900) |
+| **Style** | Glass morphism with backdrop blur |
+| **Typography** | Inter font family |
+| **Theme Support** | Light and dark modes |
+| **Component Library** | 14+ production-ready components |
+
+### 7.2 Key User Flows
+
+#### 7.2.1 Token Disposal Flow
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│  Connect │───►│  Select  │───►│  Review  │───►│  Approve │───►│  Flush   │
+│  Wallet  │    │  Tokens  │    │  Summary │    │  Tokens  │    │  & NFT   │
+└──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
+     │               │               │               │               │
+     ▼               ▼               ▼               ▼               ▼
+  <2 sec          Browse/         Confirm        One-click       Animation
+  connect         filter          selection       approve         + receipt
+```
+
+#### 7.2.2 Blind Box Flow
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│  Connect │───►│  Choose  │───►│  View    │───►│ Contribute│───►│  Reveal  │
+│  Wallet  │    │  Amount  │    │  Odds    │    │  & Wait  │    │  Reward  │
+└──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
+```
+
+### 7.3 UI Components
+
+Leverage existing component library:
+
+| Component | Usage |
+|-----------|-------|
+| `<Button>` | Primary actions with violet theme |
+| `<Card>` | Token cards, summary cards |
+| `<AddressDisplay>` | Wallet address with copy/link |
+| `<NetworkBadge>` | Current chain indicator |
+| `<TokenList>` | Selectable token grid |
+| `<TransactionStatus>` | Progress and confirmation |
+| `<Modal>` | Confirmation dialogs |
+| `<Toast>` | Success/error notifications |
+
+### 7.4 Animation Specifications
+
+| Animation | Duration | Trigger |
+|-----------|----------|---------|
+| Toilet Flush | 2-3 seconds | On disposal confirmation |
+| Token Spiral | Part of flush | Tokens entering drain |
+| Fountain Reveal | 3-5 seconds | On reward claim |
+| Success Celebration | 1-2 seconds | On completion |
+
+---
+
+## 8. Data Model
+
+### 8.1 Token Metadata
 
 ```typescript
 interface TokenMetadata {
-  address: string;
-  chainId: number;
+  address: `0x${string}`;
+  chainId: 1 | 137 | 42161; // Ethereum, Polygon, Arbitrum
   name: string;
   symbol: string;
   decimals: number;
   logoURI?: string;
-  balance?: string;
-  type: 'ERC20' | 'ERC721' | 'ERC1155' | 'SPL' | 'other';
+  balance: bigint;
+  type: 'ERC20' | 'ERC721';
 }
 ```
 
-### 6.2 Transaction Records
+### 8.2 Transaction Records
 
 ```typescript
 interface TransactionRecord {
-  txHash: string;
+  txHash: `0x${string}`;
   chainId: number;
-  user: string;
+  user: `0x${string}`;
   actionType: 'disposal' | 'contribution' | 'claim';
-  tokens: {
-    address: string;
-    amount: string;
-    tokenId?: string;
-  }[];
+  tokens: Array<{
+    address: `0x${string}`;
+    amount: bigint;
+    tokenId?: bigint;
+  }>;
   timestamp: number;
   status: 'pending' | 'confirmed' | 'failed';
+  receiptTokenId?: bigint;
 }
 ```
 
-### 6.3 NFT Receipt Metadata
+### 8.3 NFT Receipt Metadata
 
 ```typescript
 interface ReceiptMetadata {
   name: string;
   description: string;
-  image: string;
-  attributes: {
+  image: string; // IPFS URI
+  attributes: Array<{
+    trait_type: string;
+    value: string | number;
+  }>;
+  properties: {
     txHash: string;
     chainId: number;
-    disposedTokens: {
+    disposedTokens: Array<{
       name: string;
       symbol: string;
       amount: string;
-    }[];
+    }>;
     timestamp: number;
     charityImpact?: {
       organization: string;
@@ -428,7 +572,7 @@ interface ReceiptMetadata {
 }
 ```
 
-### 6.4 Charity Data
+### 8.4 Charity Data
 
 ```typescript
 interface CharityData {
@@ -436,280 +580,290 @@ interface CharityData {
   name: string;
   description: string;
   logoURI: string;
-  address: string;
-  category: string[];
-  totalDonations: string;
+  walletAddress: `0x${string}`;
+  categories: string[];
+  totalDonations: bigint;
   website: string;
+  verified: boolean;
 }
 ```
 
 ---
 
-## 7. Development Phases
+## 9. Development Phases
 
-### 7.1 Phase 1: Setup and Wallet Integration (Weeks 1-2)
-
-**Objectives:**
-- Establish Next.js project with TypeScript and Tailwind
-- Implement wallet connection interface
-- Set up multi-chain integration foundation
-
-**Deliverables:**
-- Working project skeleton
-- Wallet connection with chain selection
-- Basic token discovery functionality
-
-**Acceptance Testing:**
-- Successful wallet connection on multiple chains
-- Proper handling of connection errors
-- Accurate token balance display
-
-### 7.2 Phase 2: Core Token Management (Weeks 3-4)
+### 9.1 Phase 1: Foundation (Weeks 1-2)
 
 **Objectives:**
-- Develop token discovery and listing interface
-- Implement token approval workflow
-- Create basic transaction handling
+- Establish project infrastructure
+- Implement wallet connection
+- Set up multi-chain foundation
 
 **Deliverables:**
-- Token selection interface
-- Approval mechanism for ERC standards
-- Transaction status monitoring
+| Deliverable | Acceptance Criteria |
+|-------------|---------------------|
+| Wallet Connection | Connect/disconnect on 3 chains |
+| Chain Switching | Seamless network change |
+| Token Discovery | Display tokens with metadata |
+| Error Handling | Clear messages for all failure modes |
 
-**Acceptance Testing:**
-- Accurate token discovery across chains
-- Successful token approvals
-- Proper error handling for transactions
+**Exit Criteria:**
+- [ ] Wallet connects on Ethereum, Polygon, Arbitrum
+- [ ] Token balances display accurately
+- [ ] All tests passing
 
-### 7.3 Phase 3: Toilet & Fountain Mechanics (Weeks 5-6)
+### 9.2 Phase 2: Core Token Management (Weeks 3-4)
 
 **Objectives:**
-- Implement token disposal smart contracts
-- Develop random token distribution logic
-- Create basic animations
+- Develop token selection interface
+- Implement approval workflow
+- Create transaction handling
 
 **Deliverables:**
-- Working TokenToilet contract
-- Working TokenFountain contract
-- Basic animation implementations
+| Deliverable | Acceptance Criteria |
+|-------------|---------------------|
+| Token Selection UI | Multi-select with filtering |
+| Approval Flow | One-click approve pattern |
+| Transaction Monitor | Real-time status updates |
+| Disposal Contract | TokenToilet.sol deployed to testnet |
 
-**Acceptance Testing:**
-- Successful token disposal across chains
-- Working blind box mechanism
-- Proper animation triggers
+**Exit Criteria:**
+- [ ] Users can select and approve tokens
+- [ ] Transactions complete successfully
+- [ ] Contract passes security review
 
-### 7.4 Phase 4: Charity & Polish (Weeks 7-8)
+### 9.3 Phase 3: Toilet & Animations (Weeks 5-6)
 
 **Objectives:**
-- Integrate charity donation functionality
-- Implement NFT receipt generation
-- Polish UI and test thoroughly
+- Implement disposal mechanism
+- Create engaging animations
+- Deploy to testnet
 
 **Deliverables:**
-- Charity integration
-- NFT receipt contract and minting
-- Complete user flows with animations
+| Deliverable | Acceptance Criteria |
+|-------------|---------------------|
+| Disposal Flow | End-to-end token disposal |
+| Flush Animation | 60fps, <3 seconds |
+| Testnet Deployment | All contracts on Sepolia/Mumbai |
+| Integration Testing | Full flow tested |
 
-**Acceptance Testing:**
-- Successful charity donations
-- Proper NFT receipt generation
-- Smooth end-to-end user experience
+**Exit Criteria:**
+- [ ] Complete disposal flow functional
+- [ ] Animations perform at 60fps
+- [ ] Testnet deployment successful
 
-### 7.5 MVP Feature Table
+### 9.4 Phase 4: Charity & NFT Receipts (Weeks 7-8)
 
-| Feature | Priority | Phase | Complexity | Status |
-|---------|----------|-------|------------|--------|
-| Wallet Connection | High | 1 | Medium | Not Started |
-| Token Discovery | High | 1 | Medium | Not Started |
-| Token Disposal | High | 2 | High | Not Started |
-| Transaction Monitoring | High | 2 | Medium | Not Started |
-| Basic Animations | Medium | 3 | Medium | Not Started |
-| Blind Box Mechanism | High | 3 | High | Not Started |
-| Charity Integration | High | 4 | Medium | Not Started |
-| NFT Receipts | Medium | 4 | Medium | Not Started |
-| Multi-chain Support | Medium | Various | High | Not Started |
+**Objectives:**
+- Integrate charity donations
+- Implement NFT receipt minting
+- Polish and launch prep
+
+**Deliverables:**
+| Deliverable | Acceptance Criteria |
+|-------------|---------------------|
+| Charity Integration | The Giving Block connected |
+| NFT Receipts | Mint on disposal |
+| UI Polish | Design system compliance |
+| Documentation | User and developer guides |
+
+**Exit Criteria:**
+- [ ] Charity donations functional
+- [ ] NFT receipts mint correctly
+- [ ] Ready for security audit
+
+### 9.5 MVP Feature Matrix
+
+| Feature | Priority | Phase | Status |
+|---------|----------|-------|--------|
+| Wallet Connection | Must Have | 1 | In Progress |
+| Token Discovery | Must Have | 1 | In Progress |
+| Token Selection | Must Have | 2 | Not Started |
+| Token Approval | Must Have | 2 | Not Started |
+| Token Disposal | Must Have | 3 | Not Started |
+| Flush Animation | Should Have | 3 | Not Started |
+| Charity Integration | Must Have | 4 | Not Started |
+| NFT Receipts | Should Have | 4 | Not Started |
+| Blind Box | Should Have | Post-MVP | Not Started |
 
 ---
 
-## 8. Security Considerations
+## 10. Security Considerations
 
-### 8.1 Smart Contract Security
+### 10.1 Smart Contract Security
 
-1. **Auditing Requirements**
-   - Code review by security professionals
-   - Automated testing for common vulnerabilities
-   - Consider formal verification for critical functions
+| Requirement | Implementation |
+|-------------|----------------|
+| **Auditing** | Professional audit before mainnet |
+| **Access Control** | OpenZeppelin AccessControl |
+| **Pausability** | Emergency pause mechanism |
+| **Reentrancy Protection** | ReentrancyGuard on all external calls |
+| **Safe Transfers** | SafeERC20 for all token operations |
 
-2. **Access Controls**
-   - Clear role-based permissions
-   - Time-locked administration functions
-   - Emergency pause mechanisms
+### 10.2 Frontend Security
 
-3. **Token Handling**
-   - Safe transfer patterns for all token standards
-   - Protection against malicious token contracts
-   - Proper decimal handling for different tokens
+| Requirement | Implementation |
+|-------------|----------------|
+| **Input Validation** | Zod schemas for all inputs |
+| **Transaction Simulation** | Simulate before submission |
+| **Phishing Protection** | Domain verification |
+| **CSP Headers** | Strict Content Security Policy |
 
-### 8.2 Frontend Security
+### 10.3 Transaction Safety
 
-1. **Connection Security**
-   - Secure wallet connection practices
-   - Clear transaction signing requests
-   - Protection against phishing attempts
+| Requirement | Implementation |
+|-------------|----------------|
+| **Gas Estimation** | Accurate with 20% buffer |
+| **Stuck Transaction Handling** | Speed-up/cancel options |
+| **Confirmation Thresholds** | Wait for 2 confirmations |
 
-2. **Data Validation**
-   - Input validation for all user inputs
-   - Proper handling of unexpected data formats
-   - Protection against XSS and injection attacks
+### 10.4 Third-Party Security
 
-### 8.3 Transaction Safety
-
-1. **Gas Management**
-   - Accurate gas estimation
-   - Gas optimization for operations
-   - Protection against gas-based attacks
-
-2. **Transaction Monitoring**
-   - Clear transaction status updates
-   - Handling for dropped/stuck transactions
-   - Recovery mechanisms for failed transactions
-
-### 8.4 Third-Party Integrations
-
-1. **API Security**
-   - Secure API key management
-   - Rate limiting and monitoring
-   - Fallback mechanisms for API failures
-
-2. **Dependency Management**
-   - Regular updates of dependencies
-   - Monitoring for security vulnerabilities
-   - Minimal third-party dependencies
-
----
-
-## 9. Future Enhancements
-
-### 9.1 Post-MVP Features
-
-1. **LLM-based Token History**
-   - Integration with blockchain explorers (Etherscan, etc.)
-   - Historical data retrieval for tokens
-   - AI-powered insights about tokens being disposed
-
-2. **Customizable Donation Allocation**
-   - Slider interface for donation distribution
-   - Multiple charity support
-   - Personalized impact dashboard
-
-3. **Token Swapping Integration**
-   - Automatic conversion of valuable tokens to stablecoins
-   - Integration with DEXs for optimal rates
-   - Opt-out donation mode
-
-4. **Ad Network Integration**
-   - Optional ad viewing for value reclamation
-   - Partnership with crypto ad networks
-   - Transparent revenue sharing
-
-5. **Enhanced Gamification**
-   - Loyalty program for regular users
-   - Seasonal events and special rewards
-   - Leaderboards and achievements
-
-### 9.2 Expansion Opportunities
-
-1. **Additional Blockchain Support**
-   - Support for more EVM-compatible chains
-   - Integration with additional L2 networks
-   - Cross-chain functionality
-
-2. **Enhanced NFT Capabilities**
-   - Dynamic NFT receipts that evolve with usage
-   - NFT collections with utility within platform
-   - Collaborative NFT campaigns with charities
-
-3. **Community Governance**
-   - DAO structure for platform decisions
-   - Community voting on charity selections
-   - Token holder benefits
-
-4. **Mobile Application**
-   - Native mobile experience
-   - Push notifications for transactions
-   - Mobile-specific features
-
----
-
-## 10. Technical Challenges & Mitigations
-
-### 10.1 Multi-chain Integration
-
-**Challenge:** Supporting different blockchain architectures with varying token standards.
-
-**Mitigation:**
-- Implement chain-specific adapters
-- Use abstraction layers for common functionality
-- Prioritize chains for phased implementation
-- Utilize established libraries for cross-chain support
-
-### 10.2 Random Distribution Fairness
-
-**Challenge:** Ensuring fair and transparent random token distribution.
-
-**Mitigation:**
-- Use verifiable random functions where available
-- Implement transparent odds calculation
-- Balance reward pools regularly
-- Audit the randomness mechanism
-
-### 10.3 Gas Optimization
-
-**Challenge:** High gas costs on Ethereum for token operations.
-
-**Mitigation:**
-- Batch operations where possible
-- Prioritize L2 solutions for frequent operations
-- Implement gas estimation and warnings
-- Consider gas subsidies for certain actions
-
-### 10.4 Handling Various Token Types
-
-**Challenge:** Supporting diverse token standards across chains.
-
-**Mitigation:**
-- Create modular handling for different standards
-- Comprehensive testing with various token implementations
-- Fallback mechanisms for non-standard tokens
-- Clear communication about supported standards
+| Requirement | Implementation |
+|-------------|----------------|
+| **API Keys** | Environment variables, server-side only |
+| **Rate Limiting** | Protect against abuse |
+| **Dependency Scanning** | Automated with Dependabot |
 
 ---
 
 ## 11. Business Considerations
 
-### 11.1 Monetization Potential
+### 11.1 Monetization Strategy
 
-1. **Service Fees**
-   - Small percentage on blind box contributions
-   - Optional premium features
-   - Priority processing fees
-
-2. **NFT Sales**
-   - Limited edition artistic receipts
-   - Collaborative collections with artists
-   - NFT utility extensions
-
-3. **Partnership Opportunities**
-   - Integration with projects seeking token utility
-   - Charity partnership promotions
-   - Cross-promotion with compatible services
+| Revenue Stream | Model | Target |
+|----------------|-------|--------|
+| Blind Box Fees | 5% of contribution | $500/month by month 6 |
+| Premium NFT Receipts | One-time purchase | $100/month by month 6 |
+| Partnership Fees | Revenue share | $200/month by month 6 |
 
 ### 11.2 Legal Considerations
 
-1. **Charitable Donation Compliance**
-   - Proper reporting and documentation
-   - Collaboration with compliant platforms
-   - Tax receipt generation
+#### 11.2.1 Charitable Donation Compliance
 
-2. **Gambling Regulations**
-   - Ensuring blind box mechanics aren
+| Requirement | Approach |
+|-------------|----------|
+| Tax Documentation | Partner with compliant platform (The Giving Block) |
+| Reporting | Automated donation receipts |
+| Verification | Only registered 501(c)(3) organizations |
+
+#### 11.2.2 Gambling Regulations
+
+| Risk | Mitigation |
+|------|------------|
+| Blind box as gambling | No monetary entry requirement for disposal |
+| Variable returns | Transparent odds disclosure |
+| Age verification | Wallet-based (inherent to Web3) |
+| Jurisdiction restrictions | Geo-blocking where required |
+
+**Legal Review Required:** Consult with legal counsel before launch to ensure compliance with:
+- US state gambling laws
+- EU gaming regulations
+- Crypto-specific regulations by jurisdiction
+
+### 11.3 Risk Assessment
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Smart contract exploit | Low | Critical | Audit, bug bounty |
+| Regulatory action | Medium | High | Legal review, compliance |
+| Low adoption | Medium | Medium | Marketing, partnerships |
+| Gas cost barriers | Medium | Medium | L2 priority, gas subsidies |
+
+---
+
+## 12. Technical Challenges & Mitigations
+
+### 12.1 Multi-chain Integration
+
+**Challenge:** Different chains have varying confirmation times, gas models, and RPC reliability.
+
+**Mitigation:**
+- Chain-specific adapters with unified interface
+- Fallback RPC providers
+- Chain-appropriate confirmation thresholds
+- Clear UX for chain-specific behaviors
+
+### 12.2 Random Distribution Fairness
+
+**Challenge:** Ensuring provably fair randomness on-chain.
+
+**Mitigation:**
+- Chainlink VRF for verifiable randomness
+- Transparent odds calculation
+- Public audit of distribution history
+- Anti-manipulation safeguards (cooldowns, limits)
+
+### 12.3 Gas Optimization
+
+**Challenge:** High gas costs on Ethereum mainnet.
+
+**Mitigation:**
+- Batch operations where possible
+- Prioritize L2s (Polygon, Arbitrum) for high-frequency actions
+- Accurate gas estimation with user warnings
+- Consider gas subsidies for small disposals
+
+### 12.4 Token Standard Variations
+
+**Challenge:** Non-standard token implementations.
+
+**Mitigation:**
+- Try/catch with fallback patterns
+- Token whitelist for known-good contracts
+- Clear error messages for unsupported tokens
+- Manual override option with warnings
+
+---
+
+## 13. Future Enhancements
+
+### 13.1 Phase 2 Features (Post-MVP)
+
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| Solana Support | SPL token disposal | High |
+| Multiple Charities | User-selected allocation | High |
+| ERC-1155 Support | Multi-token standard | Medium |
+| LLM Token Insights | AI-powered token history | Medium |
+
+### 13.2 Phase 3 Features
+
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| Mobile App | Native iOS/Android | High |
+| DAO Governance | Community decisions | Medium |
+| Dynamic NFTs | Evolving receipts | Low |
+| Cross-chain Bridging | Unified multi-chain experience | Medium |
+
+---
+
+## 14. Appendix
+
+### 14.1 Glossary
+
+| Term | Definition |
+|------|------------|
+| Disposal | Transferring tokens to the TokenToilet contract |
+| Flush | The animated disposal action |
+| Fountain | The blind box contribution system |
+| Sprinkler | The charity distribution system |
+| Receipt NFT | ERC-721 proof of disposal |
+
+### 14.2 References
+
+- [Reown AppKit Documentation](https://docs.reown.com/)
+- [Wagmi Documentation](https://wagmi.sh/)
+- [The Giving Block API](https://thegivingblock.com/)
+- [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts/)
+
+### 14.3 Revision History
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 1.0 | May 3, 2025 | Product Team | Initial draft |
+| 2.0 | Dec 22, 2025 | Product Team | Updated tech stack, added NFRs, aligned with implementation |
+
+---
+
+*Document Status: Draft - Pending Stakeholder Review*

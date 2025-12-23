@@ -1,3 +1,4 @@
 globs:
   - '!.ai/**'
   - '!AGENTS.md'
+  - '!docs/prd.md'
