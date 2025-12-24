@@ -1,18 +1,18 @@
-import type {WalletErrorRecovery, WalletSpecificError} from '@/lib/web3/wallet-error-types'
+import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
 
 import type {Meta, StoryObj} from '@storybook/react'
 
-import {WalletErrorHandler, type WalletErrorMessage} from './wallet-error-handler'
+import {WalletErrorRecovery} from './wallet-error-recovery'
 
-const meta: Meta<typeof WalletErrorHandler> = {
-  title: 'Web3/WalletErrorHandler',
-  component: WalletErrorHandler,
+const meta: Meta<typeof WalletErrorRecovery> = {
+  title: 'Web3/WalletErrorRecovery',
+  component: WalletErrorRecovery,
   parameters: {
     layout: 'centered',
     docs: {
       description: {
         component:
-          'Displays wallet-specific error messages with provider-specific styling and recovery actions. Supports MetaMask, WalletConnect, and Coinbase Wallet error scenarios.',
+          'Displays wallet-specific error messages with provider-specific styling and recovery actions. Automatically fetches recovery steps based on the error. Supports MetaMask, WalletConnect, and Coinbase Wallet error scenarios.',
       },
     },
   },
@@ -33,17 +33,10 @@ export const MetaMaskNotInstalled: Story = {
       name: 'MetaMaskNotInstalled',
       message: 'MetaMask not found',
       code: 'METAMASK_NOT_INSTALLED',
-      userFriendlyMessage: 'MetaMask extension not found',
+      userFriendlyMessage: 'MetaMask extension not found. Please install MetaMask to connect.',
       walletProvider: 'metamask',
       recoveryInstructions: ['Install MetaMask browser extension', 'Restart your browser after installation'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'install',
-        label: 'Install MetaMask',
-        url: 'https://metamask.io/download/',
-      },
-    } as WalletErrorRecovery,
   },
 }
 
@@ -53,16 +46,10 @@ export const MetaMaskLocked: Story = {
       name: 'MetaMaskLocked',
       message: 'MetaMask is locked',
       code: 'METAMASK_LOCKED',
-      userFriendlyMessage: 'MetaMask wallet is locked',
+      userFriendlyMessage: 'MetaMask wallet is locked. Please unlock it to continue.',
       walletProvider: 'metamask',
-      recoveryInstructions: ['Unlock MetaMask extension', 'Enter your password'],
+      recoveryInstructions: ['Click the MetaMask extension icon', 'Enter your password to unlock'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'unlock',
-        label: 'Unlock MetaMask',
-      },
-    } as WalletErrorRecovery,
   },
 }
 
@@ -72,22 +59,10 @@ export const MetaMaskAccountAccessDenied: Story = {
       name: 'MetaMaskAccessDenied',
       message: 'User rejected the request',
       code: 'METAMASK_ACCOUNT_ACCESS_DENIED',
-      userFriendlyMessage: 'Connection request was denied',
+      userFriendlyMessage: 'Connection request was denied. Please approve the connection in MetaMask.',
       walletProvider: 'metamask',
       recoveryInstructions: ['Click "Connect" in MetaMask popup', 'Select the account you want to connect'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'retry',
-        label: 'Try Again',
-      },
-      secondaryActions: [
-        {
-          type: 'try_different_wallet',
-          label: 'Try Different Wallet',
-        },
-      ],
-    } as WalletErrorRecovery,
   },
 }
 
@@ -97,22 +72,10 @@ export const MetaMaskExtensionError: Story = {
       name: 'MetaMaskExtensionError',
       message: 'Extension error occurred',
       code: 'METAMASK_EXTENSION_ERROR',
-      userFriendlyMessage: 'MetaMask extension encountered an error',
+      userFriendlyMessage: 'MetaMask extension encountered an error.',
       walletProvider: 'metamask',
       recoveryInstructions: ['Refresh the page', 'Restart your browser', 'Disable and re-enable MetaMask extension'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'refresh',
-        label: 'Refresh Page',
-      },
-      secondaryActions: [
-        {
-          type: 'refresh',
-          label: 'Refresh Page',
-        },
-      ],
-    } as WalletErrorRecovery,
   },
 }
 
@@ -123,16 +86,10 @@ export const WalletConnectSessionRejected: Story = {
       name: 'WalletConnectSessionRejected',
       message: 'Session request was rejected',
       code: 'WALLETCONNECT_SESSION_REJECTED',
-      userFriendlyMessage: 'Connection was rejected in your wallet',
+      userFriendlyMessage: 'Connection was rejected in your wallet app.',
       walletProvider: 'walletconnect',
       recoveryInstructions: ['Scan the QR code again', 'Approve the connection in your wallet app'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'retry',
-        label: 'Try Again',
-      },
-    } as WalletErrorRecovery,
   },
 }
 
@@ -142,16 +99,10 @@ export const WalletConnectQRExpired: Story = {
       name: 'WalletConnectQRExpired',
       message: 'QR code has expired',
       code: 'WALLETCONNECT_QR_CODE_EXPIRED',
-      userFriendlyMessage: 'QR code has expired',
+      userFriendlyMessage: 'The QR code has expired. Please generate a new one.',
       walletProvider: 'walletconnect',
       recoveryInstructions: ['Generate a new QR code', 'Scan within 2 minutes'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'retry',
-        label: 'Generate New QR',
-      },
-    } as WalletErrorRecovery,
   },
 }
 
@@ -161,22 +112,10 @@ export const WalletConnectRelayError: Story = {
       name: 'WalletConnectRelayError',
       message: 'Relay server connection failed',
       code: 'WALLETCONNECT_RELAY_ERROR',
-      userFriendlyMessage: 'Connection server unavailable',
+      userFriendlyMessage: 'Connection server is temporarily unavailable.',
       walletProvider: 'walletconnect',
       recoveryInstructions: ['Check your internet connection', 'Try again in a few moments'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'retry',
-        label: 'Retry Connection',
-      },
-      secondaryActions: [
-        {
-          type: 'try_different_wallet',
-          label: 'Try Different Wallet',
-        },
-      ],
-    } as WalletErrorRecovery,
   },
 }
 
@@ -187,17 +126,10 @@ export const CoinbaseNotInstalled: Story = {
       name: 'CoinbaseNotInstalled',
       message: 'Coinbase Wallet not found',
       code: 'COINBASE_NOT_INSTALLED',
-      userFriendlyMessage: 'Coinbase Wallet not detected',
+      userFriendlyMessage: 'Coinbase Wallet not detected. Please install it to continue.',
       walletProvider: 'coinbase',
       recoveryInstructions: ['Install Coinbase Wallet app or extension', 'Make sure it is properly installed'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'install',
-        label: 'Install Coinbase Wallet',
-        url: 'https://wallet.coinbase.com/',
-      },
-    } as WalletErrorRecovery,
   },
 }
 
@@ -207,19 +139,13 @@ export const CoinbaseUnauthorized: Story = {
       name: 'CoinbaseUnauthorized',
       message: 'Authorization failed',
       code: 'COINBASE_UNAUTHORIZED',
-      userFriendlyMessage: 'Connection authorization failed',
+      userFriendlyMessage: 'Connection authorization failed. Please try again.',
       walletProvider: 'coinbase',
       recoveryInstructions: [
         'Approve the connection in Coinbase Wallet',
         'Make sure you are logged into Coinbase Wallet',
       ],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'retry',
-        label: 'Try Again',
-      },
-    } as WalletErrorRecovery,
   },
 }
 
@@ -229,87 +155,59 @@ export const CoinbaseNetworkError: Story = {
       name: 'CoinbaseNetworkError',
       message: 'Network connection failed',
       code: 'COINBASE_NETWORK_ERROR',
-      userFriendlyMessage: 'Network connection error',
+      userFriendlyMessage: 'Network connection error with Coinbase Wallet.',
       walletProvider: 'coinbase',
       recoveryInstructions: ['Check your internet connection', 'Verify Coinbase Wallet is online'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'retry',
-        label: 'Retry Connection',
-      },
-      secondaryActions: [
-        {
-          type: 'refresh',
-          label: 'Refresh Page',
-        },
-      ],
-    } as WalletErrorRecovery,
   },
 }
 
-// Generic Error Story
 export const UnknownWalletError: Story = {
   args: {
     error: {
       name: 'UnknownWalletError',
       message: 'An unexpected error occurred',
-      code: 'METAMASK_LOCKED',
-      userFriendlyMessage: 'Unknown wallet error',
+      code: 'METAMASK_EXTENSION_ERROR',
+      userFriendlyMessage: 'An unexpected wallet error occurred.',
       walletProvider: 'unknown',
       recoveryInstructions: ['Try refreshing the page', 'Check your wallet connection'],
     } as WalletSpecificError,
-    recovery: {
-      primaryAction: {
-        type: 'retry',
-        label: 'Try Again',
-      },
-      secondaryActions: [
-        {
-          type: 'refresh',
-          label: 'Refresh Page',
-        },
-        {
-          type: 'try_different_wallet',
-          label: 'Try Different Wallet',
-        },
-      ],
-    } as WalletErrorRecovery,
   },
 }
 
-// WalletErrorMessage Component Stories
-export const SimpleErrorMessage: StoryObj<typeof WalletErrorMessage> = {
+// Interactive Stories
+export const WithRetryAction: Story = {
   args: {
     error: {
-      name: 'MetaMaskGeneralError',
-      message: 'Something went wrong with MetaMask',
+      name: 'ConnectionFailed',
+      message: 'Connection failed',
       code: 'METAMASK_LOCKED',
-      userFriendlyMessage: 'MetaMask encountered an error',
+      userFriendlyMessage: 'Failed to connect to MetaMask. Please try again.',
       walletProvider: 'metamask',
+      recoveryInstructions: ['Ensure MetaMask is unlocked', 'Click retry to try again'],
     } as WalletSpecificError,
   },
 }
 
-export const WalletConnectErrorMessage: StoryObj<typeof WalletErrorMessage> = {
+export const WithDismissAction: Story = {
   args: {
     error: {
-      name: 'WalletConnectGeneralError',
-      message: 'WalletConnect session failed',
-      code: 'WALLETCONNECT_RELAY_ERROR',
-      userFriendlyMessage: 'WalletConnect connection failed',
+      name: 'MinorError',
+      message: 'Minor error occurred',
+      code: 'WALLETCONNECT_SESSION_REJECTED',
+      userFriendlyMessage: 'Connection was cancelled.',
       walletProvider: 'walletconnect',
     } as WalletSpecificError,
   },
 }
 
-export const CoinbaseErrorMessage: StoryObj<typeof WalletErrorMessage> = {
+export const NoRecoveryInstructions: Story = {
   args: {
     error: {
-      name: 'CoinbaseGeneralError',
-      message: 'Coinbase Wallet error occurred',
+      name: 'SimpleError',
+      message: 'Simple error',
       code: 'COINBASE_NETWORK_ERROR',
-      userFriendlyMessage: 'Coinbase Wallet error',
+      userFriendlyMessage: 'A network error occurred.',
       walletProvider: 'coinbase',
     } as WalletSpecificError,
   },

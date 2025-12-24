@@ -43,6 +43,8 @@ describe('useWallet - Network Switching', () => {
     mockUseAccount.mockReturnValue({
       address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
       isConnected: true,
+      isConnecting: false,
+      isReconnecting: false,
     } as any)
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -359,6 +361,78 @@ describe('useWallet - Network Switching', () => {
 
         expect(mockSwitchChain).toHaveBeenCalledWith({chainId: to})
       })
+    })
+  })
+
+  describe('Connection States (RFC-002)', () => {
+    it('should expose isConnecting state from useAccount', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      mockUseAccount.mockReturnValue({
+        address: undefined,
+        isConnected: false,
+        isConnecting: true,
+        isReconnecting: false,
+      } as any)
+
+      const {result} = renderHook(() => useWallet())
+
+      expect(result.current.isConnecting).toBe(true)
+      expect(result.current.isReconnecting).toBe(false)
+    })
+
+    it('should expose isReconnecting state from useAccount', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      mockUseAccount.mockReturnValue({
+        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+        isConnected: false,
+        isConnecting: false,
+        isReconnecting: true,
+      } as any)
+
+      const {result} = renderHook(() => useWallet())
+
+      expect(result.current.isConnecting).toBe(false)
+      expect(result.current.isReconnecting).toBe(true)
+    })
+
+    it('should show both false when fully connected', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      mockUseAccount.mockReturnValue({
+        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+        isConnected: true,
+        isConnecting: false,
+        isReconnecting: false,
+      } as any)
+
+      const {result} = renderHook(() => useWallet())
+
+      expect(result.current.isConnected).toBe(true)
+      expect(result.current.isConnecting).toBe(false)
+      expect(result.current.isReconnecting).toBe(false)
+    })
+  })
+
+  describe('Error State Management (RFC-002)', () => {
+    it('should initialize with null error state', () => {
+      const {result} = renderHook(() => useWallet())
+
+      expect(result.current.error).toBe(null)
+    })
+
+    it('should have clearError function', () => {
+      const {result} = renderHook(() => useWallet())
+
+      expect(typeof result.current.clearError).toBe('function')
+    })
+
+    it('should clear error when clearError is called', async () => {
+      const {result} = renderHook(() => useWallet())
+
+      await act(async () => {
+        result.current.clearError()
+      })
+
+      expect(result.current.error).toBe(null)
     })
   })
 })

@@ -7,7 +7,7 @@ This document serves as the master index for all Token Toilet implementation RFC
 | RFC | Title | Priority | Complexity | Phase | Status | Dependencies |
 |-----|-------|----------|------------|-------|--------|--------------|
 | [RFC-001](./RFC-001-Project-Foundation.md) | Project Foundation & Design System | Must Have | Medium | 1 | Completed | None |
-| [RFC-002](./RFC-002-Wallet-Connection.md) | Wallet Connection & Multi-Chain | Must Have | High | 1 | Pending | RFC-001 |
+| [RFC-002](./RFC-002-Wallet-Connection.md) | Wallet Connection & Multi-Chain | Must Have | High | 1 | Completed | RFC-001 |
 | [RFC-003](./RFC-003-Token-Discovery.md) | Token Discovery & Display | Must Have | High | 2 | Pending | RFC-001, RFC-002 |
 | [RFC-004](./RFC-004-Token-Management.md) | Token Management UI | Must Have | Medium | 2 | Pending | RFC-003 |
 | [RFC-005](./RFC-005-Token-Selection-Approval.md) | Token Selection & Approval | Must Have | High | 2 | Pending | RFC-003, RFC-004 |
