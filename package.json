@@ -19,6 +19,7 @@
     "test:ui": "vitest --ui",
     "type-check": "tsc --noEmit",
     "validate": "pnpm run lint && pnpm run type-check && pnpm run test && pnpm run validate:design-system && pnpm run build-storybook",
+    "validate:bundle-size": "NEXT_BUILD_ENV_ANALYZE=true pnpm run build",
     "validate:design-system": "tsx scripts/validate-design-system.ts",
     "validate:stories": "pnpm run build-storybook",
     "validate:web3": "tsx scripts/validate-web3-integration.ts"
@@ -39,6 +40,7 @@
     "@tanstack/react-virtual": "^3.13.12",
     "consola": "^3.4.2",
     "crypto-js": "^4.2.0",
+    "lru-cache": "^11.2.4",
     "lucide-react": "^0.555.0",
     "next": "16.1.0",
     "next-themes": "^0.4.4",
