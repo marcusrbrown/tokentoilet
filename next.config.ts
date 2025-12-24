@@ -13,6 +13,41 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   productionBrowserSourceMaps: buildEnv.NEXT_BUILD_ENV_SOURCEMAPS,
 
+  images: {
+    remotePatterns: [
+      {protocol: 'https', hostname: 'assets.coingecko.com'},
+      {protocol: 'https', hostname: 'raw.githubusercontent.com'},
+      {protocol: 'https', hostname: 'ipfs.io'},
+      {protocol: 'https', hostname: '*.ipfs.dweb.link'},
+      {protocol: 'https', hostname: 'cloudflare-ipfs.com'},
+    ],
+  },
+
+  headers: async () => [
+    {
+      source: '/:path*',
+      headers: [
+        {
+          key: 'Content-Security-Policy',
+          value: [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: https: blob:",
+            "font-src 'self' data:",
+            "connect-src 'self' https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.alchemy.com https://*.infura.io https://api.coingecko.com https://*.reown.com wss://*.reown.com https://api.web3modal.org https://*.web3modal.com",
+            "frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org",
+            "worker-src 'self' blob:",
+          ].join('; '),
+        },
+        {key: 'X-Content-Type-Options', value: 'nosniff'},
+        {key: 'X-Frame-Options', value: 'DENY'},
+        {key: 'X-XSS-Protection', value: '1; mode=block'},
+        {key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin'},
+      ],
+    },
+  ],
+
   turbopack: {
     resolveAlias: {
       pino: 'pino/browser',

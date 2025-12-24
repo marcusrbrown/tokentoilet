@@ -1,7 +1,9 @@
 import type {Meta, StoryObj} from '@storybook/react'
 
 import {
+  CharitySelectorSkeleton,
   GenericSkeleton,
+  TokenCardSkeleton,
   TokenDetailSkeleton,
   TokenListSkeleton,
   TokenSelectionSkeleton,
@@ -21,6 +23,10 @@ export default meta
 
 export const TokenList: StoryObj = {
   render: () => <TokenListSkeleton />,
+}
+
+export const TokenCard: StoryObj = {
+  render: () => <TokenCardSkeleton />,
 }
 
 export const TokenDetail: StoryObj = {
@@ -43,6 +49,10 @@ export const TransactionStatus: StoryObj = {
   render: () => <TransactionStatusSkeleton />,
 }
 
+export const CharitySelector: StoryObj = {
+  render: () => <CharitySelectorSkeleton />,
+}
+
 export const Generic: StoryObj = {
   render: () => <GenericSkeleton />,
 }
@@ -59,6 +69,10 @@ export const AllSkeletons: StoryObj = {
         <TokenListSkeleton />
       </div>
       <div>
+        <h3 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Token Card Skeleton</h3>
+        <TokenCardSkeleton />
+      </div>
+      <div>
         <h3 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Token Detail Skeleton</h3>
         <TokenDetailSkeleton />
       </div>
@@ -73,6 +87,10 @@ export const AllSkeletons: StoryObj = {
       <div>
         <h3 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Transaction Status Skeleton</h3>
         <TransactionStatusSkeleton />
+      </div>
+      <div>
+        <h3 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Charity Selector Skeleton</h3>
+        <CharitySelectorSkeleton />
       </div>
     </div>
   ),
