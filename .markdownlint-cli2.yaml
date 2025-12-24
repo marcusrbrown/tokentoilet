@@ -1,4 +1,7 @@
 globs:
   - '!.ai/**'
   - '!AGENTS.md'
+  - '!docs/FEATURES.md'
   - '!docs/prd.md'
+  - '!docs/RULES.md'
+  - '!RFCs/**'
