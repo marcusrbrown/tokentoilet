@@ -59,6 +59,10 @@ const mockPersistence = {
 const defaultWalletState = {
   address: undefined as `0x${string}` | undefined,
   isConnected: false,
+  isConnecting: false,
+  isReconnecting: false,
+  error: null,
+  clearError: vi.fn(),
   connect: mockConnect,
   disconnect: mockDisconnect,
   chainId: 1, // Default to a valid chain ID

@@ -4,6 +4,7 @@ import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
 import {classifyWalletError, getWalletErrorRecovery} from '@/lib/web3/wallet-error-detector'
 import {arbitrum, mainnet, polygon} from '@reown/appkit/networks'
 import {useAppKit} from '@reown/appkit/react'
+import {useCallback, useState} from 'react'
 import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
 
 import {useWalletPersistence} from './use-wallet-persistence'
@@ -52,10 +53,13 @@ export interface UnsupportedNetworkError {
 
 export function useWallet() {
   const {open} = useAppKit()
-  const {address, isConnected} = useAccount()
+  const {address, isConnected, isConnecting, isReconnecting} = useAccount()
   const {disconnect} = useDisconnect()
   const chainId = useChainId()
   const {switchChain, isPending: isSwitchingChain, error: switchChainError} = useSwitchChain()
+
+  const [error, setError] = useState<WalletSpecificError | null>(null)
+  const clearError = useCallback(() => setError(null), [])
 
   // Integration with wallet persistence
   const persistence = useWalletPersistence({
@@ -253,39 +257,36 @@ export function useWallet() {
   }
 
   return {
-    // Basic wallet functionality
     address,
     isConnected,
+    isConnecting,
+    isReconnecting,
     connect: handleConnect,
     disconnect: handleDisconnect,
 
-    // Network information
     chainId,
     currentNetwork: getCurrentNetworkInfo(),
 
-    // Network validation
     isCurrentChainSupported: isCurrentChainSupported(),
     isSupportedChain,
     validateCurrentNetwork,
 
-    // Enhanced error handling for unsupported networks
     getUnsupportedNetworkError,
     handleUnsupportedNetwork,
 
-    // Network switching
     switchToChain,
     isSwitchingChain,
     switchChainError,
 
-    // Utility functions
     getSupportedChains,
 
-    // Wallet-specific error handling
+    error,
+    clearError,
+
     classifyWalletError: (error: Error, context?: Parameters<typeof classifyWalletError>[1]) =>
       classifyWalletError(error, context),
     getWalletErrorRecovery,
 
-    // Persistence functionality
     persistence: {
       isAvailable: persistence.isAvailable,
       autoReconnect: persistence.autoReconnect,

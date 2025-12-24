@@ -102,6 +102,10 @@ describe('Token Discovery Performance Benchmarks', () => {
     vi.mocked(useWallet).mockReturnValue({
       address: mockAddress,
       isConnected: true,
+      isConnecting: false,
+      isReconnecting: false,
+      error: null,
+      clearError: vi.fn(),
       connect: vi.fn(),
       disconnect: vi.fn(),
       chainId: 1,
