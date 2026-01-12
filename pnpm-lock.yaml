@@ -2882,8 +2882,8 @@ packages:
       typescript:
         optional: true
 
-  '@wagmi/connectors@7.1.1':
-    resolution: {integrity: sha512-rkYapSMFeBzZTs7nul1O7UCFMZ/pWIwBTYDJnTGTX2vG0pe3FGZ+SNPgSFL7enLQzZdcif3+9pt7pUJAzJogVw==}
+  '@wagmi/connectors@7.1.2':
+    resolution: {integrity: sha512-L5ATHwEjJCWOm/tRWAyQ42hFpe4UrrReqQT8pMEsM+A29CkJxEm0n7/C2Ki7O1hiZ2D/n5emp0s4MfCFe9pdwQ==}
     peerDependencies:
       '@base-org/account': ^2.5.1
       '@coinbase/wallet-sdk': ^4.3.6
@@ -2891,7 +2891,7 @@ packages:
       '@metamask/sdk': ~0.33.1
       '@safe-global/safe-apps-provider': ~0.18.6
       '@safe-global/safe-apps-sdk': ^9.1.0
-      '@wagmi/core': 3.2.1
+      '@wagmi/core': 3.2.2
       '@walletconnect/ethereum-provider': ^2.21.1
       porto: ~0.2.35
       typescript: '>=5.7.3'
@@ -9296,7 +9296,7 @@ snapshots:
       viem: 2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5)
       wagmi: 2.19.5(@tanstack/query-core@5.90.16)(@tanstack/react-query@5.90.16(react@19.2.3))(@types/react@19.2.7)(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))(zod@4.3.5)
     optionalDependencies:
-      '@wagmi/connectors': 7.1.1(4f618df07ac5df79355c13f7107a7706)
+      '@wagmi/connectors': 7.1.2(4f618df07ac5df79355c13f7107a7706)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -11386,7 +11386,7 @@ snapshots:
       - wagmi
       - zod
 
-  '@wagmi/connectors@7.1.1(4f618df07ac5df79355c13f7107a7706)':
+  '@wagmi/connectors@7.1.2(4f618df07ac5df79355c13f7107a7706)':
     dependencies:
       '@wagmi/core': 2.22.1(@tanstack/query-core@5.90.16)(@types/react@19.2.7)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5))
       viem: 2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.3.5)
