@@ -1,0 +1,389 @@
+---
+name: Fro Bot
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  discussion_comment:
+    types: [created]
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, review_requested]
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: Custom prompt for the Fro Bot agent
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: >-
+    fro-bot-${{
+      github.event.issue.number ||
+      github.event.pull_request.number ||
+      github.event.discussion.number ||
+      github.run_id
+    }}
+  cancel-in-progress: false
+
+env:
+  PR_REVIEW_PROMPT: |
+    You are reviewing a pull request for Token Toilet — a Web3 DeFi application
+    built with Next.js 16 + React 19 + TypeScript 5.9 + Wagmi v2 + Reown AppKit
+    + Tailwind CSS v4 + Vitest + Storybook. Read AGENTS.md for full project
+    conventions before reviewing.
+
+    Focus your review on:
+
+    1. CORRECTNESS & EDGE CASES
+       - Logic errors, off-by-one, null/undefined paths
+       - Async race conditions, especially in wallet operations
+       - React hook dependency arrays and stale closures
+       - Functional state updates in useEffect (`setX(prev => ...)` not `setX(x + 1)`)
+       - Ref capture at effect execution time for cleanup
+
+    2. WEB3 SECURITY (elevated scrutiny)
+       - Token approval flows: infinite approvals flagged, amount validation
+       - Address handling: checksummed, validated before use
+       - Transaction error handling: try/catch with console.error, never throw
+         on connect/disconnect
+       - Wallet state transitions: connected → disconnecting → disconnected
+       - Chain ID validation and unsupported network handling
+       - Reentrancy concerns in any contract interaction patterns
+       - Private key / mnemonic exposure: never logged, displayed, or stored
+       - RPC endpoint safety: no hardcoded private keys in config
+
+    3. ARCHITECTURE & PATTERNS
+       - Must use `useWallet` hook, not direct wagmi/AppKit hooks in components
+       - Web3 components require `'use client'` directive
+       - Imports use `@/*` path alias
+       - Design system components from `@/components/ui/*`
+       - Environment access via `import {env} from '@/env'`, never `process.env`
+
+    4. TYPE SAFETY (strict — no exceptions)
+       - No `as any`, `@ts-ignore`, or `@ts-expect-error`
+       - Discriminated unions over optional properties
+       - Parse, don't validate (Zod-first for runtime validation)
+       - Explicit return types on public APIs
+
+    5. STYLING (Tailwind CSS v4 — CSS-first)
+       - No `tailwind.config.ts` or JavaScript-based theme config
+       - No `@apply` directives
+       - CSS custom properties in `@theme` blocks for design tokens
+       - Violet branding (`--color-violet-*`) and glass morphism patterns
+       - No hardcoded color values — use design system tokens
+
+    6. TESTING
+       - New/changed behavior must have test coverage
+       - Web3 components require mocked wallet providers (wagmi, AppKit)
+       - Use computed property names for hook mocks (avoids ESLint warnings)
+       - Co-located test files: `component.test.ts(x)` alongside source
+
+    7. BREAKING CHANGES
+       - Changes to public hook APIs (useWallet, useTokenApproval)
+       - Design system component prop changes
+       - Web3 config changes affecting supported chains
+
+    Do NOT push commits, modify code, or create branches. Review only.
+    Use inline comments for file-specific issues. Reserve the review body
+    for the structured summary below.
+
+    You MUST structure your review using exactly these headings:
+    ## Verdict: [PASS | CONDITIONAL | REJECT]
+    CONDITIONAL = can merge after addressing the listed blocking issues.
+    ### Blocking issues
+    ### Non-blocking concerns
+    ### Web3 security assessment
+    ### Missing tests
+    ### Risk assessment (LOW/MED/HIGH) + rationale
+    Evaluate likelihood of regression, security exposure, or blast radius.
+    If a section has no items, write "None" under the heading.
+    Do not omit any heading.
+
+  SCHEDULE_PROMPT: |
+    Perform daily repository autohealing for Token Toilet — a Web3 DeFi
+    application built with Next.js 16 + React 19 + TypeScript 5.9 + Wagmi v2
+    + Reown AppKit + Tailwind CSS v4 + Vitest + Storybook, deployed to Vercel.
+    Read AGENTS.md for full project conventions before making changes.
+
+    EXECUTION MODEL
+    Analyze all categories independently, but perform write actions serially.
+    Do not keep multiple branches checked out at once. Complete one mutation,
+    return to a clean working tree, then continue.
+
+    DEDUPLICATION (applies to ALL categories)
+    Before creating any new PR or issue, search for an existing open
+    bot-authored PR/issue for the same root cause. Reuse or update the
+    existing item instead of creating a duplicate.
+
+    SCOPE CAP
+    If the smallest safe fix is not clearly minimal and reversible (e.g.,
+    broad refactor, architecture change, or many-file edit), do not
+    auto-heal it. Open or update an issue and log it under "Needs Human
+    Attention".
+
+    DEPENDENCY OWNERSHIP
+    Renovate owns routine dependency/version bumps (configured via
+    marcusrbrown/renovate-config preset with bfra-me automerge rules).
+    You may change dependency versions only when remediating a confirmed
+    security advisory (critical/high) or repairing an existing
+    security-update PR. Do not create non-security version-bump PRs, and
+    do not batch unrelated dependency changes into a security fix. Do NOT
+    modify package.json versions outside category 2 security remediation.
+
+    1. ERRORED PRs
+       Find open PRs with failing CI checks. Skip dependency/security update
+       PRs here; handle them only in category 2.
+       Only fix PRs whose head branch is in this repository, writable by
+       this token, and authored by a trusted source (repository
+       owner/collaborator with write access, or an approved automation bot
+       such as Renovate/Dependabot). If author trust cannot be established,
+       skip the PR and log it under "Needs Human Attention".
+       If the PR touches workflows, automation prompts, package-manager
+       config, lockfiles, or execution scripts, do not run project commands
+       from that branch. Skip it and log why.
+       For each fixable PR:
+       a. Check out the PR branch.
+       b. Read the failing check logs to diagnose the root cause.
+       c. Fix the issue (type errors, lint failures, test regressions,
+          build breaks).
+       d. Commit with a clear message and push to the PR branch.
+       e. Comment on the PR explaining what failed and what was fixed.
+
+    2. SECURITY
+       Review Dependabot/Renovate alerts and open PRs for vulnerable deps.
+       - If a security update PR exists but has conflicts or failures,
+         fix and push to that PR branch.
+       - For unaddressed critical/high advisories with no existing PR,
+         create a new PR with the remediation.
+       - Do NOT bulk-update unrelated deps in a security PR.
+       If security advisory/alert data is unavailable to the token or CLI,
+       skip this category and note "security alerts unavailable" under
+       "Needs Human Attention". Do not guess.
+
+       Web3-specific security checks:
+       - Verify no private keys, mnemonics, or wallet secrets appear in
+         source code, config, or committed .env files.
+       - Check that RPC endpoint URLs do not contain embedded API keys in
+         committed source (should use env vars).
+       - Flag any direct usage of `eval()` or `Function()` constructors
+         near user-supplied data.
+
+    3. CODE QUALITY & REPO HYGIENE
+       This category is primarily report-only. Focus on things only a
+       code-aware agent can catch:
+       - Run `pnpm build` (Next.js production build). Report any type
+         errors or build failures.
+       - Run `pnpm test:coverage` and report coverage metrics. If coverage
+         regressions are detected, open or update a single issue with the
+         failing metrics and the top contributing files.
+       - Run `pnpm run build-storybook` and report any failures. Storybook
+         health is critical for design system documentation.
+       - Run `pnpm run validate:design-system` to verify design system
+         completeness. Report any validation failures.
+       - Run `pnpm run validate:web3` to verify Web3 integration patterns.
+         Report any validation failures.
+       - Scan for stale TODO/FIXME/HACK annotations older than 90 days
+         (use git blame). Collect them into a single issue or update an
+         existing "Stale TODOs" issue.
+       - Verify convention compliance:
+         * No `as any`, `@ts-ignore`, or `@ts-expect-error` in source
+         * No direct wagmi/AppKit hook usage outside `hooks/` directory
+           (components must use `useWallet`, not `useAccount` directly)
+         * Imports use `@/` alias for project paths
+         * Web3 components have `'use client'` directive
+         * No `process.env` usage (must use `import {env} from '@/env'`)
+         * No `tailwind.config.ts` or `@apply` directives
+         * No hardcoded color values (must use design system tokens)
+         * Error handling: try/catch with console.error on Web3 ops,
+           never throw on connect/disconnect
+         * Functional state updates in useEffect
+         Report findings but put actual code fixes into category 4.
+       - Check that AGENTS.md accurately reflects the current directory
+         structure. If drift is found, open a PR with corrections.
+
+    4. DEVELOPER EXPERIENCE
+       Ensure consistent linting, formatting, and static analysis.
+       Run `pnpm lint`; fix any failures, including convention violations
+       found in category 3.
+       Open a PR for all fixes — never commit directly to the default
+       branch. Group related lint/format/convention fixes into a single PR.
+
+    5. QUALITY GATES VERIFICATION
+       Verify the project's quality gates pass on the default branch:
+       a. `pnpm lint` — 0 errors
+       b. `pnpm exec tsc --noEmit` — type check passes
+       c. `pnpm test` — all unit tests passing
+       d. `pnpm build` — successful Next.js production build
+       e. `pnpm run build-storybook` — Storybook builds successfully
+       f. `pnpm audit --audit-level moderate` — no moderate+ vulnerabilities
+       g. `pnpm run validate:design-system` — design system complete
+       h. `pnpm run validate:web3` — Web3 patterns valid
+
+       For each failing gate:
+       - Identify the root cause from command output.
+       - If the fix is minimal and safe, include it in a category 4 PR.
+       - If the fix is complex, open an issue with diagnosis and
+         recommended approach.
+
+    Hard boundaries:
+    - Never force-push, rewrite history, or delete branches.
+    - Never push directly to the default branch. Direct pushes are allowed
+      only to an existing non-default PR branch you are repairing under
+      category 1 or category 2.
+    - Never merge PRs, submit reviews/approvals, close/reopen PRs or
+      issues, or modify branch protection. This workflow may only push
+      fixes, open/update PRs, open/update issues, and comment on PRs when
+      a fix was pushed.
+    - Never modify secrets, org settings, environments, or branch
+      protection.
+    - Never make checks pass by disabling tests, deleting failing
+      assertions, lowering coverage/performance budgets, weakening
+      lint/type rules, or editing workflows/configuration only to suppress
+      failures.
+    - Do not modify .github/workflows/, lint/test/build config, hook
+      config, or automation prompt files unless the failing run is caused
+      by a genuine bug in that file, the change is narrowly scoped, and
+      the summary explains why.
+    - If the smallest safe fix would weaken a guardrail or reduce
+      validation, skip it and log it under "Needs Human Attention".
+    - Do not create multiple summary issues.
+
+    Project conventions (MUST follow for code changes):
+    - TypeScript strict mode: no `any`, no `@ts-ignore`, no `@ts-expect-error`
+    - Import alias: `@/` for project paths
+    - Web3 hooks: use `useWallet` abstraction, not direct wagmi hooks
+    - Error handling: `try/catch` with `console.error`, never throw on
+      connect/disconnect
+    - Styling: Tailwind CSS v4 CSS-first, no `tailwind.config.ts`, no
+      `@apply`, CSS custom properties in `@theme` blocks
+    - Package manager: pnpm (not npm/yarn)
+    - YAML extension: .yaml, not .yml
+
+    OUTPUT FORMAT — SINGLE SUMMARY ISSUE
+    After completing all work, find an existing open issue titled
+    "Daily Autohealing Report — YYYY-MM-DD" (using today's UTC date).
+    If it exists, update its body. If not, create it.
+
+    The issue body MUST use this structure. If a section has no rows, do
+    not emit an empty table — write "None." directly under that heading.
+
+    ## Daily Autohealing Report — YYYY-MM-DD (UTC)
+
+    ### Errored PRs
+    | PR | Failure | Fix | Status |
+    | --- | --- | --- | --- |
+    | #N | [root cause] | [what was fixed] | ✅ Fixed / ⚠️ Needs review |
+
+    ### Security
+    | Advisory / PR | Severity | Action Taken |
+    | --- | --- | --- |
+    | [advisory or #N] | Critical/High/Medium | [fix pushed / PR created / skipped] |
+
+    ### Code Quality & Repo Hygiene
+    | Check | Result | Action |
+    | --- | --- | --- |
+    | Next.js build | ✅ Pass / ❌ Fail | [details or #N] |
+    | Test coverage | ✅ Meets thresholds / ⚠️ Below target | [details or #N] |
+    | Storybook build | ✅ Pass / ❌ Fail | [details or #N] |
+    | Design system | ✅ Valid / ⚠️ Issues | [details or #N] |
+    | Web3 patterns | ✅ Valid / ⚠️ Issues | [details or #N] |
+    | Stale TODOs | N found | [#N or None] |
+    | Convention drift | ✅ Clean / ⚠️ Issues | [details or #N] |
+    | AGENTS.md accuracy | ✅ Current / ⚠️ Drifted | [#N or None] |
+
+    ### Developer Experience
+    - [list of each PR or commit-sized fix with summary link]
+
+    ### Quality Gates
+    | Gate | Status | Details |
+    | --- | --- | --- |
+    | Lint | ✅ / ❌ | [error count or clean] |
+    | Type check | ✅ / ❌ | [error count or clean] |
+    | Unit tests | ✅ / ❌ | [pass/fail count] |
+    | Build | ✅ / ❌ | [details] |
+    | Storybook | ✅ / ❌ | [details] |
+    | Security audit | ✅ / ❌ | [advisory count] |
+    | Design system | ✅ / ❌ | [details] |
+    | Web3 validation | ✅ / ❌ | [details] |
+
+    ### Needs Human Attention
+    - [items that could not be auto-fixed, with context]
+
+    Do NOT create multiple issues. Do NOT comment on individual issues.
+    Produce exactly one summary issue per run.
+
+jobs:
+  fro-bot:
+    name: Fro Bot
+    runs-on: ubuntu-latest
+    if: >-
+      (
+        github.event.pull_request == null ||
+        (
+          !github.event.pull_request.head.repo.fork &&
+          !endsWith(github.event.pull_request.user.login || '', '[bot]')
+        )
+      ) && (
+        (
+          github.event_name == 'issues' &&
+          !endsWith(github.event.issue.user.login || '', '[bot]') &&
+          (github.event.issue.user.login || '') != 'fro-bot'
+        ) ||
+        (
+          github.event_name == 'pull_request' &&
+          !endsWith(github.event.pull_request.user.login || '', '[bot]') &&
+          (github.event.pull_request.user.login || '') != 'fro-bot'
+        ) ||
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch' ||
+        (
+          (github.event_name == 'issue_comment' ||
+           github.event_name == 'pull_request_review_comment' ||
+           github.event_name == 'discussion_comment') &&
+          contains(github.event.comment.body || '', '@fro-bot') &&
+          (github.event.comment.user.login || '') != 'fro-bot' &&
+          contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association || '')
+        )
+      )
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: >-
+            ${{
+              (github.event.issue.pull_request && format('refs/pull/{0}/head', github.event.issue.number))
+              || github.event.pull_request.head.sha
+              || ''
+            }}
+          token: ${{ secrets.FRO_BOT_PAT }}
+
+      - name: Setup project
+        uses: ./.github/actions/setup
+
+      - name: Run Fro Bot
+        uses: fro-bot/agent@9083d9d3fe350d32c4917bd0312fe78f241ad0aa # v0.32.1
+        env:
+          OPENCODE_PROMPT_ARTIFACT: 'true'
+          PROMPT: >-
+            ${{
+              (github.event_name == 'workflow_dispatch' && (github.event.inputs.prompt || ''))
+              || (github.event_name == 'schedule' && env.SCHEDULE_PROMPT)
+              || (github.event_name == 'pull_request' && env.PR_REVIEW_PROMPT)
+              || ''
+            }}
+        with:
+          auth-json: ${{ secrets.OPENCODE_AUTH_JSON }}
+          github-token: ${{ secrets.FRO_BOT_PAT }}
+          model: ${{ vars.FRO_BOT_MODEL }}
+          omo-providers: ${{ secrets.OMO_PROVIDERS }}
+          prompt: ${{ env.PROMPT }}
+          timeout: 0
