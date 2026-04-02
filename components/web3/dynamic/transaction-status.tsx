@@ -24,9 +24,9 @@
 
 import type {ComponentProps} from 'react'
 
-import {TransactionStatusSkeleton} from '@/components/ui/skeletons'
 import dynamic from 'next/dynamic'
 import {Suspense} from 'react'
+import {TransactionStatusSkeleton} from '@/components/ui/skeletons'
 
 const TransactionStatusCardComponent = dynamic(
   async () => import('../transaction-status').then(mod => mod.TransactionStatusCard),

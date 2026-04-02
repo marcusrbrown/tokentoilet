@@ -1,17 +1,17 @@
 'use client'
 
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import type {Address} from 'viem'
+import {cva, type VariantProps} from 'class-variance-authority'
+import {AlertTriangle, CheckCircle, Clock, DollarSign, Info, Loader2, RefreshCw, Settings, Zap} from 'lucide-react'
+import React, {useState} from 'react'
+import {formatUnits, parseUnits} from 'viem'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
 import {Modal} from '@/components/ui/modal'
 import {Skeleton} from '@/components/ui/skeleton'
 import {useTokenApproval} from '@/hooks/use-token-approval'
 import {cn} from '@/lib/utils'
-import {cva, type VariantProps} from 'class-variance-authority'
-import {AlertTriangle, CheckCircle, Clock, DollarSign, Info, Loader2, RefreshCw, Settings, Zap} from 'lucide-react'
-import React, {useState} from 'react'
-import {formatUnits, parseUnits} from 'viem'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
 
 /**
  * CVA variants for flexible approval component presentation

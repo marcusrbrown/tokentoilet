@@ -1,10 +1,10 @@
 'use client'
 
-import {useWallet} from '@/hooks/use-wallet'
-import {cn} from '@/lib/utils'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {AlertCircle, CheckCircle2, Loader2, Network, Wallet, WifiOff, Zap} from 'lucide-react'
 import React from 'react'
+import {useWallet} from '@/hooks/use-wallet'
+import {cn} from '@/lib/utils'
 
 import {Badge} from './badge'
 import {Button} from './button'

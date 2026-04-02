@@ -1,10 +1,10 @@
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import type {Meta, StoryObj} from '@storybook/react'
 import type {Address} from 'viem'
+import React from 'react'
 
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
-import React from 'react'
 
 const mockToken = (overrides: Partial<CategorizedToken> = {}): CategorizedToken => ({
   address: `0x${Math.random().toString(16).slice(2, 42).padEnd(40, '0')}`,

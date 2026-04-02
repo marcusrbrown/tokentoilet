@@ -1,11 +1,11 @@
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import type {Address} from 'viem'
-import {useTokenMetadata} from '@/hooks/use-token-metadata'
-import {useWallet} from '@/hooks/use-wallet'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {fireEvent, render, screen} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
+import {useTokenMetadata} from '@/hooks/use-token-metadata'
+import {useWallet} from '@/hooks/use-wallet'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 import {TokenDetail} from './token-detail'
 

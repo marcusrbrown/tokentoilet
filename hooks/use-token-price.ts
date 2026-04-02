@@ -1,9 +1,9 @@
 'use client'
 
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import type {Address} from 'viem'
 import {useQuery} from '@tanstack/react-query'
 import {useCallback, useMemo} from 'react'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import {useWallet, type SupportedChainId} from './use-wallet'
 
 /**

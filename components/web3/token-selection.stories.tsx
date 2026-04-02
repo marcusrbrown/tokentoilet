@@ -1,7 +1,6 @@
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import type {Meta, StoryObj} from '@storybook/react'
 import type {Address} from 'viem'
-
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
 

@@ -1,10 +1,10 @@
 'use client'
 
+import {useState} from 'react'
 import {Button} from '@/components/ui/button'
 import {NetworkBadge} from '@/components/ui/network-badge'
 import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
 import {cn} from '@/lib/utils'
-import {useState} from 'react'
 
 const CHAIN_INFO: Record<SupportedChainId, {name: string; icon: string}> = {
   1: {name: 'Ethereum', icon: '⟠'},

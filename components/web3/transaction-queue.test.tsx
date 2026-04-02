@@ -1,9 +1,8 @@
-import type {QueuedTransaction} from '@/lib/web3/transaction-queue'
 import type {Hash} from 'viem'
-
-import {useTransactionQueue} from '@/hooks/use-transaction-queue'
 import {render, screen} from '@testing-library/react'
 import {describe, expect, it, vi} from 'vitest'
+import {useTransactionQueue} from '@/hooks/use-transaction-queue'
+import type {QueuedTransaction} from '@/lib/web3/transaction-queue'
 
 import {PendingTransactionQueue, TransactionQueue, TransactionQueueSummary} from './transaction-queue'
 

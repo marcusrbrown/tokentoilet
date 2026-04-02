@@ -1,6 +1,6 @@
-import {WalletConnectionModal} from '@/components/web3/wallet-connection-modal'
 import {render, screen} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
+import {WalletConnectionModal} from '@/components/web3/wallet-connection-modal'
 
 // Mock useWallet hook
 vi.mock('@/hooks/use-wallet', () => ({

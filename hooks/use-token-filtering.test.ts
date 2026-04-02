@@ -6,7 +6,6 @@ import React from 'react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
 import {useAccount, useChainId} from 'wagmi'
 import {TokenCategory} from '../lib/web3/token-filtering'
-
 import {
   useTokenCategorizationPreferences,
   useTokenFavorites,

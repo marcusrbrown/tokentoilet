@@ -1,6 +1,6 @@
-import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
-
 import type {Meta, StoryObj} from '@storybook/react'
+
+import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
 
 import {WalletErrorRecovery} from './wallet-error-recovery'
 

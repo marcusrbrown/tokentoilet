@@ -2,11 +2,11 @@
  * @vitest-environment jsdom
  */
 
+import {renderHook, waitFor} from '@testing-library/react'
+import {beforeEach, describe, expect, it, vi} from 'vitest'
+
 // Import the mocked module to get typed access
 import {walletStorage} from '@/lib/web3/secure-storage'
-import {renderHook, waitFor} from '@testing-library/react'
-
-import {beforeEach, describe, expect, it, vi} from 'vitest'
 
 import {useWalletPersistence} from './use-wallet-persistence'
 

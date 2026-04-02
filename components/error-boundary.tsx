@@ -1,9 +1,8 @@
 'use client'
 
+import {Component, type ErrorInfo, type ReactNode} from 'react'
 import {Button} from '@/components/ui/button'
 import {Card} from '@/components/ui/card'
-
-import {Component, type ErrorInfo, type ReactNode} from 'react'
 
 export interface ErrorBoundaryProps {
   children: ReactNode

@@ -1,8 +1,8 @@
 import type {Metadata} from 'next/types'
 
-import {ErrorBoundary} from '@/components/error-boundary'
-
 import {Inter} from 'next/font/google'
+
+import {ErrorBoundary} from '@/components/error-boundary'
 import {Providers} from './providers'
 import './globals.css'
 

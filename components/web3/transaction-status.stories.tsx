@@ -1,6 +1,6 @@
-import type {QueuedTransaction} from '@/lib/web3/transaction-queue'
 import type {Meta, StoryObj} from '@storybook/react'
 import type {Hash} from 'viem'
+import type {QueuedTransaction} from '@/lib/web3/transaction-queue'
 
 import {TransactionStatusCard} from './transaction-status'
 

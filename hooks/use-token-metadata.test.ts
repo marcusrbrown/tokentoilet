@@ -2,7 +2,6 @@ import type {Address} from 'viem'
 import {describe, expect, it} from 'vitest'
 
 import {TokenRiskScore, type EnhancedTokenMetadata} from '../lib/web3/token-metadata'
-
 import {filterTokenMetadata, getTokenMetadataStats} from './use-token-metadata'
 
 describe('use-token-metadata utils', () => {

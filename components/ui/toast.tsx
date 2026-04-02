@@ -1,10 +1,10 @@
 'use client'
 
-import {cn} from '@/lib/utils'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {AlertCircle, CheckCircle, Info, X, XCircle} from 'lucide-react'
 import React from 'react'
 import toast, {Toaster, type Toast} from 'react-hot-toast'
+import {cn} from '@/lib/utils'
 
 /**
  * Toast component variants using class-variance-authority

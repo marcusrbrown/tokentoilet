@@ -1,9 +1,9 @@
 'use client'
 
-import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
+import {AlertCircle, ExternalLink, RefreshCw} from 'lucide-react'
 import {cn} from '@/lib/utils'
 import {getWalletErrorRecovery} from '@/lib/web3/wallet-error-detector'
-import {AlertCircle, ExternalLink, RefreshCw} from 'lucide-react'
+import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
 
 import {Badge} from '../ui/badge'
 import {Button} from '../ui/button'

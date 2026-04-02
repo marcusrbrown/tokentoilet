@@ -1,16 +1,5 @@
 'use client'
 
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
-import {Badge} from '@/components/ui/badge'
-import {Button} from '@/components/ui/button'
-import {Modal} from '@/components/ui/modal'
-import {NetworkBadge} from '@/components/ui/network-badge'
-import {Skeleton} from '@/components/ui/skeleton'
-import {useTokenMetadata} from '@/hooks/use-token-metadata'
-import {formatDate, formatNumber} from '@/lib/token-utils'
-import {cn, formatAddress} from '@/lib/utils'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {
   AlertTriangle,
@@ -34,6 +23,17 @@ import {
   Zap,
 } from 'lucide-react'
 import React, {useCallback, useState} from 'react'
+import {Badge} from '@/components/ui/badge'
+import {Button} from '@/components/ui/button'
+import {Modal} from '@/components/ui/modal'
+import {NetworkBadge} from '@/components/ui/network-badge'
+import {Skeleton} from '@/components/ui/skeleton'
+import {useTokenMetadata} from '@/hooks/use-token-metadata'
+import {formatDate, formatNumber} from '@/lib/token-utils'
+import {cn, formatAddress} from '@/lib/utils'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 // Strict type definitions for component variants
 type RiskLevel = 'low' | 'medium' | 'high' | 'spam'

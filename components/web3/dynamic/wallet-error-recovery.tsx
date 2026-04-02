@@ -2,9 +2,9 @@
 
 import type {ComponentProps} from 'react'
 
-import {GenericSkeleton} from '@/components/ui/skeletons'
 import dynamic from 'next/dynamic'
 import {Suspense} from 'react'
+import {GenericSkeleton} from '@/components/ui/skeletons'
 
 const WalletErrorRecoveryComponent = dynamic(
   async () => import('../wallet-error-recovery').then(mod => mod.WalletErrorRecovery),

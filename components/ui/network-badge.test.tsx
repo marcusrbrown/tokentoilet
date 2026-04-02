@@ -1,9 +1,9 @@
-// Import useWallet to get access to the mock
-import {useWallet} from '@/hooks/use-wallet'
 import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-
 import {beforeEach, describe, expect, it, vi, type Mock} from 'vitest'
+
+// Import useWallet to get access to the mock
+import {useWallet} from '@/hooks/use-wallet'
 
 import {NetworkBadge} from './network-badge'
 

@@ -1,16 +1,15 @@
-import type {DiscoveredToken} from '@/lib/web3/token-discovery'
 import type {Address} from 'viem'
-import {useTokenDiscovery} from '@/hooks/use-token-discovery'
-import {useTokenFiltering} from '@/hooks/use-token-filtering'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
-
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
 import {useAccount, useChainId, type UseAccountReturnType} from 'wagmi'
+import {useTokenDiscovery} from '@/hooks/use-token-discovery'
+import {useTokenFiltering} from '@/hooks/use-token-filtering'
+import type {DiscoveredToken} from '@/lib/web3/token-discovery'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 import {TokenList} from './token-list'
 

@@ -29,9 +29,9 @@
 
 import type {ComponentProps} from 'react'
 
-import {WalletDashboardSkeleton} from '@/components/ui/skeletons'
 import dynamic from 'next/dynamic'
 import {Suspense} from 'react'
+import {WalletDashboardSkeleton} from '@/components/ui/skeletons'
 
 const WalletDashboardComponent = dynamic(async () => import('../wallet-dashboard').then(mod => mod.WalletDashboard), {
   loading: () => <WalletDashboardSkeleton />,

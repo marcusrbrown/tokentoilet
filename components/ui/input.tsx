@@ -1,8 +1,7 @@
 import type {VariantProps} from 'class-variance-authority'
-import {cn, formatAddress, isValidAddress} from '@/lib/utils'
-
 import {AlertCircle, Check, Copy, Eye, EyeOff, X} from 'lucide-react'
 import React, {useId, useMemo, useState} from 'react'
+import {cn, formatAddress, isValidAddress} from '@/lib/utils'
 
 import {inputVariants} from './input-variants'
 

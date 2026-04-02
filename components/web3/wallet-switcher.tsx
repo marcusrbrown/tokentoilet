@@ -2,13 +2,12 @@
 
 import type {Connector} from 'wagmi'
 
+import {CheckCircle, ChevronDown, ExternalLink, Plus, RefreshCw, Wallet, X} from 'lucide-react'
+import {useState} from 'react'
 import {Badge} from '@/components/ui/badge'
-
 import {Button} from '@/components/ui/button'
 import {Card} from '@/components/ui/card'
 import {formatAddress} from '@/lib/utils'
-import {CheckCircle, ChevronDown, ExternalLink, Plus, RefreshCw, Wallet, X} from 'lucide-react'
-import {useState} from 'react'
 
 import {useWalletSwitcher, type ConnectedWallet} from '../../hooks/use-wallet-switcher'
 

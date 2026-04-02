@@ -29,9 +29,9 @@
 
 import type {ComponentProps} from 'react'
 
-import {TokenListSkeleton} from '@/components/ui/skeletons'
 import dynamic from 'next/dynamic'
 import {Suspense} from 'react'
+import {TokenListSkeleton} from '@/components/ui/skeletons'
 
 const TokenListComponent = dynamic(async () => import('../token-list').then(mod => mod.TokenList), {
   loading: () => <TokenListSkeleton />,

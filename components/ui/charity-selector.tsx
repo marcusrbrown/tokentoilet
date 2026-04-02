@@ -1,12 +1,12 @@
 'use client'
 
-import {Button} from '@/components/ui/button'
-import {Card} from '@/components/ui/card'
-import {cn} from '@/lib/utils'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {Check, ChevronDown, ExternalLink, Heart, Info, Sliders} from 'lucide-react'
 import Image from 'next/image'
 import React, {useCallback, useId, useState} from 'react'
+import {Button} from '@/components/ui/button'
+import {Card} from '@/components/ui/card'
+import {cn} from '@/lib/utils'
 
 /**
  * Charity data interface from the product requirements document

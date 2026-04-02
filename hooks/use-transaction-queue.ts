@@ -7,7 +7,6 @@ import type {
   TransactionStatus,
   TransactionType,
 } from '../lib/web3/transaction-queue'
-
 import type {SupportedChainId} from './use-wallet'
 
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'

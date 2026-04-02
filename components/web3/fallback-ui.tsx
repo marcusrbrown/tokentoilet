@@ -1,8 +1,8 @@
 'use client'
 
+import {AlertCircle, ExternalLink} from 'lucide-react'
 import {Button} from '@/components/ui/button'
 import {Card} from '@/components/ui/card'
-import {AlertCircle, ExternalLink} from 'lucide-react'
 
 interface FallbackUIProps {
   title: string
