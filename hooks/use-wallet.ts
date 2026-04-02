@@ -1,11 +1,11 @@
 'use client'
 
-import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
-import {classifyWalletError, getWalletErrorRecovery} from '@/lib/web3/wallet-error-detector'
 import {arbitrum, mainnet, polygon} from '@reown/appkit/networks'
 import {useAppKit} from '@reown/appkit/react'
 import {useCallback, useState} from 'react'
 import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
+import {classifyWalletError, getWalletErrorRecovery} from '@/lib/web3/wallet-error-detector'
+import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
 
 import {useWalletPersistence} from './use-wallet-persistence'
 

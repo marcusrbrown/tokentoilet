@@ -1,7 +1,7 @@
 'use client'
 
-import {walletStorage, type WalletConnectionData} from '@/lib/web3/secure-storage'
 import {useCallback, useEffect, useState} from 'react'
+import {walletStorage, type WalletConnectionData} from '@/lib/web3/secure-storage'
 
 export interface WalletPersistenceConfig {
   reconnectTimeout?: number // default: 30 seconds

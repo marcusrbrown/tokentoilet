@@ -1,13 +1,12 @@
 'use client'
 
-import type {QueuedTransaction, TransactionStatus} from '@/lib/web3/transaction-queue'
-
-import {Badge} from '@/components/ui/badge'
-import {Card} from '@/components/ui/card'
-import {cn, formatAddress} from '@/lib/utils'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {AlertTriangle, CheckCircle, Clock, Copy, ExternalLink, Hash, RefreshCw, Trash2, XCircle} from 'lucide-react'
 import {useState} from 'react'
+import {Badge} from '@/components/ui/badge'
+import {Card} from '@/components/ui/card'
+import {cn, formatAddress} from '@/lib/utils'
+import type {QueuedTransaction, TransactionStatus} from '@/lib/web3/transaction-queue'
 
 /**
  * Transaction status indicator variants

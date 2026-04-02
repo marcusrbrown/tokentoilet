@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import type {ReactNode} from 'react'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {renderHook, waitFor} from '@testing-library/react'
 import React from 'react'
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {TokenPriceFetchError, useTokenPrice, useTokenPrices} from './use-token-price'
 import {useWallet} from './use-wallet'
 

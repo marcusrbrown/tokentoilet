@@ -1,9 +1,9 @@
 'use client'
 
-import {cn, formatAddress, isValidAddress} from '@/lib/utils'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {Check, Copy, ExternalLink} from 'lucide-react'
 import React, {useState} from 'react'
+import {cn, formatAddress, isValidAddress} from '@/lib/utils'
 
 /**
  * AddressDisplay component variants using class-variance-authority

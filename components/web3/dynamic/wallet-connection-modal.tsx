@@ -24,9 +24,9 @@
 
 import type {ComponentProps} from 'react'
 
-import {GenericSkeleton} from '@/components/ui/skeletons'
 import dynamic from 'next/dynamic'
 import {Suspense} from 'react'
+import {GenericSkeleton} from '@/components/ui/skeletons'
 
 const WalletConnectionModalComponent = dynamic(
   async () => import('../wallet-connection-modal').then(mod => mod.WalletConnectionModal),

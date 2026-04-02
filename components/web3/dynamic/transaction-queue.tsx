@@ -29,9 +29,9 @@
 
 import type {ComponentProps} from 'react'
 
-import {TransactionQueueSkeleton} from '@/components/ui/skeletons'
 import dynamic from 'next/dynamic'
 import {Suspense} from 'react'
+import {TransactionQueueSkeleton} from '@/components/ui/skeletons'
 
 const TransactionQueueComponent = dynamic(
   async () => import('../transaction-queue').then(mod => mod.TransactionQueue),

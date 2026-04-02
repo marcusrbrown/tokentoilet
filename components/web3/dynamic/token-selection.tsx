@@ -24,9 +24,9 @@
 
 import type {ComponentProps} from 'react'
 
-import {TokenSelectionSkeleton} from '@/components/ui/skeletons'
 import dynamic from 'next/dynamic'
 import {Suspense} from 'react'
+import {TokenSelectionSkeleton} from '@/components/ui/skeletons'
 
 const TokenSelectionComponent = dynamic(async () => import('../token-selection').then(mod => mod.TokenSelection), {
   loading: () => <TokenSelectionSkeleton />,

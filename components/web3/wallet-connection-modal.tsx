@@ -1,10 +1,10 @@
 'use client'
 
+import {CheckCircle, Copy, ExternalLink, Wifi, X} from 'lucide-react'
+import {useEffect, useRef, useState} from 'react'
 import {useWallet} from '@/hooks/use-wallet'
 import {useWalletPersistence} from '@/hooks/use-wallet-persistence'
 import {cn} from '@/lib/utils'
-import {CheckCircle, Copy, ExternalLink, Wifi, X} from 'lucide-react'
-import {useEffect, useRef, useState} from 'react'
 
 import {Badge} from '../ui/badge'
 import {Button} from '../ui/button'

@@ -1,8 +1,8 @@
-import {WalletButton} from '@/components/web3/wallet-button'
-import {useWallet} from '@/hooks/use-wallet'
 import {render, screen} from '@testing-library/react'
 import {userEvent} from '@testing-library/user-event'
 import {beforeEach, describe, expect, it, vi, type Mock} from 'vitest'
+import {WalletButton} from '@/components/web3/wallet-button'
+import {useWallet} from '@/hooks/use-wallet'
 
 vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(),

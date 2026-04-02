@@ -1,11 +1,11 @@
 'use client'
 
-import {Badge} from '@/components/ui/badge'
-import {Card} from '@/components/ui/card'
-import {cn, formatAddress} from '@/lib/utils'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {CheckCircle, Clock, Copy, ExternalLink, Hash, RefreshCw, Wallet, XCircle} from 'lucide-react'
 import React, {useState} from 'react'
+import {Badge} from '@/components/ui/badge'
+import {Card} from '@/components/ui/card'
+import {cn, formatAddress} from '@/lib/utils'
 
 /**
  * Transaction data interface based on Web3 patterns and PRD requirements

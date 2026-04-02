@@ -2,7 +2,6 @@
 
 import type {DiscoveredToken} from '../lib/web3/token-discovery'
 import {useQuery, useQueryClient} from '@tanstack/react-query'
-
 import {useCallback, useMemo, useState} from 'react'
 import {
   calculateTokenStats,

@@ -1,17 +1,17 @@
 'use client'
 
-import type {CategorizedToken, TokenFilter, TokenSortOptions} from '@/lib/web3/token-filtering'
 import type {Address} from 'viem'
+import {useVirtualizer} from '@tanstack/react-virtual'
+import {cva, type VariantProps} from 'class-variance-authority'
+import {AlertCircle, ChevronLeft, ChevronRight, Filter, Loader2, Search, SortAsc, SortDesc, Trash2} from 'lucide-react'
+import React, {useCallback, useMemo, useRef, useState} from 'react'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
 import {Skeleton} from '@/components/ui/skeleton'
 import {useTokenDiscovery} from '@/hooks/use-token-discovery'
 import {useTokenFiltering} from '@/hooks/use-token-filtering'
 import {cn} from '@/lib/utils'
-import {useVirtualizer} from '@tanstack/react-virtual'
-import {cva, type VariantProps} from 'class-variance-authority'
-import {AlertCircle, ChevronLeft, ChevronRight, Filter, Loader2, Search, SortAsc, SortDesc, Trash2} from 'lucide-react'
-import React, {useCallback, useMemo, useRef, useState} from 'react'
+import type {CategorizedToken, TokenFilter, TokenSortOptions} from '@/lib/web3/token-filtering'
 
 import {TokenListItem} from './token-list-item'
 

@@ -1,11 +1,11 @@
-import type {UseTokenApprovalReturn} from '@/hooks/use-token-approval'
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
-// Import the mocked function
-import {useTokenApproval} from '@/hooks/use-token-approval'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {fireEvent, render, screen} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
+import type {UseTokenApprovalReturn} from '@/hooks/use-token-approval'
+// Import the mocked function
+import {useTokenApproval} from '@/hooks/use-token-approval'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 import {TokenApproval} from './token-approval'
 

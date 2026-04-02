@@ -1,7 +1,7 @@
 'use client'
 
-import type {WalletErrorRecovery, WalletSpecificError} from '@/lib/web3/wallet-error-types'
 import {useState} from 'react'
+import type {WalletErrorRecovery, WalletSpecificError} from '@/lib/web3/wallet-error-types'
 
 /**
  * Hook for managing wallet error state

@@ -1,12 +1,12 @@
 'use client'
 
+import {AlertTriangle, Wallet} from 'lucide-react'
+import {useState} from 'react'
 import {Badge} from '@/components/ui/badge'
 import {Button} from '@/components/ui/button'
 import {Card} from '@/components/ui/card'
 import {useWallet} from '@/hooks/use-wallet'
 import {formatAddress} from '@/lib/utils'
-import {AlertTriangle, Wallet} from 'lucide-react'
-import {useState} from 'react'
 
 export function WalletButton() {
   const {

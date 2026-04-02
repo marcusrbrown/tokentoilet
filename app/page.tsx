@@ -1,9 +1,9 @@
+import {Droplets, Flame, Wallet} from 'lucide-react'
+import Link from 'next/link'
 import {ThemeToggle} from '@/components/theme-toggle'
 import {Button} from '@/components/ui/button'
 import {Card} from '@/components/ui/card'
 import {WalletButton} from '@/components/web3/wallet-button'
-import {Droplets, Flame, Wallet} from 'lucide-react'
-import Link from 'next/link'
 
 export default function Home() {
   return (

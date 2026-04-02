@@ -1,5 +1,9 @@
 'use client'
 
+import {cva, type VariantProps} from 'class-variance-authority'
+import {ChevronDown, DollarSign, Wallet} from 'lucide-react'
+import Image from 'next/image'
+import React, {useCallback, useId, useMemo, useState} from 'react'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
 import {
@@ -10,10 +14,6 @@ import {
   type TokenData,
 } from '@/lib/token-utils'
 import {cn} from '@/lib/utils'
-import {cva, type VariantProps} from 'class-variance-authority'
-import {ChevronDown, DollarSign, Wallet} from 'lucide-react'
-import Image from 'next/image'
-import React, {useCallback, useId, useMemo, useState} from 'react'
 
 const isNonEmpty = (value: string | null | undefined): value is string => {
   return value != null && value !== ''

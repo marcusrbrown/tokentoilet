@@ -11,20 +11,18 @@
  * - Token Approval Workflow: selection → approval → gas estimation → transaction
  */
 
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
-import {useTokenApproval} from '@/hooks/use-token-approval'
-import {useTokenDiscovery} from '@/hooks/use-token-discovery'
-import {useTokenFiltering} from '@/hooks/use-token-filtering'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {render, screen, waitFor} from '@testing-library/react'
-
 import userEvent from '@testing-library/user-event'
 import {parseUnits, type Address} from 'viem'
 import {beforeEach, describe, expect, it, vi, type Mock} from 'vitest'
-
 import {useAccount, useChainId, useReadContract, useWriteContract} from 'wagmi'
+import {useTokenApproval} from '@/hooks/use-token-approval'
+import {useTokenDiscovery} from '@/hooks/use-token-discovery'
+import {useTokenFiltering} from '@/hooks/use-token-filtering'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {TokenApproval} from '../token-approval'
 import {TokenList} from '../token-list'
 import {TokenSelection} from '../token-selection'

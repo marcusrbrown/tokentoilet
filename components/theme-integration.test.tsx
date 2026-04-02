@@ -1,8 +1,8 @@
-import {ThemeToggle} from '@/components/theme-toggle'
 import {fireEvent, render, screen, waitFor} from '@testing-library/react'
 import {ThemeProvider} from 'next-themes'
 import React, {act} from 'react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
+import {ThemeToggle} from '@/components/theme-toggle'
 
 // Mock next-themes
 const mockSetTheme = vi.fn()

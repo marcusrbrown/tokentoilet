@@ -1,13 +1,12 @@
 'use client'
 
-import type {SupportedChainId} from '@/hooks/use-wallet'
-import type {QueuedTransaction, TransactionStatus, TransactionType} from '@/lib/web3/transaction-queue'
-
+import {AlertTriangle, CheckCircle, Clock, RefreshCw, XCircle} from 'lucide-react'
 import {Badge} from '@/components/ui/badge'
 import {Card} from '@/components/ui/card'
 import {useChainTransactionQueue, useTransactionQueue} from '@/hooks/use-transaction-queue'
+import type {SupportedChainId} from '@/hooks/use-wallet'
 import {cn} from '@/lib/utils'
-import {AlertTriangle, CheckCircle, Clock, RefreshCw, XCircle} from 'lucide-react'
+import type {QueuedTransaction, TransactionStatus, TransactionType} from '@/lib/web3/transaction-queue'
 import {TransactionStatusCard} from './transaction-status'
 
 export interface TransactionQueueProps {

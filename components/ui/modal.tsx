@@ -1,8 +1,8 @@
-import {cn} from '@/lib/utils'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {X} from 'lucide-react'
 import React, {useEffect, useRef} from 'react'
 import {createPortal} from 'react-dom'
+import {cn} from '@/lib/utils'
 
 /**
  * Modal backdrop variants using class-variance-authority

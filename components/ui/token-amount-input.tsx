@@ -1,13 +1,13 @@
 'use client'
 
+import {AlertTriangle, CheckCircle2, Info, Loader2, TrendingUp, Wallet} from 'lucide-react'
+import React, {useCallback, useEffect, useMemo, useRef} from 'react'
 import {Button} from '@/components/ui/button'
 import {TokenInput, type TokenInputProps} from '@/components/ui/token-input'
 import {useSingleTokenBalance, type UseSingleTokenBalanceOptions} from '@/hooks/use-token-balance'
 import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
 import {rawToDecimal, validateTokenAmount, type TokenData} from '@/lib/token-utils'
 import {cn} from '@/lib/utils'
-import {AlertTriangle, CheckCircle2, Info, Loader2, TrendingUp, Wallet} from 'lucide-react'
-import React, {useCallback, useEffect, useMemo, useRef} from 'react'
 
 // Default configuration objects to prevent render loops
 const DEFAULT_VALIDATION_CONFIG = {}

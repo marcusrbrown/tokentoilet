@@ -1,10 +1,5 @@
 'use client'
 
-import {Badge} from '@/components/ui/badge'
-import {Button} from '@/components/ui/button'
-import {Card} from '@/components/ui/card'
-import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
-import {formatAddress} from '@/lib/utils'
 import {
   AlertTriangle,
   CheckCircle,
@@ -19,6 +14,11 @@ import {
   Zap,
 } from 'lucide-react'
 import React, {useState} from 'react'
+import {Badge} from '@/components/ui/badge'
+import {Button} from '@/components/ui/button'
+import {Card} from '@/components/ui/card'
+import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
+import {formatAddress} from '@/lib/utils'
 
 export interface WalletDashboardProps {
   /**

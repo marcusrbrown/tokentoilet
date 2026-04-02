@@ -1,14 +1,13 @@
 'use client'
 
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import type {Address} from 'viem'
-
 import type {SupportedChainId} from './use-wallet'
 
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {erc20Abi, formatUnits} from 'viem'
 import {useAccount, useChainId, useEstimateGas, useReadContract, useWriteContract} from 'wagmi'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
 
 import {useTransactionQueue} from './use-transaction-queue'
 import {useWallet} from './use-wallet'

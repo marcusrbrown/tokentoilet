@@ -1,10 +1,10 @@
 'use client'
 
-import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
-import {cn} from '@/lib/utils'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {ChevronDown, Loader2, Zap} from 'lucide-react'
 import React, {useEffect, useRef, useState} from 'react'
+import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
+import {cn} from '@/lib/utils'
 
 import {Badge} from './badge'
 import {Button} from './button'

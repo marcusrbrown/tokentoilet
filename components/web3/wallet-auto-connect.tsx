@@ -1,10 +1,10 @@
 'use client'
 
 import type {ReactNode} from 'react'
-import {useWallet} from '@/hooks/use-wallet'
-import {useWalletPersistence} from '@/hooks/use-wallet-persistence'
 import {useAppKit} from '@reown/appkit/react'
 import {useEffect, useRef} from 'react'
+import {useWallet} from '@/hooks/use-wallet'
+import {useWalletPersistence} from '@/hooks/use-wallet-persistence'
 
 interface WalletAutoConnectProps {
   children: ReactNode

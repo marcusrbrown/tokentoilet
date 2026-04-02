@@ -1,13 +1,6 @@
 'use client'
 
-import type {CategorizedToken, TokenCategory, TokenFilter, TokenValueClass} from '@/lib/web3/token-filtering'
 import type {Address} from 'viem'
-import {Button} from '@/components/ui/button'
-import {Input} from '@/components/ui/input'
-import {Modal} from '@/components/ui/modal'
-import {cn} from '@/lib/utils'
-import {TokenCategory as TokenCategoryEnum, TokenValueClass as TokenValueClassEnum} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {
   AlertTriangle,
@@ -24,6 +17,13 @@ import {
   X,
 } from 'lucide-react'
 import React, {useCallback, useEffect, useMemo, useState} from 'react'
+import {Button} from '@/components/ui/button'
+import {Input} from '@/components/ui/input'
+import {Modal} from '@/components/ui/modal'
+import {cn} from '@/lib/utils'
+import type {CategorizedToken, TokenCategory, TokenFilter, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenCategory as TokenCategoryEnum, TokenValueClass as TokenValueClassEnum} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 const tokenSelectionVariants = cva(
   [

@@ -1,6 +1,6 @@
-import {useWallet} from '@/hooks/use-wallet'
 import {fireEvent, render, screen} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
+import {useWallet} from '@/hooks/use-wallet'
 
 import {ConnectionStatus} from './connection-status'
 

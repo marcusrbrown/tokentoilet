@@ -1,15 +1,5 @@
 'use client'
 
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
-import {Badge} from '@/components/ui/badge'
-import {Button} from '@/components/ui/button'
-import {NetworkBadge} from '@/components/ui/network-badge'
-import {Skeleton} from '@/components/ui/skeleton'
-import {useTokenPrice} from '@/hooks/use-token-price'
-import {formatUsdValue, getPriceChangeDisplay, rawToDecimal} from '@/lib/token-utils'
-import {cn} from '@/lib/utils'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {cva, type VariantProps} from 'class-variance-authority'
 import {
   AlertTriangle,
@@ -25,6 +15,16 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import React, {useCallback, useMemo} from 'react'
+import {Badge} from '@/components/ui/badge'
+import {Button} from '@/components/ui/button'
+import {NetworkBadge} from '@/components/ui/network-badge'
+import {Skeleton} from '@/components/ui/skeleton'
+import {useTokenPrice} from '@/hooks/use-token-price'
+import {formatUsdValue, getPriceChangeDisplay, rawToDecimal} from '@/lib/token-utils'
+import {cn} from '@/lib/utils'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 // Token list item variants for consistent glass morphism styling across states
 const tokenListItemVariants = cva(

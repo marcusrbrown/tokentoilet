@@ -21,15 +21,14 @@
  * - Re-run tests to validate fixes reduce failure count to zero
  */
 
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
-
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {render} from '@testing-library/react'
 import React from 'react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {axe} from 'vitest-axe'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 import {TokenApproval} from '../token-approval'
 import {TokenDetail} from '../token-detail'

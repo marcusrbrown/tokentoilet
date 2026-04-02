@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
-import type {NetworkValidationError, UnsupportedNetworkError} from '@/hooks/use-wallet'
-import {useWallet} from '@/hooks/use-wallet'
 import {fireEvent, render, screen, waitFor} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
+import type {NetworkValidationError, UnsupportedNetworkError} from '@/hooks/use-wallet'
+import {useWallet} from '@/hooks/use-wallet'
 
 import {WalletDashboard} from './wallet-dashboard'
 

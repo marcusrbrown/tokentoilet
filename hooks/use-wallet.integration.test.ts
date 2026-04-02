@@ -1,10 +1,10 @@
+import {act, renderHook, waitFor} from '@testing-library/react'
+import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
+import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
 import {useWallet} from '@/hooks/use-wallet'
 import {useWalletErrorHandler} from '@/hooks/use-wallet-error-handler'
 import {useWalletPersistence} from '@/hooks/use-wallet-persistence'
 import {useWalletSwitcher} from '@/hooks/use-wallet-switcher'
-import {act, renderHook, waitFor} from '@testing-library/react'
-import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
-import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
 
 // Mock wagmi hooks
 vi.mock('wagmi', () => ({

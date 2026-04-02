@@ -1,14 +1,13 @@
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import type {Address} from 'viem'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
-import {TokenRiskScore} from '@/lib/web3/token-metadata'
-
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
 import {useAccount, useChainId, type UseAccountReturnType} from 'wagmi'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
+import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 import {TokenSelection, type BatchOperation, type TokenSelectionProps} from './token-selection'
 

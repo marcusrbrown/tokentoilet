@@ -1,8 +1,8 @@
-import {createWalletError, useWalletErrorHandler} from '@/hooks/use-wallet-error-handler'
-import {classifyWalletError} from '@/lib/web3/wallet-error-detector'
-
 import {act, renderHook} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
+
+import {createWalletError, useWalletErrorHandler} from '@/hooks/use-wallet-error-handler'
+import {classifyWalletError} from '@/lib/web3/wallet-error-detector'
 
 describe('useWalletErrorHandler', () => {
   beforeEach(() => {

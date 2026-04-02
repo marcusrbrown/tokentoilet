@@ -1,12 +1,11 @@
-import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
+import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {
   classifyWalletError,
   getWalletErrorRecovery,
   isWalletAvailable,
   WalletErrorDetector,
 } from '@/lib/web3/wallet-error-detector'
-
-import {beforeEach, describe, expect, it, vi} from 'vitest'
+import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
 
 // Extend window interface for testing
 interface WindowWithEthereum extends Window {
