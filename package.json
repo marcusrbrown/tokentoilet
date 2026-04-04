@@ -54,7 +54,7 @@
   "devDependencies": {
     "@bfra.me/eslint-config": "^0.50.0",
     "@bfra.me/prettier-config": "^0.16.0",
-    "@eslint-react/eslint-plugin": "^2.13.0",
+    "@eslint-react/eslint-plugin": "^3.0.0",
     "@next/bundle-analyzer": "^16.0.0",
     "@next/eslint-plugin-next": "^16.0.0",
     "@storybook/addon-essentials": "9.0.0-alpha.12",
