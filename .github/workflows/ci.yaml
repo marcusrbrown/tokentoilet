@@ -52,10 +52,16 @@ jobs:
       - name: Setup Project
         uses: ./.github/actions/setup
 
-      - name: Run Tests with Coverage
-        run: pnpm test:coverage
+      - name: Run Tests
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            pnpm test
+          else
+            pnpm test:coverage
+          fi
 
       - name: Upload Coverage Reports
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-coverage
@@ -76,8 +82,15 @@ jobs:
       - name: Setup Project
         uses: ./.github/actions/setup
 
+      - name: Record Build Start Time
+        run: echo "START_TIME=$(date +%s)" >> "$GITHUB_ENV"
+
       - name: Build Application
         run: pnpm run build
+
+      - name: Report Build Duration
+        if: always()
+        run: echo "Build completed in $(($(date +%s) - $START_TIME)) seconds"
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
