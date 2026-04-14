@@ -126,7 +126,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Run Security Audit
-        run: pnpm audit --audit-level moderate
+        run: pnpm audit --prod --audit-level high
 
   # Deployment Jobs
   deploy-staging:

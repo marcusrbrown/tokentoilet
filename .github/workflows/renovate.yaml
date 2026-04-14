@@ -5,10 +5,6 @@ name: Renovate
 on:
   issues:
     types: [edited]
-  pull_request:
-    types: [edited]
-  push:
-    branches-ignore: [main]
   workflow_dispatch:
     inputs:
       log-level:
