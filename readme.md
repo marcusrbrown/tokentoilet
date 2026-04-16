@@ -2,7 +2,7 @@
 
 > A Web3 solution for cleaning up your digital wallet
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/) [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC)](https://tailwindcss.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/) [![React](https://img.shields.io/badge/React-19-61DAFB)](https://react.dev/) [![TypeScript](https://img.shields.io/badge/TypeScript-6-blue)](https://www.typescriptlang.org/) [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC)](https://tailwindcss.com/)
 
 ## Overview
 
@@ -130,10 +130,11 @@ pnpm validate:design-system
 
 ## Technical Stack
 
-- **Frontend**: Next.js 15 with App Router and TypeScript
+- **Frontend**: Next.js 16 with App Router, React 19, and TypeScript 6
 - **Web3**: Wagmi v2 + Reown AppKit for wallet connections
-- **Styling**: Tailwind CSS v4 with glass morphism design system
-- **Testing**: Vitest with comprehensive Web3 component mocking
+- **Styling**: Tailwind CSS v4 (CSS-first configuration) with glass morphism design system
+- **Testing**: Vitest 4 with comprehensive Web3 component mocking
+- **Component Development**: Storybook 10 for interactive component exploration
 - **Networks**: Ethereum, Polygon, and Arbitrum support
 
 ## Roadmap

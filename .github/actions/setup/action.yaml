@@ -22,7 +22,7 @@ outputs:
     value: ${{ steps.setup-node.outputs.node-version }}
   cache-hit:
     description: Whether pnpm cache was hit
-    value: ${{ steps.setup-pnpm.outputs.cache-hit }}
+    value: ${{ steps.setup-node.outputs.cache-hit }}
 
 runs:
   using: composite
@@ -38,31 +38,7 @@ runs:
       uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
       with:
         node-version: ${{ inputs.node-version }}
-        package-manager-cache: false
-
-    - id: cache-config
-      name: Configure cache
-      run: |
-        pnpm_store_path="$(pnpm store path --silent)"
-        if [ -z "pnpm_store_path" ]; then
-          echo "Failed to get pnpm store path"
-          exit 1
-        fi
-        mkdir -p "pnpm_store_path" || exit 1
-        echo "path=$pnpm_store_path" >> $GITHUB_OUTPUT
-        year_month=$(date -u '+%Y%m')
-        base_key="${{ runner.os }}-pnpm-cache-v${year_month}${{ inputs.cache-key-suffix && '-' }}${{ inputs.cache-key-suffix }}"
-        echo "key=${base_key}-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
-        echo "restore-keys=${base_key}-" >> $GITHUB_OUTPUT
-        echo "nextjs-key=${{ runner.os }}-nextjs-cache${{ inputs.cache-key-suffix && '-' }}${{ inputs.cache-key-suffix }}-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
-      shell: 'bash -Eeuo pipefail {0}'
-
-    - name: Setup pnpm cache
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-      with:
-        key: ${{ steps.cache-config.outputs.key }}
-        path: ${{ steps.cache-config.outputs.path }}
-        restore-keys: ${{ steps.cache-config.outputs.restore-keys }}
+        cache: pnpm
 
     - name: Install dependencies
       if: inputs.install-dependencies == 'true'
@@ -79,9 +55,11 @@ runs:
 
     - id: cache-nextjs
       name: Setup Next.js related caches
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
-        key: ${{ steps.cache-config.outputs.nextjs-key }}
+        key: ${{ runner.os }}-nextjs-cache${{ inputs.cache-key-suffix && '-' }}${{ inputs.cache-key-suffix }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-nextjs-cache${{ inputs.cache-key-suffix && '-' }}${{ inputs.cache-key-suffix }}-
         path: |
           .next/cache
           .cache
