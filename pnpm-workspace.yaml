@@ -32,4 +32,21 @@ overrides:
   vite@>=8.0.0 <=8.0.4: '>=8.0.5'
   yaml@>=2.0.0 <2.8.3: '>=2.8.3'
 
+peerDependencyRules:
+  # Storybook 9.alpha addons work with Storybook 10 (no v10 addons released yet)
+  allowedVersions:
+    '@storybook/addon-essentials>storybook': '10'
+    '@storybook/addon-interactions>storybook': '10'
+    '@storybook/addon-backgrounds>storybook': '10'
+    '@storybook/addon-highlight>storybook': '10'
+    '@storybook/addon-measure>storybook': '10'
+    '@storybook/addon-outline>storybook': '10'
+    '@storybook/blocks>storybook': '10'
+    '@storybook/test>storybook': '10'
+  # Ecosystem catching up to latest major versions - these work in practice
+  allowAny:
+    - typescript
+    - zod
+    - react
+
 shamefullyHoist: true
