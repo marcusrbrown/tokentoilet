@@ -83,7 +83,7 @@ importers:
     devDependencies:
       '@bfra.me/eslint-config':
         specifier: ^0.50.0
-        version: 0.50.2(@eslint-react/eslint-plugin@2.13.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@next/eslint-plugin-next@16.2.2)(@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/rule-tester@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/typescript-estree@8.58.0(typescript@6.0.2))(@typescript-eslint/utils@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(chokidar@5.0.0)(eslint-config-prettier@10.1.8(eslint@10.1.0(jiti@2.6.1)))(eslint-import-resolver-node@0.3.10)(eslint-plugin-jsx-a11y@6.10.2(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-prettier@5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(prettier@3.8.1))(eslint-plugin-react-hooks@7.0.1(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
+        version: 0.50.2(@eslint-react/eslint-plugin@2.13.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@next/eslint-plugin-next@16.2.3)(@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/rule-tester@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/typescript-estree@8.58.0(typescript@6.0.2))(@typescript-eslint/utils@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(chokidar@5.0.0)(eslint-config-prettier@10.1.8(eslint@10.1.0(jiti@2.6.1)))(eslint-import-resolver-node@0.3.10)(eslint-plugin-jsx-a11y@6.10.2(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-prettier@5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(prettier@3.8.1))(eslint-plugin-react-hooks@7.0.1(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       '@bfra.me/prettier-config':
         specifier: ^0.16.0
         version: 0.16.7(prettier@3.8.1)
@@ -95,7 +95,7 @@ importers:
         version: 16.2.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@next/eslint-plugin-next':
         specifier: ^16.0.0
-        version: 16.2.2
+        version: 16.2.3
       '@storybook/addon-essentials':
         specifier: 9.0.0-alpha.12
         version: 9.0.0-alpha.12(storybook@10.3.4(@testing-library/dom@10.4.0)(bufferutil@4.1.0)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(utf-8-validate@5.0.10))
@@ -1525,8 +1525,8 @@ packages:
   '@next/env@16.2.3':
     resolution: {integrity: sha512-ZWXyj4uNu4GCWQw9cjRxWlbD+33mcDszIo9iQxFnBX3Wmgq9ulaSJcl6VhuWx5pCWqqD+9W6Wfz7N0lM5lYPMA==}
 
-  '@next/eslint-plugin-next@16.2.2':
-    resolution: {integrity: sha512-IOPbWzDQ+76AtjZioaCjpIY72xNSDMnarZ2GMQ4wjNLvnJEJHqxQwGFhgnIWLV9klb4g/+amg88Tk5OXVpyLTw==}
+  '@next/eslint-plugin-next@16.2.3':
+    resolution: {integrity: sha512-nE/b9mht28XJxjTwKs/yk7w4XTaU3t40UHVAky6cjiijdP/SEy3hGsnQMPxmXPTpC7W4/97okm6fngKnvCqVaA==}
 
   '@next/eslint-plugin-next@16.2.3':
     resolution: {integrity: sha512-nE/b9mht28XJxjTwKs/yk7w4XTaU3t40UHVAky6cjiijdP/SEy3hGsnQMPxmXPTpC7W4/97okm6fngKnvCqVaA==}
@@ -8418,7 +8418,7 @@ snapshots:
     optionalDependencies:
       chokidar: 5.0.0
 
-  '@bfra.me/eslint-config@0.50.2(@eslint-react/eslint-plugin@2.13.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@next/eslint-plugin-next@16.2.2)(@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/rule-tester@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/typescript-estree@8.58.0(typescript@6.0.2))(@typescript-eslint/utils@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(chokidar@5.0.0)(eslint-config-prettier@10.1.8(eslint@10.1.0(jiti@2.6.1)))(eslint-import-resolver-node@0.3.10)(eslint-plugin-jsx-a11y@6.10.2(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-prettier@5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(prettier@3.8.1))(eslint-plugin-react-hooks@7.0.1(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)':
+  '@bfra.me/eslint-config@0.50.2(@eslint-react/eslint-plugin@2.13.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@next/eslint-plugin-next@16.2.3)(@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/rule-tester@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/typescript-estree@8.58.0(typescript@6.0.2))(@typescript-eslint/utils@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(chokidar@5.0.0)(eslint-config-prettier@10.1.8(eslint@10.1.0(jiti@2.6.1)))(eslint-import-resolver-node@0.3.10)(eslint-plugin-jsx-a11y@6.10.2(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-prettier@5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(prettier@3.8.1))(eslint-plugin-react-hooks@7.0.1(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)':
     dependencies:
       '@bfra.me/es': 0.1.0(chokidar@5.0.0)
       '@eslint-community/eslint-plugin-eslint-comments': 4.7.1(eslint@10.1.0(jiti@2.6.1))
@@ -8448,7 +8448,7 @@ snapshots:
       typescript-eslint: 8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
     optionalDependencies:
       '@eslint-react/eslint-plugin': 2.13.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      '@next/eslint-plugin-next': 16.2.2
+      '@next/eslint-plugin-next': 16.2.3
       eslint-config-prettier: 10.1.8(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-prettier: 5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(prettier@3.8.1)
@@ -9189,7 +9189,7 @@ snapshots:
 
   '@next/env@16.2.3': {}
 
-  '@next/eslint-plugin-next@16.2.2':
+  '@next/eslint-plugin-next@16.2.3':
     dependencies:
       fast-glob: 3.3.1
 
