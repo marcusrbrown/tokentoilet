@@ -7,8 +7,10 @@ on:
     types: [edited]
   pull_request:
     types: [edited]
+    paths: [.github/workflows/renovate.yaml, .github/renovate.json5]
   push:
     branches-ignore: [main]
+    paths: [.github/workflows/renovate.yaml, .github/renovate.json5]
   workflow_dispatch:
     inputs:
       log-level:
