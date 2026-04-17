@@ -1,25 +1,22 @@
 'use client'
 
-import {arbitrum, mainnet, polygon} from '@reown/appkit/networks'
 import {useAppKit} from '@reown/appkit/react'
 import {useCallback, useState} from 'react'
 import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
+import {DEFAULT_SUPPORTED_NETWORK_V1, SUPPORTED_CHAIN_IDS_V1, SUPPORTED_NETWORK_INFO_V1} from '@/lib/web3/chains'
 import {classifyWalletError, getWalletErrorRecovery} from '@/lib/web3/wallet-error-detector'
 import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
 
 import {useWalletPersistence} from './use-wallet-persistence'
 
 // Supported chain IDs for network validation
-const SUPPORTED_CHAIN_IDS = [mainnet.id, polygon.id, arbitrum.id] as const
+const SUPPORTED_CHAIN_IDS = SUPPORTED_CHAIN_IDS_V1
 
 // Network information mapping
-const NETWORK_INFO = {
-  [mainnet.id]: {name: 'Ethereum Mainnet', symbol: 'ETH'},
-  [polygon.id]: {name: 'Polygon', symbol: 'MATIC'},
-  [arbitrum.id]: {name: 'Arbitrum One', symbol: 'ETH'},
-} as const
+const NETWORK_INFO = SUPPORTED_NETWORK_INFO_V1
 
-export type SupportedChainId = (typeof SUPPORTED_CHAIN_IDS)[number]
+export type SupportedChainId = number
+type V1SupportedChainId = (typeof SUPPORTED_CHAIN_IDS)[number]
 
 export interface NetworkInfo {
   name: string
@@ -39,7 +36,7 @@ export interface NetworkValidationError extends Error {
     | 'RPC_ENDPOINT_FAILED'
     | 'INSUFFICIENT_PERMISSIONS'
   chainId?: number
-  suggestedChainId?: SupportedChainId
+  suggestedChainId?: number
   userFriendlyMessage?: string
   originalError?: Error
 }
@@ -47,7 +44,7 @@ export interface NetworkValidationError extends Error {
 export interface UnsupportedNetworkError {
   isUnsupported: boolean
   currentChainId?: number
-  suggestedChain: {id: SupportedChainId; name: string}
+  suggestedChain: {id: number; name: string}
   error: NetworkValidationError
 }
 
@@ -67,8 +64,8 @@ export function useWallet() {
   })
 
   // Network validation functions
-  const isSupportedChain = (chainId: number): chainId is SupportedChainId => {
-    return SUPPORTED_CHAIN_IDS.includes(chainId as SupportedChainId)
+  const isSupportedChain = (chainId: number): chainId is V1SupportedChainId => {
+    return SUPPORTED_CHAIN_IDS.includes(chainId as V1SupportedChainId)
   }
 
   const isCurrentChainSupported = () => {
@@ -93,7 +90,10 @@ export function useWallet() {
     }
 
     // User is on an unsupported network - create comprehensive error
-    const suggestedChain = {id: mainnet.id, name: NETWORK_INFO[mainnet.id].name}
+    const suggestedChain = {
+      id: DEFAULT_SUPPORTED_NETWORK_V1.id,
+      name: NETWORK_INFO[DEFAULT_SUPPORTED_NETWORK_V1.id].name,
+    }
     const error = new Error(
       `You're currently connected to an unsupported network (Chain ID: ${chainId}). Please switch to a supported network to continue.`,
     ) as NetworkValidationError
@@ -183,8 +183,9 @@ export function useWallet() {
       ) as NetworkValidationError
       error.code = 'UNSUPPORTED_NETWORK'
       error.chainId = chainId
-      error.suggestedChainId = mainnet.id
-      error.userFriendlyMessage = `Please switch to a supported network. Current network (${chainId}) is not supported.`
+      error.suggestedChainId = DEFAULT_SUPPORTED_NETWORK_V1.id
+      error.userFriendlyMessage = `Please switch to Sepolia. Current network (${chainId}) is not supported.`
+      error.message = `Unsupported network: Chain ID ${chainId}. Please switch to Sepolia.`
       return error
     }
 
@@ -207,7 +208,7 @@ export function useWallet() {
   }
 
   // Safe chain switching with wallet-specific error classification
-  const switchToChain = async (targetChainId: SupportedChainId) => {
+  const switchToChain = async (targetChainId: number) => {
     if (!isSupportedChain(targetChainId)) {
       const error = new Error(
         `Cannot switch to unsupported chain ID: ${String(targetChainId)}`,

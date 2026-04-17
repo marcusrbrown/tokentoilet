@@ -5,6 +5,7 @@ import {ChevronDown, Loader2, Zap} from 'lucide-react'
 import React, {useEffect, useRef, useState} from 'react'
 import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
 import {cn} from '@/lib/utils'
+import {DEFAULT_SUPPORTED_NETWORK_V1} from '@/lib/web3/chains'
 
 import {Badge} from './badge'
 import {Button} from './button'
@@ -99,6 +100,13 @@ const networkBadgeVariants = cva(
  * Network configuration mapping chain IDs to display information
  */
 const NETWORK_CONFIG = {
+  11155111: {
+    name: 'Sepolia',
+    shortName: 'ETH',
+    color: 'default',
+    icon: '🧪',
+    explorerUrl: 'https://sepolia.etherscan.io',
+  },
   1: {
     name: 'Ethereum',
     shortName: 'ETH',
@@ -299,12 +307,12 @@ const NetworkBadge = ({
           variant="outline"
           size="sm"
           onClick={() => {
-            handleNetworkSwitch(1).catch(console.error) // Switch to Ethereum mainnet
+            handleNetworkSwitch(DEFAULT_SUPPORTED_NETWORK_V1.id).catch(console.error)
           }}
           disabled={isSwitchingChain}
         >
           {isSwitchingChain && <Loader2 className="h-3 w-3 animate-spin" />}
-          Switch to Ethereum
+          Switch to Sepolia
         </Button>
       </div>
     )
@@ -374,7 +382,13 @@ const NetworkBadge = ({
           <div className="p-2">
             <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-2">Switch Network</div>
             {supportedChains.map(chain => {
-              const config = NETWORK_CONFIG[chain.id]
+              const config = NETWORK_CONFIG[chain.id as keyof typeof NETWORK_CONFIG] ?? {
+                name: chain.name,
+                shortName: chain.symbol,
+                color: 'default' as const,
+                icon: '⚠️',
+                explorerUrl: '',
+              }
               const isCurrentChain = chainId === chain.id
 
               return (
