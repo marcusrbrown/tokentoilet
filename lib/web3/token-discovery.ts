@@ -84,6 +84,11 @@ export const DEFAULT_TOKEN_DISCOVERY_CONFIG: Required<Omit<TokenDiscoveryConfig,
  * These are well-known tokens that users commonly hold
  */
 export const COMMON_TOKEN_ADDRESSES: Record<SupportedChainId, Address[]> = {
+  // Sepolia
+  11155111: [
+    '0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8', // USDC
+    '0xfff9976782d46cc05630d1f6ebab18b2324d6b14', // WETH
+  ],
   // Ethereum Mainnet
   1: [
     '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94', // USDC
@@ -286,6 +291,20 @@ async function discoverChainTokens(
   const errors: TokenDiscoveryError[] = []
   const tokenAddresses = COMMON_TOKEN_ADDRESSES[chainId]
   let contractsChecked = 0
+
+  if (tokenAddresses === undefined) {
+    return {
+      tokens,
+      errors: [
+        {
+          chainId,
+          message: `No token discovery addresses configured for chain ${chainId}`,
+          type: 'VALIDATION_ERROR',
+        },
+      ],
+      contractsChecked,
+    }
+  }
 
   // Limit the number of tokens to check based on configuration
   const tokensToCheck = tokenAddresses.slice(0, discoveryConfig.maxTokensPerChain)

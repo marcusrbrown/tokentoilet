@@ -1,6 +1,9 @@
 globs:
   - '!.ai/**'
   - '!AGENTS.md'
+  - '!docs/brainstorms/**'
+  - '!docs/plans/**'
+  - '!docs/solutions/**'
   - '!docs/FEATURES.md'
   - '!docs/prd.md'
   - '!docs/RULES.md'

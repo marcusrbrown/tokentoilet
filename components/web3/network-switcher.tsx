@@ -5,14 +5,13 @@ import {Button} from '@/components/ui/button'
 import {NetworkBadge} from '@/components/ui/network-badge'
 import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
 import {cn} from '@/lib/utils'
+import {SUPPORTED_CHAIN_IDS_V1} from '@/lib/web3/chains'
 
 const CHAIN_INFO: Record<SupportedChainId, {name: string; icon: string}> = {
-  1: {name: 'Ethereum', icon: '⟠'},
-  137: {name: 'Polygon', icon: '⬟'},
-  42161: {name: 'Arbitrum', icon: '🔷'},
+  11155111: {name: 'Sepolia', icon: '🧪'},
 }
 
-const SUPPORTED_CHAIN_IDS: readonly SupportedChainId[] = [1, 137, 42161]
+const SUPPORTED_CHAIN_IDS: readonly SupportedChainId[] = [...SUPPORTED_CHAIN_IDS_V1]
 
 export {CHAIN_INFO, SUPPORTED_CHAIN_IDS}
 

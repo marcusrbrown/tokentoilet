@@ -25,15 +25,11 @@ vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(() => ({
     address: '0x1234567890123456789012345678901234567890' as Address,
     isConnected: true,
-    chainId: 1,
-    currentNetwork: {id: 1, name: 'Ethereum', nativeCurrency: {symbol: 'ETH'}},
+    chainId: 11155111,
+    currentNetwork: {id: 11155111, name: 'Sepolia', nativeCurrency: {symbol: 'ETH'}},
     isCurrentChainSupported: true,
     getUnsupportedNetworkError: vi.fn(() => null),
-    getSupportedChains: vi.fn(() => [
-      {id: 1, name: 'Ethereum Mainnet'},
-      {id: 137, name: 'Polygon'},
-      {id: 42161, name: 'Arbitrum One'},
-    ]),
+    getSupportedChains: vi.fn(() => [{id: 11155111, name: 'Sepolia'}]),
     isSupportedChain: vi.fn(() => true),
     validateCurrentNetwork: vi.fn(() => ({success: true})),
     handleUnsupportedNetwork: vi.fn(),
@@ -74,6 +70,7 @@ vi.mock('@reown/appkit/networks', () => ({
   mainnet: {id: 1},
   polygon: {id: 137},
   arbitrum: {id: 42161},
+  sepolia: {id: 11155111},
 }))
 
 const mockUseAccount = useAccount as MockedFunction<typeof useAccount>
@@ -98,7 +95,7 @@ const createWrapper = () => {
 // Mock token data generators
 const createMockDiscoveredToken = (overrides: Partial<DiscoveredToken> = {}): DiscoveredToken => ({
   address: '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A2' as Address,
-  chainId: 1,
+  chainId: 11155111,
   symbol: 'TEST',
   name: 'Test Token',
   decimals: 18,
@@ -109,7 +106,7 @@ const createMockDiscoveredToken = (overrides: Partial<DiscoveredToken> = {}): Di
 
 const createMockCategorizedToken = (overrides = {}) => ({
   address: '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A2' as Address,
-  chainId: 1 as const,
+  chainId: 11155111 as const,
   symbol: 'TEST',
   name: 'Test Token',
   decimals: 18,
@@ -133,14 +130,14 @@ describe('TokenList', () => {
     mockUseAccount.mockReturnValue({
       address: '0x1234567890123456789012345678901234567890' as Address,
       isConnected: true,
-      chainId: 1,
+      chainId: 11155111,
       isConnecting: false,
       isDisconnected: false,
       isReconnecting: false,
       status: 'connected',
     } as UseAccountReturnType)
 
-    mockUseChainId.mockReturnValue(1)
+    mockUseChainId.mockReturnValue(11155111)
 
     mockUseTokenDiscovery.mockReturnValue({
       tokens: [],

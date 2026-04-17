@@ -2,8 +2,10 @@ import {Droplets, Flame, Wallet} from 'lucide-react'
 import Link from 'next/link'
 import {ThemeToggle} from '@/components/theme-toggle'
 import {Button} from '@/components/ui/button'
+import {buttonVariants} from '@/components/ui/button-variants'
 import {Card} from '@/components/ui/card'
 import {WalletButton} from '@/components/web3/wallet-button'
+import {cn} from '@/lib/utils'
 
 export default function Home() {
   return (
@@ -43,10 +45,13 @@ export default function Home() {
           </p>
 
           <div className="mt-10 flex items-center justify-center gap-4">
-            <Button variant="default" size="lg" className="group relative overflow-hidden">
+            <Link
+              href="/flush"
+              className={cn(buttonVariants({variant: 'default', size: 'lg'}), 'group relative overflow-hidden')}
+            >
               <span className="relative z-10">Start Flushing</span>
               <div className="absolute inset-0 -translate-y-full bg-gradient-to-b from-violet-400 to-violet-600 transition-transform duration-300 group-hover:translate-y-0"></div>
-            </Button>
+            </Link>
             <Button variant="outline" size="lg" className="backdrop-blur-sm">
               Learn More
             </Button>

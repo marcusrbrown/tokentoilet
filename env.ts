@@ -38,6 +38,7 @@ export const schemas = {
       .default(false),
     NEXT_PUBLIC_ETHEREUM_RPC_URL: rpcUrlSchema.optional(),
     NEXT_PUBLIC_POLYGON_RPC_URL: rpcUrlSchema.optional(),
+    NEXT_PUBLIC_SEPOLIA_RPC_URL: rpcUrlSchema.optional(),
     NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: walletConnectProjectIdSchema,
   },
   // @keep-sorted
@@ -58,6 +59,7 @@ export const env = createEnv({
     NEXT_PUBLIC_ETHEREUM_RPC_URL: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
     NEXT_PUBLIC_POLYGON_RPC_URL: process.env.NEXT_PUBLIC_POLYGON_RPC_URL,
     NEXT_PUBLIC_ARBITRUM_RPC_URL: process.env.NEXT_PUBLIC_ARBITRUM_RPC_URL,
+    NEXT_PUBLIC_SEPOLIA_RPC_URL: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
 
     // Feature flags
     NEXT_PUBLIC_ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS,

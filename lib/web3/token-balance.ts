@@ -427,7 +427,7 @@ export async function checkCrossChainBalances(
 
   // Process chains in parallel for better performance
   const chainPromises = Object.entries(tokensByChain).map(async ([chainIdStr, tokens]) => {
-    const chainId = Number(chainIdStr) as SupportedChainId
+    const chainId = Number(chainIdStr)
     try {
       const result = await checkAllBalances(config, userAddress, tokens, chainId, options)
       return {chainId, result}

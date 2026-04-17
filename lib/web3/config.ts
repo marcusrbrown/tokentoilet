@@ -1,15 +1,15 @@
 import {WagmiAdapter} from '@reown/appkit-adapter-wagmi'
-import {arbitrum, mainnet, polygon, type AppKitNetwork} from '@reown/appkit/networks'
 import {createAppKit} from '@reown/appkit/react'
 import {http} from 'viem'
 
 import {env} from '../../env'
+import {DEFAULT_SUPPORTED_NETWORK_V1, SUPPORTED_NETWORKS_V1} from './chains'
 
 // Use validated environment variables
 export const projectId = env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
 
-// Define the networks for multi-chain support
-export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, polygon, arbitrum]
+// Define the networks for v1.0 support
+export const networks = SUPPORTED_NETWORKS_V1
 
 // Create metadata object for TokenToilet project
 export const metadata = {
@@ -31,20 +31,14 @@ const getRpcUrl = (chainId: number, envUrl?: string, defaultUrl?: string): strin
   return ''
 }
 
-// Create Wagmi Adapter with multi-chain support and configurable RPC endpoints
+// Create Wagmi Adapter with Sepolia-only support for v1.0
 export const wagmiAdapter = new WagmiAdapter({
   networks,
   projectId,
   ssr: true,
   transports: {
-    [mainnet.id]: http(
-      getRpcUrl(mainnet.id, env.NEXT_PUBLIC_ETHEREUM_RPC_URL, 'https://eth-mainnet.g.alchemy.com/v2/demo'),
-    ),
-    [polygon.id]: http(
-      getRpcUrl(polygon.id, env.NEXT_PUBLIC_POLYGON_RPC_URL, 'https://polygon-mainnet.g.alchemy.com/v2/demo'),
-    ),
-    [arbitrum.id]: http(
-      getRpcUrl(arbitrum.id, env.NEXT_PUBLIC_ARBITRUM_RPC_URL, 'https://arb-mainnet.g.alchemy.com/v2/demo'),
+    [DEFAULT_SUPPORTED_NETWORK_V1.id]: http(
+      getRpcUrl(DEFAULT_SUPPORTED_NETWORK_V1.id, env.NEXT_PUBLIC_SEPOLIA_RPC_URL),
     ),
   },
 })

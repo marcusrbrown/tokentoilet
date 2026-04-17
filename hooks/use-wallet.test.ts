@@ -24,6 +24,7 @@ vi.mock('@reown/appkit/networks', () => ({
   mainnet: {id: 1},
   polygon: {id: 137},
   arbitrum: {id: 42161},
+  sepolia: {id: 11155111},
 }))
 
 const mockUseAccount = useAccount as MockedFunction<typeof useAccount>
@@ -54,13 +55,14 @@ describe('useWallet - Network Switching', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseSwitchChain.mockReturnValue({
-      switchChain: mockSwitchChain,
+      switchChain: undefined,
+      switchChainAsync: mockSwitchChain,
       isPending: false,
       error: null,
     } as any)
 
-    // Default chainId to Ethereum mainnet
-    mockUseChainId.mockReturnValue(1)
+    // Default chainId to Sepolia
+    mockUseChainId.mockReturnValue(11155111)
 
     // Default switchChain behavior - succeed by default
     mockSwitchChain.mockImplementation(async ({chainId}: {chainId: number}) => {
@@ -71,43 +73,33 @@ describe('useWallet - Network Switching', () => {
   })
 
   describe('Network Support Validation', () => {
-    it('should identify Ethereum mainnet (1) as supported', () => {
+    it('should identify Sepolia (11155111) as the only supported chain for v1.0', () => {
+      // Given a wallet connected to Sepolia
+      mockUseChainId.mockReturnValue(11155111)
+
+      // When the wallet hook evaluates network support
+      const {result} = renderHook(() => useWallet())
+
+      // Then Sepolia is supported and exposed as the current network
+      expect(result.current.isCurrentChainSupported).toBe(true)
+      expect(result.current.isSupportedChain(11155111)).toBe(true)
+      expect(result.current.currentNetwork).toEqual({
+        name: 'Sepolia',
+        symbol: 'ETH',
+      })
+    })
+
+    it('should reject Ethereum mainnet (1) for v1.0', () => {
+      // Given a wallet connected to Ethereum mainnet
       mockUseChainId.mockReturnValue(1)
 
+      // When the wallet hook evaluates network support
       const {result} = renderHook(() => useWallet())
 
-      expect(result.current.isCurrentChainSupported).toBe(true)
-      expect(result.current.isSupportedChain(1)).toBe(true)
-      expect(result.current.currentNetwork).toEqual({
-        name: 'Ethereum Mainnet',
-        symbol: 'ETH',
-      })
-    })
-
-    it('should identify Polygon (137) as supported', () => {
-      mockUseChainId.mockReturnValue(137)
-
-      const {result} = renderHook(() => useWallet())
-
-      expect(result.current.isCurrentChainSupported).toBe(true)
-      expect(result.current.isSupportedChain(137)).toBe(true)
-      expect(result.current.currentNetwork).toEqual({
-        name: 'Polygon',
-        symbol: 'MATIC',
-      })
-    })
-
-    it('should identify Arbitrum One (42161) as supported', () => {
-      mockUseChainId.mockReturnValue(42161)
-
-      const {result} = renderHook(() => useWallet())
-
-      expect(result.current.isCurrentChainSupported).toBe(true)
-      expect(result.current.isSupportedChain(42161)).toBe(true)
-      expect(result.current.currentNetwork).toEqual({
-        name: 'Arbitrum One',
-        symbol: 'ETH',
-      })
+      // Then mainnet is treated as unsupported for v1.0
+      expect(result.current.isCurrentChainSupported).toBe(false)
+      expect(result.current.isSupportedChain(1)).toBe(false)
+      expect(result.current.currentNetwork).toBe(null)
     })
 
     it('should identify unsupported networks correctly', () => {
@@ -120,56 +112,46 @@ describe('useWallet - Network Switching', () => {
       expect(result.current.currentNetwork).toBe(null)
     })
 
-    it('should return list of supported chains', () => {
-      mockUseChainId.mockReturnValue(1)
+    it('should return Sepolia as the only supported chain', () => {
+      // Given a wallet connected to Sepolia
+      mockUseChainId.mockReturnValue(11155111)
 
+      // When the wallet hook returns supported chains
       const {result} = renderHook(() => useWallet())
 
+      // Then only Sepolia is available for network selection
       const supportedChains = result.current.getSupportedChains()
-      expect(supportedChains).toHaveLength(3)
-      expect(supportedChains).toEqual([
-        {id: 1, name: 'Ethereum Mainnet', symbol: 'ETH'},
-        {id: 137, name: 'Polygon', symbol: 'MATIC'},
-        {id: 42161, name: 'Arbitrum One', symbol: 'ETH'},
-      ])
+      expect(supportedChains).toHaveLength(1)
+      expect(supportedChains).toEqual([{id: 11155111, name: 'Sepolia', symbol: 'ETH'}])
     })
   })
 
   describe('Network Switching', () => {
-    it('should switch to Ethereum mainnet successfully', async () => {
-      mockUseChainId.mockReturnValue(137) // Start on Polygon
+    it('should switch to Sepolia successfully', async () => {
+      mockUseChainId.mockReturnValue(56) // Start on unsupported network
 
       const {result} = renderHook(() => useWallet())
 
       await act(async () => {
-        await result.current.switchToChain(1)
+        await result.current.switchToChain(11155111)
       })
 
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 1})
+      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 11155111})
     })
 
-    it('should switch to Polygon successfully', async () => {
-      mockUseChainId.mockReturnValue(1) // Start on Ethereum
+    it('should use the async chain switching API', async () => {
+      // Given wagmi only exposes the async switch API implementation
+      mockUseChainId.mockReturnValue(56)
 
+      // When the wallet hook switches to Sepolia
       const {result} = renderHook(() => useWallet())
 
       await act(async () => {
-        await result.current.switchToChain(137)
+        await result.current.switchToChain(11155111)
       })
 
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 137})
-    })
-
-    it('should switch to Arbitrum One successfully', async () => {
-      mockUseChainId.mockReturnValue(1) // Start on Ethereum
-
-      const {result} = renderHook(() => useWallet())
-
-      await act(async () => {
-        await result.current.switchToChain(42161)
-      })
-
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 42161})
+      // Then the async switch API is invoked successfully
+      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 11155111})
     })
 
     it('should reject switching to unsupported chain', async () => {
@@ -197,7 +179,7 @@ describe('useWallet - Network Switching', () => {
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(137)
+          await result.current.switchToChain(11155111)
         })
       }).rejects.toThrow('User rejected the request')
     })
@@ -214,15 +196,15 @@ describe('useWallet - Network Switching', () => {
       expect(error?.isUnsupported).toBe(true)
       expect(error?.currentChainId).toBe(56)
       expect(error?.suggestedChain).toEqual({
-        id: 1,
-        name: 'Ethereum Mainnet',
+        id: 11155111,
+        name: 'Sepolia',
       })
       expect(error?.error.code).toBe('UNSUPPORTED_NETWORK')
-      expect(error?.error.userFriendlyMessage).toContain('Switch to Ethereum Mainnet')
+      expect(error?.error.userFriendlyMessage).toContain('Switch to Sepolia')
     })
 
     it('should return null for supported networks', () => {
-      mockUseChainId.mockReturnValue(1) // Ethereum - supported
+      mockUseChainId.mockReturnValue(11155111) // Sepolia - supported
 
       const {result} = renderHook(() => useWallet())
 
@@ -247,10 +229,8 @@ describe('useWallet - Network Switching', () => {
         expect(success).toBe(true)
       })
 
-      // Verify that switchToChain was called with Ethereum mainnet (default fallback)
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 1})
-
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 1}) // Should switch to Ethereum
+      // Verify that switchToChain was called with Sepolia (v1 supported network)
+      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 11155111})
     })
 
     it('should not auto-switch when autoSwitch is false', async () => {
@@ -269,7 +249,7 @@ describe('useWallet - Network Switching', () => {
 
   describe('Network Validation', () => {
     it('should validate current network successfully on supported chain', () => {
-      mockUseChainId.mockReturnValue(137) // Polygon
+      mockUseChainId.mockReturnValue(11155111) // Sepolia
 
       const {result} = renderHook(() => useWallet())
 
@@ -286,7 +266,7 @@ describe('useWallet - Network Switching', () => {
       expect(validationError).not.toBe(null)
       expect(validationError?.code).toBe('UNSUPPORTED_NETWORK')
       expect(validationError?.chainId).toBe(56)
-      expect(validationError?.suggestedChainId).toBe(1)
+      expect(validationError?.suggestedChainId).toBe(11155111)
     })
 
     it('should return validation error when no chain ID is available', () => {
@@ -307,7 +287,8 @@ describe('useWallet - Network Switching', () => {
       mockUseChainId.mockReturnValue(1)
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseSwitchChain.mockReturnValue({
-        switchChain: mockSwitchChain,
+        switchChain: undefined,
+        switchChainAsync: mockSwitchChain,
         isPending: true,
         error: null,
       } as any)
@@ -322,7 +303,8 @@ describe('useWallet - Network Switching', () => {
       const mockError = new Error('Switch failed')
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseSwitchChain.mockReturnValue({
-        switchChain: mockSwitchChain,
+        switchChain: undefined,
+        switchChainAsync: mockSwitchChain,
         isPending: false,
         error: mockError,
       } as any)
@@ -334,33 +316,19 @@ describe('useWallet - Network Switching', () => {
   })
 
   describe('All Network Combinations Testing', () => {
-    const testCases = [
-      {from: 1, to: 137, fromName: 'Ethereum', toName: 'Polygon'},
-      {from: 1, to: 42161, fromName: 'Ethereum', toName: 'Arbitrum'},
-      {from: 137, to: 1, fromName: 'Polygon', toName: 'Ethereum'},
-      {from: 137, to: 42161, fromName: 'Polygon', toName: 'Arbitrum'},
-      {from: 42161, to: 1, fromName: 'Arbitrum', toName: 'Ethereum'},
-      {from: 42161, to: 137, fromName: 'Arbitrum', toName: 'Polygon'},
-    ]
+    it('should report only Sepolia as supported across combinations', async () => {
+      mockUseChainId.mockReturnValue(11155111)
 
-    testCases.forEach(({from, to, fromName, toName}) => {
-      it(`should switch from ${fromName} (${from}) to ${toName} (${to})`, async () => {
-        mockUseChainId.mockReturnValue(from)
+      const {result} = renderHook(() => useWallet())
 
-        const {result} = renderHook(() => useWallet())
+      expect(result.current.isCurrentChainSupported).toBe(true)
+      expect(result.current.chainId).toBe(11155111)
 
-        // Verify starting state
-        expect(result.current.isCurrentChainSupported).toBe(true)
-        expect(result.current.chainId).toBe(from)
-
-        // Perform switch
+      await expect(async () => {
         await act(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          await result.current.switchToChain(to as any)
+          await result.current.switchToChain(137)
         })
-
-        expect(mockSwitchChain).toHaveBeenCalledWith({chainId: to})
-      })
+      }).rejects.toThrow('Cannot switch to unsupported chain ID: 137')
     })
   })
 

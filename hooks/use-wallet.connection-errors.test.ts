@@ -25,6 +25,7 @@ vi.mock('@reown/appkit/networks', () => ({
   mainnet: {id: 1},
   polygon: {id: 137},
   arbitrum: {id: 42161},
+  sepolia: {id: 11155111},
 }))
 
 const mockUseAccount = useAccount as MockedFunction<typeof useAccount>
@@ -54,11 +55,12 @@ describe('useWallet - Error Handling for Connection Failures', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseSwitchChain.mockReturnValue({
       switchChain: mockSwitchChain,
+      switchChainAsync: mockSwitchChain,
       isPending: false,
       error: null,
     } as any)
 
-    mockUseChainId.mockReturnValue(1) // Default to Ethereum mainnet
+    mockUseChainId.mockReturnValue(11155111) // Default to Sepolia (only supported chain for MVP)
     mockOpen.mockResolvedValue(undefined) // Default successful open
   })
 
@@ -133,7 +135,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'Connected to unsupported network:',
-        expect.stringContaining('Switch to Ethereum Mainnet'),
+        expect.stringContaining('Switch to Sepolia'),
       )
 
       consoleSpy.mockRestore()
@@ -180,72 +182,65 @@ describe('useWallet - Error Handling for Connection Failures', () => {
     })
   })
 
-  describe('Network Switching Error Scenarios', () => {
-    it('should handle user rejection of network switch', async () => {
-      mockUseChainId.mockReturnValue(1)
-      mockSwitchChain.mockImplementation(() => {
-        throw new Error('User rejected the request')
-      })
+  describe('Network Switching Error Scenarios (Unsupported Chains)', () => {
+    it('should reject switching to mainnet (unsupported in MVP)', async () => {
+      mockUseChainId.mockReturnValue(11155111) // Start on Sepolia
 
       const {result} = renderHook(() => useWallet())
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(137)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          await result.current.switchToChain(1 as any)
         })
-      }).rejects.toMatchObject({
-        code: 'METAMASK_LOCKED',
-        chainId: 137,
-        userFriendlyMessage: 'MetaMask wallet is locked or access was denied.',
-      })
+      }).rejects.toThrow('Cannot switch to unsupported chain ID: 1')
+
+      expect(mockSwitchChain).not.toHaveBeenCalled()
     })
 
-    it('should handle RPC endpoint failures during network switch', async () => {
-      mockUseChainId.mockReturnValue(1)
-      mockSwitchChain.mockImplementation(() => {
-        throw new Error('RPC endpoint not responding')
-      })
+    it('should reject switching to Polygon (unsupported in MVP)', async () => {
+      mockUseChainId.mockReturnValue(11155111) // Start on Sepolia
 
       const {result} = renderHook(() => useWallet())
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(42161)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          await result.current.switchToChain(137 as any)
         })
-      }).rejects.toMatchObject({
-        code: 'METAMASK_EXTENSION_ERROR',
-        chainId: 42161,
-      })
+      }).rejects.toThrow('Cannot switch to unsupported chain ID: 137')
+
+      expect(mockSwitchChain).not.toHaveBeenCalled()
     })
 
-    it('should handle network configuration errors', async () => {
-      mockUseChainId.mockReturnValue(1)
-      mockSwitchChain.mockImplementation(() => {
-        throw new Error('Network configuration invalid')
-      })
+    it('should reject switching to Arbitrum (unsupported in MVP)', async () => {
+      mockUseChainId.mockReturnValue(11155111) // Start on Sepolia
 
       const {result} = renderHook(() => useWallet())
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(137)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          await result.current.switchToChain(42161 as any)
         })
-      }).rejects.toThrow('Network configuration invalid')
+      }).rejects.toThrow('Cannot switch to unsupported chain ID: 42161')
+
+      expect(mockSwitchChain).not.toHaveBeenCalled()
     })
 
-    it('should handle wallet locked errors during network switch', async () => {
-      mockUseChainId.mockReturnValue(1)
-      mockSwitchChain.mockImplementation(() => {
-        throw new Error('Wallet is locked')
-      })
+    it('should reject switching to BSC (unsupported)', async () => {
+      mockUseChainId.mockReturnValue(11155111) // Start on Sepolia
 
       const {result} = renderHook(() => useWallet())
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(137)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          await result.current.switchToChain(56 as any)
         })
-      }).rejects.toThrow('Wallet is locked')
+      }).rejects.toThrow('Cannot switch to unsupported chain ID: 56')
+
+      expect(mockSwitchChain).not.toHaveBeenCalled()
     })
   })
 
@@ -266,7 +261,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
         expect(success).toBe(false) // Should return false on failure
       })
 
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 1})
+      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 11155111})
     })
 
     it('should handle switch failures when user manually requests network change', async () => {
@@ -369,6 +364,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
     })
 
     it('should handle rapid network switch requests', async () => {
+      // Start on unsupported chain
       mockUseChainId.mockReturnValue(1)
 
       let switchCallCount = 0
@@ -382,15 +378,19 @@ describe('useWallet - Error Handling for Connection Failures', () => {
 
       const {result} = renderHook(() => useWallet())
 
-      // First switch should succeed
+      // First switch to Sepolia should succeed
       await act(async () => {
-        await result.current.switchToChain(137)
+        await result.current.switchToChain(11155111)
       })
 
-      // Second rapid switch should fail gracefully
+      // Second rapid switch should fail (same chain, but tests the error path)
+      // Switch back to unsupported then try again
+      mockUseChainId.mockReturnValue(56)
+      const {result: result2} = renderHook(() => useWallet())
+
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(42161)
+          await result2.current.switchToChain(11155111)
         })
       }).rejects.toMatchObject({
         code: 'METAMASK_EXTENSION_ERROR',
@@ -427,6 +427,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
     })
 
     it('should handle network switch recovery after initial failure', async () => {
+      // Start on unsupported chain
       mockUseChainId.mockReturnValue(1)
 
       let switchAttempts = 0
@@ -440,16 +441,16 @@ describe('useWallet - Error Handling for Connection Failures', () => {
 
       const {result} = renderHook(() => useWallet())
 
-      // First attempt should fail
+      // First attempt to switch to Sepolia should fail
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(137)
+          await result.current.switchToChain(11155111)
         })
       }).rejects.toThrow('First switch attempt failed')
 
       // Second attempt should succeed
       await act(async () => {
-        await result.current.switchToChain(137)
+        await result.current.switchToChain(11155111)
       })
 
       expect(switchAttempts).toBe(2)
