@@ -155,9 +155,9 @@ jobs:
 
       - name: Deploy to Vercel (Staging)
         run: |
-          echo "🚀 Deploying to staging environment..."
-          echo "This would deploy to Vercel staging with preview URL"
-          echo "Preview URL would be available for PR review"
+          echo "🚀 Staging deployment handled by Vercel GitHub integration"
+          echo "Preview URL: https://v0-token-toilet-git-${GITHUB_HEAD_REF:-staging}-mrbro-dev.vercel.app"
+          echo "See Vercel dashboard for deployment status"
 
   deploy-production:
     name: Deploy to Production
@@ -182,9 +182,9 @@ jobs:
 
       - name: Deploy to Vercel (Production)
         run: |
-          echo "🚀 Deploying to production environment..."
-          echo "This would deploy to Vercel production"
-          echo "Production deployment completed"
+          echo "🚀 Production deployment handled by Vercel GitHub integration"
+          echo "Production URL: https://v0-token-toilet.vercel.app"
+          echo "See Vercel dashboard for deployment status"
 
   # Notification Job
   notify-completion:
