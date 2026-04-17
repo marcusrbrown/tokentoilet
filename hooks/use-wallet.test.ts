@@ -55,7 +55,8 @@ describe('useWallet - Network Switching', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseSwitchChain.mockReturnValue({
-      switchChain: mockSwitchChain,
+      switchChain: undefined,
+      switchChainAsync: mockSwitchChain,
       isPending: false,
       error: null,
     } as any)
@@ -135,6 +136,21 @@ describe('useWallet - Network Switching', () => {
         await result.current.switchToChain(11155111)
       })
 
+      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 11155111})
+    })
+
+    it('should use the async chain switching API', async () => {
+      // Given wagmi only exposes the async switch API implementation
+      mockUseChainId.mockReturnValue(56)
+
+      // When the wallet hook switches to Sepolia
+      const {result} = renderHook(() => useWallet())
+
+      await act(async () => {
+        await result.current.switchToChain(11155111)
+      })
+
+      // Then the async switch API is invoked successfully
       expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 11155111})
     })
 
@@ -271,7 +287,8 @@ describe('useWallet - Network Switching', () => {
       mockUseChainId.mockReturnValue(1)
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseSwitchChain.mockReturnValue({
-        switchChain: mockSwitchChain,
+        switchChain: undefined,
+        switchChainAsync: mockSwitchChain,
         isPending: true,
         error: null,
       } as any)
@@ -286,7 +303,8 @@ describe('useWallet - Network Switching', () => {
       const mockError = new Error('Switch failed')
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseSwitchChain.mockReturnValue({
-        switchChain: mockSwitchChain,
+        switchChain: undefined,
+        switchChainAsync: mockSwitchChain,
         isPending: false,
         error: mockError,
       } as any)

@@ -25,6 +25,7 @@ vi.mock('@reown/appkit/networks', () => ({
   mainnet: {id: 1},
   polygon: {id: 137},
   arbitrum: {id: 42161},
+  sepolia: {id: 11155111},
 }))
 
 const mockUseAccount = useAccount as MockedFunction<typeof useAccount>

@@ -53,7 +53,7 @@ export function useWallet() {
   const {address, isConnected, isConnecting, isReconnecting} = useAccount()
   const {disconnect} = useDisconnect()
   const chainId = useChainId()
-  const {switchChain, isPending: isSwitchingChain, error: switchChainError} = useSwitchChain()
+  const {switchChainAsync, isPending: isSwitchingChain, error: switchChainError} = useSwitchChain()
 
   const [error, setError] = useState<WalletSpecificError | null>(null)
   const clearError = useCallback(() => setError(null), [])
@@ -179,13 +179,12 @@ export function useWallet() {
 
     if (!isSupportedChain(chainId)) {
       const error = new Error(
-        `Unsupported network: Chain ID ${chainId}. Please switch to a supported network: Ethereum Mainnet, Polygon, or Arbitrum One.`,
+        `Unsupported network: Chain ID ${chainId}. Please switch to Sepolia.`,
       ) as NetworkValidationError
       error.code = 'UNSUPPORTED_NETWORK'
       error.chainId = chainId
       error.suggestedChainId = DEFAULT_SUPPORTED_NETWORK_V1.id
       error.userFriendlyMessage = `Please switch to Sepolia. Current network (${chainId}) is not supported.`
-      error.message = `Unsupported network: Chain ID ${chainId}. Please switch to Sepolia.`
       return error
     }
 
@@ -220,7 +219,7 @@ export function useWallet() {
     }
 
     try {
-      switchChain({chainId: targetChainId})
+      await switchChainAsync({chainId: targetChainId})
     } catch (error) {
       console.error(`Failed to switch to chain ${targetChainId}:`, error)
 
