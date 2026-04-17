@@ -42,15 +42,11 @@ vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(() => ({
     address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' as Address,
     isConnected: true,
-    chainId: 1,
-    currentNetwork: {id: 1, name: 'Ethereum', nativeCurrency: {symbol: 'ETH'}},
+    chainId: 11155111,
+    currentNetwork: {id: 11155111, name: 'Sepolia', nativeCurrency: {symbol: 'ETH'}},
     isCurrentChainSupported: true,
     getUnsupportedNetworkError: vi.fn(() => null),
-    getSupportedChains: vi.fn(() => [
-      {id: 1, name: 'Ethereum Mainnet'},
-      {id: 137, name: 'Polygon'},
-      {id: 42161, name: 'Arbitrum One'},
-    ]),
+    getSupportedChains: vi.fn(() => [{id: 11155111, name: 'Sepolia'}]),
     isSupportedChain: vi.fn(() => true),
     validateCurrentNetwork: vi.fn(() => ({success: true})),
     handleUnsupportedNetwork: vi.fn(),
@@ -100,6 +96,7 @@ vi.mock('@reown/appkit/networks', () => ({
   mainnet: {id: 1, name: 'Ethereum'},
   polygon: {id: 137, name: 'Polygon'},
   arbitrum: {id: 42161, name: 'Arbitrum'},
+  sepolia: {id: 11155111, name: 'Sepolia'},
 }))
 
 vi.mock('react-hot-toast', () => ({
@@ -121,7 +118,7 @@ const TEST_TIMEOUT = 3000 as const
 function createMockToken(overrides: Partial<CategorizedToken> = {}): CategorizedToken {
   const defaults: CategorizedToken = {
     address: `0x${Math.random().toString(16).slice(2, 42)}`,
-    chainId: 1,
+    chainId: 11155111,
     name: 'Test Token',
     symbol: 'TEST',
     decimals: 18,
@@ -225,7 +222,7 @@ describe('Token Discovery Workflow E2E Tests', () => {
       connector: {id: 'metaMaskSDK', name: 'MetaMask'},
     })
 
-    mockUseChainId.mockReturnValue(1)
+    mockUseChainId.mockReturnValue(11155111)
 
     const mockTokens = createMockTokenCollection()
     mockUseTokenDiscovery.mockReturnValue({
@@ -280,7 +277,7 @@ describe('Token Discovery Workflow E2E Tests', () => {
   })
 
   it('should handle token discovery across multiple chains', async () => {
-    mockUseChainId.mockReturnValue(137)
+    mockUseChainId.mockReturnValue(11155111)
 
     renderWithProviders(<TokenList />)
 
@@ -388,7 +385,7 @@ describe('Token Selection Workflow E2E Tests', () => {
       connector: {id: 'metaMaskSDK', name: 'MetaMask'},
     })
 
-    mockUseChainId.mockReturnValue(1)
+    mockUseChainId.mockReturnValue(11155111)
   })
 
   it('should complete batch selection workflow: view list → select all → deselect', async () => {
@@ -601,7 +598,7 @@ describe('Token Approval Workflow E2E Tests', () => {
       connector: {id: 'metaMaskSDK', name: 'MetaMask'},
     })
 
-    mockUseChainId.mockReturnValue(1)
+    mockUseChainId.mockReturnValue(11155111)
 
     mockUseReadContract.mockImplementation(({functionName}: {functionName: string}) => {
       if (functionName === 'allowance') {
@@ -859,7 +856,7 @@ describe('Complete Token Disposal Workflow E2E Test', () => {
       connector: {id: 'metaMaskSDK', name: 'MetaMask'},
     })
 
-    mockUseChainId.mockReturnValue(1)
+    mockUseChainId.mockReturnValue(11155111)
 
     mockUseTokenDiscovery.mockReturnValue({
       tokens: mockTokens.map(t => ({

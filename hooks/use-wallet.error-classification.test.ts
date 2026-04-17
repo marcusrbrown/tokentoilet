@@ -55,11 +55,12 @@ describe('useWallet - Enhanced Error Classification', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseSwitchChain.mockReturnValue({
       switchChain: mockSwitchChain,
+      switchChainAsync: mockSwitchChain,
       isPending: false,
       error: null,
     } as any)
 
-    mockUseChainId.mockReturnValue(1) // Default to Ethereum mainnet
+    mockUseChainId.mockReturnValue(11155111) // Default to Sepolia (only supported chain for MVP)
     mockOpen.mockResolvedValue(undefined) // Default successful open
   })
 
@@ -174,6 +175,7 @@ describe('useWallet - Enhanced Error Classification', () => {
 
   describe('Network Switch Error Classification', () => {
     it('should classify switch rejection errors correctly', async () => {
+      // Start on unsupported chain so switch to Sepolia is valid
       mockUseChainId.mockReturnValue(1)
       mockSwitchChain.mockImplementation(() => {
         throw new Error('User rejected the request')
@@ -183,12 +185,12 @@ describe('useWallet - Enhanced Error Classification', () => {
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(137)
+          await result.current.switchToChain(11155111)
         })
       }).rejects.toMatchObject({
         code: 'METAMASK_LOCKED',
         userFriendlyMessage: 'MetaMask wallet is locked or access was denied.',
-        chainId: 137,
+        chainId: 11155111,
       })
     })
 
@@ -202,12 +204,12 @@ describe('useWallet - Enhanced Error Classification', () => {
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(42161)
+          await result.current.switchToChain(11155111)
         })
       }).rejects.toMatchObject({
         code: 'METAMASK_EXTENSION_ERROR',
         userFriendlyMessage: 'An error occurred while connecting to Wallet. RPC endpoint failed',
-        chainId: 42161,
+        chainId: 11155111,
       })
     })
 
@@ -221,12 +223,12 @@ describe('useWallet - Enhanced Error Classification', () => {
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(137)
+          await result.current.switchToChain(11155111)
         })
       }).rejects.toMatchObject({
         code: 'METAMASK_EXTENSION_ERROR',
         userFriendlyMessage: 'An error occurred while connecting to Wallet. Request timeout',
-        chainId: 137,
+        chainId: 11155111,
       })
     })
 
@@ -240,12 +242,12 @@ describe('useWallet - Enhanced Error Classification', () => {
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(42161)
+          await result.current.switchToChain(11155111)
         })
       }).rejects.toMatchObject({
         code: 'METAMASK_EXTENSION_ERROR',
         userFriendlyMessage: 'An error occurred while connecting to Wallet. Wallet locked',
-        chainId: 42161,
+        chainId: 11155111,
       })
     })
 
@@ -259,12 +261,12 @@ describe('useWallet - Enhanced Error Classification', () => {
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(137)
+          await result.current.switchToChain(11155111)
         })
       }).rejects.toMatchObject({
         code: 'METAMASK_EXTENSION_ERROR',
         userFriendlyMessage: 'An error occurred while connecting to Wallet. Unknown switch error',
-        chainId: 137,
+        chainId: 11155111,
       })
     })
   })
@@ -286,6 +288,7 @@ describe('useWallet - Enhanced Error Classification', () => {
     })
 
     it('should preserve original error in switch failures', async () => {
+      // Start on unsupported chain so switch to Sepolia is valid
       mockUseChainId.mockReturnValue(1)
       const originalError = new Error('Original switch error')
       mockSwitchChain.mockImplementation(() => {
@@ -296,11 +299,11 @@ describe('useWallet - Enhanced Error Classification', () => {
 
       await expect(async () => {
         await act(async () => {
-          await result.current.switchToChain(137)
+          await result.current.switchToChain(11155111)
         })
       }).rejects.toMatchObject({
         originalError,
-        chainId: 137,
+        chainId: 11155111,
       })
     })
   })

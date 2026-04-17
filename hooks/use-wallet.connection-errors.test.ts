@@ -55,6 +55,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseSwitchChain.mockReturnValue({
       switchChain: mockSwitchChain,
+      switchChainAsync: mockSwitchChain,
       isPending: false,
       error: null,
     } as any)

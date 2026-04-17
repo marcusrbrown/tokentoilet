@@ -88,6 +88,7 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseSwitchChain.mockReturnValue({
       switchChain: mockSwitchChain,
+      switchChainAsync: mockSwitchChain,
       isPending: false,
       error: null,
     } as any)
@@ -166,14 +167,15 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
         return Promise.resolve()
       })
 
+      // Switch to Sepolia (only supported chain)
       await act(async () => {
-        await connectedResult.current.switchToChain(137)
+        await connectedResult.current.switchToChain(11155111)
       })
 
       const {result: switchedResult} = renderHook(() => useWallet())
-      expect(switchedResult.current.chainId).toBe(137)
+      expect(switchedResult.current.chainId).toBe(11155111)
       expect(switchedResult.current.isCurrentChainSupported).toBe(true)
-      expect(switchedResult.current.currentNetwork?.name).toBe('Polygon')
+      expect(switchedResult.current.currentNetwork?.name).toBe('Sepolia')
     })
 
     it('should handle MetaMask connection rejection gracefully', async () => {
@@ -577,7 +579,7 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
         expect(unsupportedError).not.toBeNull()
         if (unsupportedError != null) {
           expect(unsupportedError.currentChainId).toBe(56)
-          expect(unsupportedError.suggestedChain.id).toBe(1)
+          expect(unsupportedError.suggestedChain.id).toBe(11155111)
         }
       }
     })

@@ -59,6 +59,7 @@ describe('useWallet - MetaMask Connection Flow (TASK-017)', () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseSwitchChain.mockReturnValue({
       switchChain: mockSwitchChain,
+      switchChainAsync: mockSwitchChain,
       isPending: false,
       error: null,
     } as any)
