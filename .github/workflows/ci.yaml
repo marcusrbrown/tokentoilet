@@ -139,7 +139,7 @@ jobs:
     if: github.event_name == 'pull_request'
     environment:
       name: staging
-      url: https://tokentoilet-staging.vercel.app
+      url: https://staging.tokentoilet.com
     steps:
       - name: ⤵️ Checkout Branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -156,7 +156,7 @@ jobs:
       - name: Deploy to Vercel (Staging)
         run: |
           echo "🚀 Staging deployment handled by Vercel GitHub integration"
-          echo "Preview URL: https://v0-token-toilet-git-${GITHUB_HEAD_REF:-staging}-mrbro-dev.vercel.app"
+          echo "Preview URL: https://staging.tokentoilet.com"
           echo "See Vercel dashboard for deployment status"
 
   deploy-production:
@@ -166,7 +166,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: production
-      url: https://tokentoilet.vercel.app
+      url: https://tokentoilet.com
     steps:
       - name: ⤵️ Checkout Branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -183,7 +183,7 @@ jobs:
       - name: Deploy to Vercel (Production)
         run: |
           echo "🚀 Production deployment handled by Vercel GitHub integration"
-          echo "Production URL: https://v0-token-toilet.vercel.app"
+          echo "Production URL: https://tokentoilet.com"
           echo "See Vercel dashboard for deployment status"
 
   # Notification Job
