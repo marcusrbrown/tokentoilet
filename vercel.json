@@ -3,7 +3,7 @@
   "framework": "nextjs",
   "buildCommand": "pnpm build",
   "devCommand": "pnpm dev",
-  "installCommand": "pnpm bootstrap",
+  "installCommand": "pnpm install",
   "git": {
     "deploymentEnabled": {
       "main": true,

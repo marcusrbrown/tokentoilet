@@ -1,3 +1,6 @@
+packages:
+  - .
+
 onlyBuiltDependencies:
   - '@reown/appkit'
   - '@tailwindcss/oxide'

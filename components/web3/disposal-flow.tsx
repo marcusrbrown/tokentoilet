@@ -2,12 +2,13 @@
 
 import type {Address} from 'viem'
 import {AlertCircle, CheckCircle, Clock} from 'lucide-react'
-import React, {useEffect, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {Button} from '@/components/ui/button'
 import {Card} from '@/components/ui/card'
 import {useTokenDiscovery} from '@/hooks/use-token-discovery'
 import {useTokenDisposal} from '@/hooks/use-token-disposal'
 import {useUnwantedTokens} from '@/hooks/use-token-filtering'
+import {DEFAULT_SUPPORTED_NETWORK_V1} from '@/lib/web3/chains'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import {TokenList} from './token-list'
 import {TransactionQueue} from './transaction-queue'
@@ -21,35 +22,88 @@ interface DisposalResult {
   error?: string
 }
 
+/**
+ * Keyed child component that owns its own useTokenDisposal instance.
+ * When the parent changes the key (token address), React remounts this
+ * component with fresh hook state, avoiding stale isSuccess/error from
+ * the previous token's transaction.
+ */
+function DisposalExecutor({
+  token,
+  onComplete,
+}: {
+  token: CategorizedToken
+  onComplete: (result: DisposalResult) => void
+}) {
+  const {dispose, isPending, isSuccess, error} = useTokenDisposal(token)
+  const hasTriggeredRef = useRef(false)
+  const hasReportedRef = useRef(false)
+
+  useEffect(() => {
+    if (!hasTriggeredRef.current) {
+      hasTriggeredRef.current = true
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      dispose()
+    }
+  }, [dispose])
+
+  useEffect(() => {
+    if (hasTriggeredRef.current && !hasReportedRef.current && (isSuccess || error != null)) {
+      hasReportedRef.current = true
+      onComplete({
+        address: token.address,
+        success: isSuccess && error == null,
+        name: token.name,
+        symbol: token.symbol,
+        error: error?.message,
+      })
+    }
+  }, [isSuccess, error, token.address, token.name, token.symbol, onComplete])
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-3 mb-2">
+        {isPending && <Clock className="h-5 w-5 text-yellow-500 animate-spin" />}
+        {isSuccess && <CheckCircle className="h-5 w-5 text-green-500" />}
+        {error != null && <AlertCircle className="h-5 w-5 text-red-500" />}
+        {!isPending && !isSuccess && error == null && <Clock className="h-5 w-5 text-gray-400" />}
+        <span className="font-medium">{token.name}</span>
+      </div>
+      {error != null && <p className="text-sm text-red-500 ml-8">{error.message}</p>}
+    </Card>
+  )
+}
+
 export function DisposalFlow() {
   const [step, setStep] = useState<Step>('select')
   const [selectedAddresses, setSelectedAddresses] = useState<Address[]>([])
-
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState<DisposalResult[]>([])
-  const hasTriggeredRef = useRef(false)
 
   const {tokens: discoveredTokens} = useTokenDiscovery({enabled: true})
   const {tokens: unwantedTokens} = useUnwantedTokens(discoveredTokens)
 
-  const selectedTokens = unwantedTokens.filter(t => selectedAddresses.includes(t.address))
+  const selectedTokens = useMemo(
+    () => unwantedTokens.filter(t => selectedAddresses.includes(t.address)),
+    [unwantedTokens, selectedAddresses],
+  )
 
-  // Hook for the current token being disposed
   const currentToken = selectedTokens[currentIndex] as CategorizedToken | undefined
-  // We must pass a dummy token if undefined to satisfy hook rules (can't conditionally call hooks)
-  const dummyToken = unwantedTokens[0] ?? {
-    address: '0x0',
-    chainId: 1,
-    symbol: '',
-    name: '',
-    decimals: 18,
-    balance: BigInt(0),
-    formattedBalance: '0',
-    category: 'unwanted',
-  }
-  const disposalToken = currentToken === undefined ? dummyToken : currentToken
 
-  const {dispose, isPending, isSuccess, error} = useTokenDisposal(disposalToken)
+  const dummyToken: CategorizedToken = useMemo(
+    () =>
+      unwantedTokens[0] ?? {
+        address: '0x0000000000000000000000000000000000000000' as Address,
+        chainId: DEFAULT_SUPPORTED_NETWORK_V1.id,
+        symbol: '',
+        name: '',
+        decimals: 18,
+        balance: BigInt(0),
+        formattedBalance: '0',
+        category: 'unwanted' as const,
+      },
+    [unwantedTokens],
+  )
 
   const handleSelectionChange = (addresses: Address[]) => {
     setSelectedAddresses(addresses)
@@ -59,41 +113,17 @@ export function DisposalFlow() {
     setCurrentIndex(0)
     setResults([])
     setStep('dispose')
-    hasTriggeredRef.current = false
   }
 
-  useEffect(() => {
-    if (step === 'dispose' && currentToken !== undefined) {
-      if (!isPending && !isSuccess && !error && !hasTriggeredRef.current) {
-        hasTriggeredRef.current = true
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        dispose()
-      } else if ((isSuccess || error != null) && hasTriggeredRef.current) {
-        // Record result
-        // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
-        setResults(prev => [
-          ...prev,
-          {
-            address: currentToken.address,
-            success: !error,
-            name: currentToken.name,
-            symbol: currentToken.symbol,
-            error: error?.message,
-          },
-        ])
+  const handleDisposalComplete = (result: DisposalResult) => {
+    setResults(prev => [...prev, result])
 
-        // Move to next
-        if (currentIndex < selectedTokens.length - 1) {
-          hasTriggeredRef.current = false
-          // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
-          setCurrentIndex(prev => prev + 1)
-        } else {
-          // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
-          setStep('results')
-        }
-      }
+    if (currentIndex < selectedTokens.length - 1) {
+      setCurrentIndex(prev => prev + 1)
+    } else {
+      setStep('results')
     }
-  }, [step, currentIndex, currentToken, isPending, isSuccess, error, dispose, selectedTokens.length])
+  }
 
   if (step === 'select') {
     const isOverLimit = selectedAddresses.length > 10
@@ -143,6 +173,8 @@ export function DisposalFlow() {
   }
 
   if (step === 'dispose') {
+    const tokenToDispose = currentToken ?? dummyToken
+
     return (
       <div className="space-y-6">
         <div>
@@ -152,15 +184,7 @@ export function DisposalFlow() {
           <p className="text-gray-500 text-sm mt-1">Please confirm the transactions in your wallet.</p>
         </div>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-3 mb-2">
-            {isPending && <Clock className="h-5 w-5 text-yellow-500 animate-spin" />}
-            {!isPending && !error && <Clock className="h-5 w-5 text-gray-400" />}
-            {error != null && <AlertCircle className="h-5 w-5 text-red-500" />}
-            <span className="font-medium">{currentToken?.name}</span>
-          </div>
-          {error != null && <p className="text-sm text-red-500 ml-8">{error.message}</p>}
-        </Card>
+        <DisposalExecutor key={tokenToDispose.address} token={tokenToDispose} onComplete={handleDisposalComplete} />
 
         <div className="mt-8">
           <h3 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">Transaction Status</h3>
@@ -170,7 +194,6 @@ export function DisposalFlow() {
     )
   }
 
-  // Results Step
   const successCount = results.filter(r => r.success).length
   const failCount = results.length - successCount
 

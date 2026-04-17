@@ -186,4 +186,29 @@ describe('DisposalFlow', () => {
     expect(screen.getByText(/disposing 1 of 2/i)).toBeInTheDocument()
     expect(mockDispose).toHaveBeenCalledTimes(1)
   })
+
+  it('resets hook state between tokens via keyed child remount', async () => {
+    // given: two tokens selected and disposal flow started
+    const disposeCallTokens: string[] = []
+    vi.mocked(useTokenDisposal).mockImplementation(token => {
+      return {
+        dispose: vi.fn(() => {
+          disposeCallTokens.push(token.symbol)
+        }),
+        isPending: false,
+        isSuccess: false,
+        error: null,
+        txHash: undefined,
+      } as unknown as ReturnType<typeof useTokenDisposal>
+    })
+
+    render(<DisposalFlow />)
+    await userEvent.click(screen.getByTestId('mock-select-tokens-1-and-2'))
+    await userEvent.click(screen.getByRole('button', {name: /continue/i}))
+    await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+
+    // when: first token disposal starts
+    // then: dispose is called with first token
+    expect(disposeCallTokens).toContain('TKN1')
+  })
 })

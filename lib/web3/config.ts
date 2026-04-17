@@ -38,7 +38,7 @@ export const wagmiAdapter = new WagmiAdapter({
   ssr: true,
   transports: {
     [DEFAULT_SUPPORTED_NETWORK_V1.id]: http(
-      getRpcUrl(DEFAULT_SUPPORTED_NETWORK_V1.id, undefined, 'https://eth-sepolia.g.alchemy.com/v2/demo'),
+      getRpcUrl(DEFAULT_SUPPORTED_NETWORK_V1.id, env.NEXT_PUBLIC_SEPOLIA_RPC_URL),
     ),
   },
 })
