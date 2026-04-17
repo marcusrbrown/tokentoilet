@@ -1,7 +1,7 @@
 ---
 title: "feat: Wire MVP disposal flow (Sepolia ERC-20 to burn address)"
 type: feat
-status: active
+status: completed
 date: 2026-04-16
 origin: docs/brainstorms/2026-04-16-mvp-rebaseline-requirements.md
 deepened: 2026-04-16
