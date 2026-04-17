@@ -17,10 +17,7 @@ branches:
         contexts:
           - Build
           - Build Storybook
-          - Deploy to Production
-          - Deploy to Staging
           - Lint
-          - Notify Completion
           - Renovate / Renovate
           - Security Audit
           - Test
