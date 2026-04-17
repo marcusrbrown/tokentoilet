@@ -20,7 +20,7 @@ vi.mock('@reown/appkit/react', () => ({
   })),
 }))
 
-// Mock network imports
+// Mock network imports - Sepolia is the only supported chain for MVP disposal flow
 vi.mock('@reown/appkit/networks', () => ({
   mainnet: {id: 1},
   polygon: {id: 137},
@@ -63,8 +63,8 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       error: null,
     } as any)
 
-    // Default to Ethereum mainnet
-    mockUseChainId.mockReturnValue(1)
+    // Default to Sepolia (only supported chain for MVP disposal flow)
+    mockUseChainId.mockReturnValue(11155111)
 
     // Reset AppKit mock
     mockAppKitOpen.mockReset()
@@ -101,6 +101,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       expect(connectedResult.current.isConnected).toBe(true)
       expect(connectedResult.current.address).toBe(MOCK_WALLETCONNECT_ADDRESS)
       expect(connectedResult.current.isCurrentChainSupported).toBe(true)
+      expect(connectedResult.current.currentNetwork?.name).toBe('Sepolia')
     })
 
     it('should handle WalletConnect QR code timeout', async () => {
@@ -293,22 +294,22 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
         address: MOCK_WALLETCONNECT_ADDRESS,
         isConnected: true,
       } as any)
-      mockUseChainId.mockReturnValue(137) // Connected to Polygon
+      mockUseChainId.mockReturnValue(11155111) // Connected to Sepolia
 
       const {result} = renderHook(() => useWallet())
 
       // Verify session state is restored
       expect(result.current.isConnected).toBe(true)
       expect(result.current.address).toBe(MOCK_WALLETCONNECT_ADDRESS)
-      expect(result.current.chainId).toBe(137)
+      expect(result.current.chainId).toBe(11155111)
       expect(result.current.isCurrentChainSupported).toBe(true)
-      expect(result.current.currentNetwork?.name).toBe('Polygon')
+      expect(result.current.currentNetwork?.name).toBe('Sepolia')
     })
   })
 
-  describe('WalletConnect Multi-Chain Network Switching', () => {
+  describe('WalletConnect Network Switching to Unsupported Chains', () => {
     beforeEach(() => {
-      // Start in connected state via WalletConnect
+      // Start in connected state via WalletConnect on Sepolia
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockUseAccount.mockReturnValue({
         address: MOCK_WALLETCONNECT_ADDRESS,
@@ -316,83 +317,64 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       } as any)
     })
 
-    it('should switch from Ethereum to Polygon via WalletConnect', async () => {
-      // Start on Ethereum mainnet
-      mockUseChainId.mockReturnValue(1)
+    it('should reject switching to mainnet (unsupported in MVP)', async () => {
+      // Start on Sepolia (supported)
+      mockUseChainId.mockReturnValue(11155111)
 
       const {result} = renderHook(() => useWallet())
 
-      // Verify initial state
-      expect(result.current.chainId).toBe(1)
-      expect(result.current.currentNetwork?.name).toBe('Ethereum Mainnet')
+      // Verify initial state on Sepolia
+      expect(result.current.chainId).toBe(11155111)
+      expect(result.current.currentNetwork?.name).toBe('Sepolia')
+      expect(result.current.isCurrentChainSupported).toBe(true)
 
-      // Simulate successful WalletConnect chain switch
-      mockSwitchChain.mockImplementationOnce(async ({chainId}: {chainId: number}) => {
-        mockUseChainId.mockReturnValue(chainId)
-        return Promise.resolve()
-      })
-
-      await act(async () => {
-        await result.current.switchToChain(137) // Switch to Polygon
-      })
-
-      // Verify switch was attempted
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 137})
-
-      // Re-render with updated chain
-      const {result: switchedResult} = renderHook(() => useWallet())
-      mockUseChainId.mockReturnValue(137)
-
-      expect(switchedResult.current.chainId).toBe(137)
-      expect(switchedResult.current.currentNetwork?.name).toBe('Polygon')
-      expect(switchedResult.current.isCurrentChainSupported).toBe(true)
-    })
-
-    it('should handle WalletConnect network switch rejection by mobile wallet', async () => {
-      // Start on Ethereum
-      mockUseChainId.mockReturnValue(1)
-
-      const {result} = renderHook(() => useWallet())
-
-      // Simulate switch rejection in mobile wallet
-      const rejectionError = new Error('Network switch rejected in mobile wallet')
-      mockSwitchChain.mockImplementationOnce(() => {
-        throw rejectionError
-      })
-
-      // Capture console.error
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-      await act(async () => {
-        await expect(result.current.switchToChain(137)).rejects.toThrow('Network switch rejected in mobile wallet')
-      })
-
-      // Verify error was logged
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to switch to chain 137:', rejectionError)
-
-      // Verify chain remained unchanged
-      expect(result.current.chainId).toBe(1)
-
-      consoleSpy.mockRestore()
-    })
-
-    it('should handle WalletConnect network switch to unsupported chain in mobile wallet', async () => {
-      // Start on Ethereum
-      mockUseChainId.mockReturnValue(1)
-
-      const {result} = renderHook(() => useWallet())
-
-      // User attempts to switch to unsupported chain (BSC) through WalletConnect
+      // Attempt to switch to Ethereum mainnet (unsupported)
       await act(async () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        await expect(result.current.switchToChain(56 as any)).rejects.toThrow(
-          'Cannot switch to unsupported chain ID: 56',
+        await expect(result.current.switchToChain(1 as any)).rejects.toThrow('Cannot switch to unsupported chain ID: 1')
+      })
+
+      // Verify no switch was attempted
+      expect(mockSwitchChain).not.toHaveBeenCalled()
+      expect(result.current.chainId).toBe(11155111) // Remained on Sepolia
+    })
+
+    it('should reject switching to Polygon (unsupported in MVP)', async () => {
+      // Start on Sepolia (supported)
+      mockUseChainId.mockReturnValue(11155111)
+
+      const {result} = renderHook(() => useWallet())
+
+      // Attempt to switch to Polygon (unsupported)
+      await act(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        await expect(result.current.switchToChain(137 as any)).rejects.toThrow(
+          'Cannot switch to unsupported chain ID: 137',
         )
       })
 
       // Verify no switch was attempted
       expect(mockSwitchChain).not.toHaveBeenCalled()
-      expect(result.current.chainId).toBe(1) // Remained on Ethereum
+      expect(result.current.chainId).toBe(11155111) // Remained on Sepolia
+    })
+
+    it('should reject switching to Arbitrum (unsupported in MVP)', async () => {
+      // Start on Sepolia (supported)
+      mockUseChainId.mockReturnValue(11155111)
+
+      const {result} = renderHook(() => useWallet())
+
+      // Attempt to switch to Arbitrum (unsupported)
+      await act(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        await expect(result.current.switchToChain(42161 as any)).rejects.toThrow(
+          'Cannot switch to unsupported chain ID: 42161',
+        )
+      })
+
+      // Verify no switch was attempted
+      expect(mockSwitchChain).not.toHaveBeenCalled()
+      expect(result.current.chainId).toBe(11155111) // Remained on Sepolia
     })
   })
 
@@ -538,7 +520,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       // Verify warning was logged for unsupported network
       expect(consoleSpy).toHaveBeenCalledWith(
         'Connected to unsupported network:',
-        expect.stringContaining('Switch to Ethereum Mainnet'),
+        expect.stringContaining('Switch to Sepolia'),
       )
 
       // Verify connection succeeded but network is unsupported
@@ -551,7 +533,7 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
       const unsupportedError = connectedResult.current.getUnsupportedNetworkError()
       expect(unsupportedError).not.toBeNull()
       expect(unsupportedError?.currentChainId).toBe(56)
-      expect(unsupportedError?.suggestedChain.id).toBe(1)
+      expect(unsupportedError?.suggestedChain.id).toBe(11155111)
 
       consoleSpy.mockRestore()
     })
@@ -583,15 +565,15 @@ describe('useWallet - WalletConnect Connection Flow (TASK-018)', () => {
         expect(success).toBe(true)
       })
 
-      // Verify switch to Ethereum mainnet was attempted
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 1})
+      // Verify switch to Sepolia was attempted
+      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 11155111})
 
       // Re-render with updated supported chain
       const {result: switchedResult} = renderHook(() => useWallet())
-      mockUseChainId.mockReturnValue(1)
+      mockUseChainId.mockReturnValue(11155111)
 
       expect(switchedResult.current.isCurrentChainSupported).toBe(true)
-      expect(switchedResult.current.chainId).toBe(1)
+      expect(switchedResult.current.chainId).toBe(11155111)
     })
   })
 

@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef} from 'react'
 import {Button} from '@/components/ui/button'
 import {TokenInput, type TokenInputProps} from '@/components/ui/token-input'
 import {useSingleTokenBalance, type UseSingleTokenBalanceOptions} from '@/hooks/use-token-balance'
-import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
+import {useWallet} from '@/hooks/use-wallet'
 import {rawToDecimal, validateTokenAmount, type TokenData} from '@/lib/token-utils'
 import {cn} from '@/lib/utils'
 
@@ -155,7 +155,7 @@ export function TokenAmountInput({
     error: balanceError,
     refresh: refreshBalance,
     isSuccess: hasBalanceData,
-  } = useSingleTokenBalance((selectedToken?.address as `0x${string}`) ?? null, (chainId as SupportedChainId) ?? null, {
+  } = useSingleTokenBalance((selectedToken?.address as `0x${string}`) ?? null, chainId ?? null, {
     enabled:
       (validationConfig.enableRealTimeBalance ?? false) &&
       isConnected &&

@@ -1,7 +1,6 @@
 'use client'
 
 import type {Address} from 'viem'
-import type {SupportedChainId} from './use-wallet'
 
 import {useCallback, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
@@ -120,7 +119,7 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
     abi: erc20Abi,
     functionName: 'allowance',
     args: typeof userAddress === 'string' && typeof spender === 'string' ? [userAddress, spender] : undefined,
-    chainId: chainId as SupportedChainId,
+    chainId,
     query: {
       enabled: typeof userAddress === 'string' && typeof spender === 'string' && isConnected && networkError === null,
       staleTime: 30_000, // Cache for 30 seconds to reduce RPC calls
@@ -140,7 +139,7 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
         ? `0x095ea7b3${spender.slice(2).padStart(64, '0')}${finalApprovalAmount.toString(16).padStart(64, '0')}`
         : undefined,
     account: typeof userAddress === 'string' ? userAddress : undefined,
-    chainId: chainId as SupportedChainId,
+    chainId,
     query: {
       enabled: typeof userAddress === 'string' && typeof spender === 'string' && isConnected && networkError === null,
       retry: 1,
@@ -154,7 +153,7 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
         // Add to transaction queue
         addTransaction({
           hash,
-          chainId: chainId as SupportedChainId,
+          chainId,
           type: 'approval',
           title: `Approve ${token.symbol}`,
           description: shouldUseInfinite
@@ -261,7 +260,7 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
         abi: erc20Abi,
         functionName: 'approve',
         args: [spender, finalApprovalAmount],
-        chainId: chainId as SupportedChainId,
+        chainId,
       })
     } catch (error_) {
       const errorMessage = error_ instanceof Error ? error_.message : 'Unknown approval transaction error'

@@ -51,7 +51,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       isConnected: false,
     } as any)
 
-    mockUseChainId.mockReturnValue(1) // Default to Ethereum mainnet
+    mockUseChainId.mockReturnValue(11155111) // Default to Sepolia (only supported chain for MVP)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseDisconnect.mockReturnValue({
       disconnect: mockDisconnect,
@@ -93,6 +93,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       expect(connectedResult.current.isConnected).toBe(true)
       expect(connectedResult.current.address).toBe(MOCK_COINBASE_ADDRESS)
       expect(connectedResult.current.isCurrentChainSupported).toBe(true)
+      expect(connectedResult.current.currentNetwork?.name).toBe('Sepolia')
     })
 
     it('should handle Coinbase Wallet connection failure gracefully', async () => {
@@ -153,7 +154,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       // Verify warning was logged for unsupported network
       expect(consoleSpy).toHaveBeenCalledWith(
         'Connected to unsupported network:',
-        expect.stringContaining('Switch to Ethereum Mainnet'),
+        expect.stringContaining('Switch to Sepolia'),
       )
 
       // Verify user is connected but on unsupported network
@@ -165,6 +166,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
     })
 
     it('should handle Coinbase Smart Wallet connection scenarios', async () => {
+      mockUseChainId.mockReturnValue(11155111) // Ensure on Sepolia for supported check
       const {result} = renderHook(() => useWallet())
 
       // Simulate successful Coinbase Smart Wallet connection
@@ -353,39 +355,41 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
         address: MOCK_COINBASE_ADDRESS,
         isConnected: true,
       } as any)
-      mockUseChainId.mockReturnValue(1) // Ethereum mainnet
+      mockUseChainId.mockReturnValue(11155111) // Sepolia (only supported)
     })
 
-    it('should successfully switch from Ethereum to Polygon via Coinbase Wallet', async () => {
+    it('should reject switching to Polygon via Coinbase Wallet (unsupported in MVP)', async () => {
       const {result} = renderHook(() => useWallet())
 
-      // Simulate successful network switch
-      mockSwitchChain.mockResolvedValueOnce(undefined)
-
+      // Attempt to switch to Polygon (unsupported)
       await act(async () => {
-        await result.current.switchToChain(137) // Polygon
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        await expect(result.current.switchToChain(137 as any)).rejects.toThrow(
+          'Cannot switch to unsupported chain ID: 137',
+        )
       })
 
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 137})
+      expect(mockSwitchChain).not.toHaveBeenCalled()
     })
 
-    it('should successfully switch from Polygon to Arbitrum via Coinbase Wallet', async () => {
-      // Start on Polygon
-      mockUseChainId.mockReturnValue(137)
-
+    it('should reject switching to Arbitrum via Coinbase Wallet (unsupported in MVP)', async () => {
       const {result} = renderHook(() => useWallet())
 
-      // Simulate successful network switch
-      mockSwitchChain.mockResolvedValueOnce(undefined)
-
+      // Attempt to switch to Arbitrum (unsupported)
       await act(async () => {
-        await result.current.switchToChain(42161) // Arbitrum
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        await expect(result.current.switchToChain(42161 as any)).rejects.toThrow(
+          'Cannot switch to unsupported chain ID: 42161',
+        )
       })
 
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 42161})
+      expect(mockSwitchChain).not.toHaveBeenCalled()
     })
 
     it('should handle Coinbase Wallet network switch rejection', async () => {
+      // Start on unsupported chain so switch to Sepolia is valid
+      mockUseChainId.mockReturnValue(1)
+
       const {result} = renderHook(() => useWallet())
 
       // Simulate user rejecting network switch in Coinbase Wallet
@@ -398,11 +402,11 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.switchToChain(137)).rejects.toThrow('User rejected the network switch request')
+        await expect(result.current.switchToChain(11155111)).rejects.toThrow('User rejected the network switch request')
       })
 
       // Verify error was logged
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to switch to chain 137:', switchError)
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to switch to chain 11155111:', switchError)
 
       consoleSpy.mockRestore()
     })
@@ -423,6 +427,9 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
     })
 
     it('should handle Coinbase Wallet network switch timeout', async () => {
+      // Start on unsupported chain so switch to Sepolia is valid
+      mockUseChainId.mockReturnValue(1)
+
       const {result} = renderHook(() => useWallet())
 
       // Simulate network switch timeout
@@ -435,11 +442,11 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       await act(async () => {
-        await expect(result.current.switchToChain(137)).rejects.toThrow('Network switch request timed out')
+        await expect(result.current.switchToChain(11155111)).rejects.toThrow('Network switch request timed out')
       })
 
       // Verify error was logged
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to switch to chain 137:', timeoutError)
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to switch to chain 11155111:', timeoutError)
 
       consoleSpy.mockRestore()
     })
@@ -586,7 +593,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       // Verify warning was logged for unsupported network
       expect(consoleSpy).toHaveBeenCalledWith(
         'Connected to unsupported network:',
-        expect.stringContaining('Switch to Ethereum Mainnet'),
+        expect.stringContaining('Switch to Sepolia'),
       )
 
       // Verify user is connected but on unsupported network
@@ -618,7 +625,7 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
         expect(switched).toBe(true)
       })
 
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 1})
+      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 11155111})
     })
 
     it('should handle auto-switching failure from unsupported network via Coinbase Wallet', async () => {
@@ -649,9 +656,9 @@ describe('useWallet - Coinbase Wallet Connection Flow (TASK-019)', () => {
       })
 
       // Verify error was logged (from handleUnsupportedNetwork -> switchToChain)
-      expect(consoleSpy).toHaveBeenCalledWith('Failed to switch to chain 1:', switchError)
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to switch to chain 11155111:', switchError)
 
-      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 1})
+      expect(mockSwitchChain).toHaveBeenCalledWith({chainId: 11155111})
 
       consoleSpy.mockRestore()
     })

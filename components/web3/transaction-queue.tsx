@@ -77,7 +77,7 @@ export function TransactionQueue({
   const chainQueue = useChainTransactionQueue(chainId ?? 1, {debug: false})
 
   // Select the appropriate queue data
-  const queue = chainId ? chainQueue : allQueue
+  const queue = chainId == null ? allQueue : chainQueue
 
   // Apply filters
   let transactions = queue.transactions
@@ -241,7 +241,7 @@ export function TransactionQueueSummary({
   const chainQueue = useChainTransactionQueue(chainId ?? 1, {debug: false})
 
   // Select the appropriate queue data
-  const queue = chainId ? chainQueue : allQueue
+  const queue = chainId == null ? allQueue : chainQueue
   const stats = getQueueStats(queue.transactions)
 
   if (stats.total === 0) {

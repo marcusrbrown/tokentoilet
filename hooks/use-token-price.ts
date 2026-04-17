@@ -251,7 +251,7 @@ export function useTokenPrice(token?: CategorizedToken, config: TokenPriceConfig
         return null
       }
 
-      const prices = await fetchTokenPrices(chainId as SupportedChainId, [token.address], fetchConfig)
+      const prices = await fetchTokenPrices(chainId, [token.address], fetchConfig)
       return prices[token.address.toLowerCase()] ?? null
     },
     enabled: token != null && chainId != null && isConnected,
@@ -316,7 +316,7 @@ export function useTokenPrices(tokens: CategorizedToken[] = [], config: TokenPri
       }
 
       const tokenAddresses = tokens.map(token => token.address)
-      return fetchTokenPrices(chainId as SupportedChainId, tokenAddresses, fetchConfig)
+      return fetchTokenPrices(chainId, tokenAddresses, fetchConfig)
     },
     enabled: tokens.length > 0 && chainId != null && isConnected,
     staleTime,

@@ -90,7 +90,8 @@ function isSerializableBigInt(value: unknown): value is SerializableBigInt {
     '__type' in value &&
     (value as SerializableBigInt).__type === 'bigint' &&
     'value' in value &&
-    typeof (value as SerializableBigInt).value === 'string'
+    typeof (value as SerializableBigInt).value === 'string' &&
+    true
   )
 }
 
@@ -211,7 +212,7 @@ export class TransactionQueue {
     let transactions = Array.from(this.transactions.values())
 
     if (filter) {
-      if (filter.chainId) {
+      if (filter.chainId != null) {
         transactions = transactions.filter(tx => tx.chainId === filter.chainId)
       }
       if (filter.status) {
@@ -228,20 +229,20 @@ export class TransactionQueue {
 
   // Clear all transactions from queue
   clearQueue(chainId?: SupportedChainId): void {
-    if (chainId) {
-      // Clear only transactions for specific chain
-      const toRemove = Array.from(this.transactions.values())
-        .filter(tx => tx.chainId === chainId)
-        .map(tx => tx.id)
-
-      toRemove.forEach(id => this.removeTransaction(id))
-    } else {
+    if (chainId == null) {
       // Clear all transactions
       this.transactions.forEach((_, id) => {
         this.stopMonitoring(id)
       })
       this.transactions.clear()
       this.persistTransactions()
+    } else {
+      // Clear only transactions for specific chain
+      const toRemove = Array.from(this.transactions.values())
+        .filter(tx => tx.chainId === chainId)
+        .map(tx => tx.id)
+
+      toRemove.forEach(id => this.removeTransaction(id))
     }
 
     this.emitEvent({
@@ -250,7 +251,7 @@ export class TransactionQueue {
     })
 
     if (this.config.debug) {
-      console.warn('[TransactionQueue] Transaction queue cleared', chainId ? `for chain ${chainId}` : '')
+      console.warn('[TransactionQueue] Transaction queue cleared', chainId == null ? '' : `for chain ${chainId}`)
     }
   }
 

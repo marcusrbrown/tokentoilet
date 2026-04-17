@@ -89,8 +89,8 @@ describe('NetworkBadge', () => {
 
     // Reset the useWallet mock to default state
     ;(useWallet as Mock).mockReturnValue({
-      chainId: 1,
-      currentNetwork: {name: 'Ethereum Mainnet', symbol: 'ETH'},
+      chainId: 11155111,
+      currentNetwork: {name: 'Sepolia', symbol: 'ETH'},
       isCurrentChainSupported: true,
       getUnsupportedNetworkError: mockGetUnsupportedNetworkError,
       switchToChain: mockSwitchToChain,
@@ -106,11 +106,7 @@ describe('NetworkBadge', () => {
       handleUnsupportedNetwork: vi.fn(),
     })
 
-    mockGetSupportedChains.mockReturnValue([
-      {id: 1, name: 'Ethereum Mainnet', symbol: 'ETH'},
-      {id: 137, name: 'Polygon', symbol: 'MATIC'},
-      {id: 42161, name: 'Arbitrum One', symbol: 'ETH'},
-    ])
+    mockGetSupportedChains.mockReturnValue([{id: 11155111, name: 'Sepolia', symbol: 'ETH'}])
     mockGetUnsupportedNetworkError.mockReturnValue(null)
   })
 
@@ -132,7 +128,7 @@ describe('NetworkBadge', () => {
     it('shows full network name when showFullName is true', () => {
       render(<NetworkBadge showFullName />)
 
-      expect(screen.getByText('Ethereum')).toBeInTheDocument()
+      expect(screen.getByText('Sepolia')).toBeInTheDocument()
     })
 
     it('shows custom name when provided', () => {
@@ -186,8 +182,8 @@ describe('NetworkBadge', () => {
     it('shows connecting status when isSwitchingChain is true', async () => {
       const {useWallet} = await import('@/hooks/use-wallet')
       ;(useWallet as Mock).mockReturnValue({
-        chainId: 1,
-        currentNetwork: {name: 'Ethereum Mainnet', symbol: 'ETH'},
+        chainId: 11155111,
+        currentNetwork: {name: 'Sepolia', symbol: 'ETH'},
         isCurrentChainSupported: true,
         getUnsupportedNetworkError: mockGetUnsupportedNetworkError,
         switchToChain: mockSwitchToChain,
@@ -254,10 +250,10 @@ describe('NetworkBadge', () => {
     it('displays correct network icons for different chains', async () => {
       const {useWallet} = await import('@/hooks/use-wallet')
 
-      // Test Polygon
+      // Test Sepolia (the only supported chain)
       ;(useWallet as Mock).mockReturnValue({
-        chainId: 137,
-        currentNetwork: {name: 'Polygon', symbol: 'MATIC'},
+        chainId: 11155111,
+        currentNetwork: {name: 'Sepolia', symbol: 'ETH'},
         isCurrentChainSupported: true,
         getUnsupportedNetworkError: mockGetUnsupportedNetworkError,
         switchToChain: mockSwitchToChain,
@@ -265,22 +261,8 @@ describe('NetworkBadge', () => {
         getSupportedChains: mockGetSupportedChains,
       })
 
-      const {rerender} = render(<NetworkBadge showIcon />)
-      expect(screen.getByText('⬟')).toBeInTheDocument()
-
-      // Test Arbitrum
-      ;(useWallet as Mock).mockReturnValue({
-        chainId: 42161,
-        currentNetwork: {name: 'Arbitrum One', symbol: 'ETH'},
-        isCurrentChainSupported: true,
-        getUnsupportedNetworkError: mockGetUnsupportedNetworkError,
-        switchToChain: mockSwitchToChain,
-        isSwitchingChain: false,
-        getSupportedChains: mockGetSupportedChains,
-      })
-
-      rerender(<NetworkBadge showIcon />)
-      expect(screen.getByText('🔷')).toBeInTheDocument()
+      render(<NetworkBadge showIcon />)
+      expect(screen.getByText('🧪')).toBeInTheDocument()
     })
   })
 
@@ -292,9 +274,7 @@ describe('NetworkBadge', () => {
       await user.click(networkBadge)
 
       expect(screen.getByText('Switch Network')).toBeInTheDocument()
-      expect(screen.getByText('Ethereum')).toBeInTheDocument()
-      expect(screen.getByText('Polygon')).toBeInTheDocument()
-      expect(screen.getByText('Arbitrum')).toBeInTheDocument()
+      expect(screen.getByText('Sepolia')).toBeInTheDocument()
     })
 
     it('handles keyboard navigation for switcher', async () => {
@@ -310,29 +290,53 @@ describe('NetworkBadge', () => {
     })
 
     it('calls switchToChain when network is selected', async () => {
+      // Set wallet to unsupported chain so Sepolia option is selectable (not current)
+      ;(useWallet as Mock).mockReturnValue({
+        chainId: 999,
+        currentNetwork: null,
+        isCurrentChainSupported: false,
+        getUnsupportedNetworkError: mockGetUnsupportedNetworkError,
+        switchToChain: mockSwitchToChain,
+        isSwitchingChain: false,
+        getSupportedChains: mockGetSupportedChains,
+        address: '0x1234567890123456789012345678901234567890',
+        isConnected: true,
+      })
       render(<NetworkBadge showSwitcher />)
 
       const networkBadge = screen.getByRole('button')
       await user.click(networkBadge)
 
-      const polygonOption = screen.getByText('Polygon')
-      await user.click(polygonOption)
+      const sepoliaOption = screen.getByText('Sepolia')
+      await user.click(sepoliaOption)
 
-      expect(mockSwitchToChain).toHaveBeenCalledWith(137)
+      expect(mockSwitchToChain).toHaveBeenCalledWith(11155111)
     })
 
     it('calls onNetworkSwitch callback when provided', async () => {
+      // Set wallet to unsupported chain so Sepolia option is selectable
+      ;(useWallet as Mock).mockReturnValue({
+        chainId: 999,
+        currentNetwork: null,
+        isCurrentChainSupported: false,
+        getUnsupportedNetworkError: mockGetUnsupportedNetworkError,
+        switchToChain: mockSwitchToChain,
+        isSwitchingChain: false,
+        getSupportedChains: mockGetSupportedChains,
+        address: '0x1234567890123456789012345678901234567890',
+        isConnected: true,
+      })
       const onNetworkSwitch = vi.fn()
       render(<NetworkBadge showSwitcher onNetworkSwitch={onNetworkSwitch} />)
 
       const networkBadge = screen.getByRole('button')
       await user.click(networkBadge)
 
-      const polygonOption = screen.getByText('Polygon')
-      await user.click(polygonOption)
+      const sepoliaOption = screen.getByText('Sepolia')
+      await user.click(sepoliaOption)
 
       await waitFor(() => {
-        expect(onNetworkSwitch).toHaveBeenCalledWith(137)
+        expect(onNetworkSwitch).toHaveBeenCalledWith(11155111)
       })
     })
 
@@ -370,8 +374,8 @@ describe('NetworkBadge', () => {
       const networkBadge = screen.getByRole('button')
       await user.click(networkBadge)
 
-      const ethereumButton = screen.getByText('Ethereum').closest('button')
-      expect(ethereumButton).toBeDisabled()
+      const sepoliaButton = screen.getByText('Sepolia').closest('button')
+      expect(sepoliaButton).toBeDisabled()
     })
   })
 
@@ -381,7 +385,7 @@ describe('NetworkBadge', () => {
       const mockError = {
         isUnsupported: true,
         currentChainId: 999,
-        suggestedChain: {id: 1, name: 'Ethereum Mainnet'},
+        suggestedChain: {id: 11155111, name: 'Sepolia'},
         error: new Error('Unsupported network'),
       }
 
@@ -400,15 +404,15 @@ describe('NetworkBadge', () => {
       render(<NetworkBadge showUnsupportedWarning />)
 
       expect(screen.getByText('Switch to a supported network to continue')).toBeInTheDocument()
-      expect(screen.getByText('Switch to Ethereum')).toBeInTheDocument()
+      expect(screen.getByText('Switch to Sepolia')).toBeInTheDocument()
     })
 
-    it('handles switch to Ethereum from unsupported warning', async () => {
+    it('handles switch to Sepolia from unsupported warning', async () => {
       const {useWallet} = await import('@/hooks/use-wallet')
       const mockError = {
         isUnsupported: true,
         currentChainId: 999,
-        suggestedChain: {id: 1, name: 'Ethereum Mainnet'},
+        suggestedChain: {id: 11155111, name: 'Sepolia'},
         error: new Error('Unsupported network'),
       }
 
@@ -426,10 +430,10 @@ describe('NetworkBadge', () => {
 
       render(<NetworkBadge showUnsupportedWarning />)
 
-      const switchButton = screen.getByText('Switch to Ethereum')
+      const switchButton = screen.getByText('Switch to Sepolia')
       await user.click(switchButton)
 
-      expect(mockSwitchToChain).toHaveBeenCalledWith(1)
+      expect(mockSwitchToChain).toHaveBeenCalledWith(11155111)
     })
   })
 
@@ -462,6 +466,18 @@ describe('NetworkBadge', () => {
 
   describe('Error Handling', () => {
     it('handles switchToChain errors gracefully', async () => {
+      // Set wallet to unsupported chain so Sepolia option is selectable
+      ;(useWallet as Mock).mockReturnValue({
+        chainId: 999,
+        currentNetwork: null,
+        isCurrentChainSupported: false,
+        getUnsupportedNetworkError: mockGetUnsupportedNetworkError,
+        switchToChain: mockSwitchToChain,
+        isSwitchingChain: false,
+        getSupportedChains: mockGetSupportedChains,
+        address: '0x1234567890123456789012345678901234567890',
+        isConnected: true,
+      })
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
       mockSwitchToChain.mockRejectedValue(new Error('Switch failed'))
 
@@ -470,8 +486,8 @@ describe('NetworkBadge', () => {
       const networkBadge = screen.getByRole('button')
       await user.click(networkBadge)
 
-      const polygonOption = screen.getByText('Polygon')
-      await user.click(polygonOption)
+      const sepoliaOption = screen.getByText('Sepolia')
+      await user.click(sepoliaOption)
 
       await waitFor(() => {
         expect(consoleError).toHaveBeenCalledWith('Failed to switch network:', expect.any(Error))

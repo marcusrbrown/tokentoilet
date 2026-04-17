@@ -343,7 +343,7 @@ export function parseTokenId(tokenId: string): {address: Address; chainId: Suppo
   const [chainIdStr, address] = tokenId.split(':')
   return {
     address: address as Address,
-    chainId: Number.parseInt(chainIdStr, 10) as SupportedChainId,
+    chainId: Number.parseInt(chainIdStr, 10),
   }
 }
 
