@@ -78,11 +78,11 @@ export function useTransactionQueue(options: UseTransactionQueueOptions = {}): U
   const loadTransactions = useCallback(() => {
     try {
       const allTransactions = queueRef.current.getTransactions()
-      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Loading from external localStorage-backed queue, not deriving from previous state
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect -- Loading from external localStorage-backed queue, not deriving from previous state
       setTransactions(() => allTransactions)
     } catch (error) {
       console.error('Failed to load transactions from queue:', error)
-      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect -- Error handling fallback
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect -- Error handling fallback
       setTransactions(() => [])
     }
   }, [])
