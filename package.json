@@ -94,7 +94,7 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "4.2.2",
     "tsx": "^4.20.5",
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "viem": "^2.23.0",
     "vite": "^8.0.8",
     "vitest": "^4.0.7",
