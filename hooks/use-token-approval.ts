@@ -308,13 +308,15 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
   }, [])
 
   // Auto-refresh allowance on chain/user change with explicit null checks
+  // Call refetchAllowance directly to avoid setState-in-effect lint error;
+  // wagmi's allowanceError captures refetch failures via the approvalState.error field.
   useEffect(() => {
     if (typeof userAddress === 'string' && isConnected && networkError === null) {
-      checkAllowance().catch(error => {
+      refetchAllowance().catch(error => {
         console.error('Failed to auto-refresh token allowance:', error, {userAddress, chainId})
       })
     }
-  }, [userAddress, chainId, isConnected, networkError, checkAllowance])
+  }, [userAddress, chainId, isConnected, networkError, refetchAllowance])
 
   return {
     approvalState,

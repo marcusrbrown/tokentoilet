@@ -96,7 +96,7 @@ describe('useTokenApproval', () => {
     vi.mocked(useReadContract).mockReturnValue({
       data: BigInt(0),
       isLoading: false,
-      refetch: vi.fn(),
+      refetch: vi.fn().mockResolvedValue({}),
       error: null,
     } as any)
 
@@ -126,7 +126,7 @@ describe('useTokenApproval', () => {
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt('2000000000'),
         isLoading: false,
-        refetch: vi.fn(),
+        refetch: vi.fn().mockResolvedValue({}),
         error: null,
       } as any)
 
@@ -140,7 +140,7 @@ describe('useTokenApproval', () => {
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: true,
-        refetch: vi.fn(),
+        refetch: vi.fn().mockResolvedValue({}),
         error: null,
       } as any)
 
@@ -230,7 +230,7 @@ describe('useTokenApproval', () => {
       vi.mocked(useReadContract).mockReturnValue({
         data: MAX_UINT256,
         isLoading: false,
-        refetch: vi.fn(),
+        refetch: vi.fn().mockResolvedValue({}),
         error: null,
       } as any)
 
@@ -343,7 +343,7 @@ describe('useTokenApproval', () => {
 
   describe('allowance checking', () => {
     it('should check allowance on demand', async () => {
-      const mockRefetch = vi.fn()
+      const mockRefetch = vi.fn().mockResolvedValue({})
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
@@ -430,7 +430,7 @@ describe('useTokenApproval', () => {
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
-        refetch: vi.fn(),
+        refetch: vi.fn().mockResolvedValue({}),
         error: mockError,
       } as any)
 
@@ -442,7 +442,7 @@ describe('useTokenApproval', () => {
 
   describe('auto-refresh behavior', () => {
     it('should auto-refresh allowance after successful approval by default', async () => {
-      const mockRefetch = vi.fn()
+      const mockRefetch = vi.fn().mockResolvedValue({})
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
@@ -481,7 +481,7 @@ describe('useTokenApproval', () => {
 
   describe('wallet state changes', () => {
     it('should refresh allowance when wallet changes', async () => {
-      const mockRefetch = vi.fn()
+      const mockRefetch = vi.fn().mockResolvedValue({})
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
@@ -513,7 +513,7 @@ describe('useTokenApproval', () => {
         address: undefined,
       } as any)
 
-      const mockRefetch = vi.fn()
+      const mockRefetch = vi.fn().mockResolvedValue({})
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
