@@ -441,6 +441,31 @@ describe('useTokenApproval', () => {
   })
 
   describe('auto-refresh behavior', () => {
+    it('should log and swallow refetchAllowance rejection during auto-refresh', async () => {
+      const mockError = new Error('Refetch failed')
+      const mockRefetch = vi.fn().mockRejectedValue(mockError)
+      vi.mocked(useReadContract).mockReturnValue({
+        data: BigInt(0),
+        isLoading: false,
+        refetch: mockRefetch,
+        error: null,
+      } as any)
+
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      renderHook(() => useTokenApproval(mockConfig))
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Failed to auto-refresh token allowance:',
+          mockError,
+          expect.objectContaining({userAddress: mockUserAddress}),
+        )
+      })
+
+      consoleErrorSpy.mockRestore()
+    })
+
     it('should auto-refresh allowance after successful approval by default', async () => {
       const mockRefetch = vi.fn().mockResolvedValue({})
       vi.mocked(useReadContract).mockReturnValue({
