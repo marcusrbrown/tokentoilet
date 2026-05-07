@@ -102,9 +102,8 @@ describe('Token Balance Utilities', () => {
       vi.mocked(getBalance).mockResolvedValueOnce({
         value: BigInt('2000000000000000000'),
         decimals: 18,
-        formatted: '2.0',
         symbol: 'ETH',
-      })
+      } as Awaited<ReturnType<typeof getBalance>>)
 
       const result = await checkAllBalances(mockConfig, mockUserAddress, tokens, mockChainId, DEFAULT_BALANCE_CONFIG)
 
@@ -130,9 +129,8 @@ describe('Token Balance Utilities', () => {
       vi.mocked(getBalance).mockResolvedValueOnce({
         value: BigInt('2000000000000000000'),
         decimals: 18,
-        formatted: '2.0',
         symbol: 'ETH',
-      })
+      } as Awaited<ReturnType<typeof getBalance>>)
 
       const result = await checkAllBalances(mockConfig, mockUserAddress, tokens, mockChainId, DEFAULT_BALANCE_CONFIG)
 
