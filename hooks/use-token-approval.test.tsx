@@ -567,5 +567,29 @@ describe('useTokenApproval', () => {
 
       expect(result.current.approvalState.error).toBe(contractError)
     })
+
+    it('should still auto-refresh when allowanceError is already present', async () => {
+      // The auto-refresh effect guards only on networkError (wallet level), not
+      // on allowanceError (contract read level). A pre-existing allowanceError
+      // must not suppress the refresh, and must persist after the refresh cycle.
+      const existingError = new Error('Previous RPC read failed')
+      const mockRefetch = vi.fn().mockResolvedValue({})
+      vi.mocked(useReadContract).mockReturnValue({
+        data: BigInt(0),
+        isLoading: false,
+        refetch: mockRefetch,
+        error: existingError,
+      } as any)
+
+      const {result} = renderHook(() => useTokenApproval(mockConfig))
+
+      // auto-refresh must still fire
+      await waitFor(() => {
+        expect(mockRefetch).toHaveBeenCalled()
+      })
+
+      // existing error must still be present in approvalState after refresh
+      expect(result.current.approvalState.error).toBe(existingError)
+    })
   })
 })
