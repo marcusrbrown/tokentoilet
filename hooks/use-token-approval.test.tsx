@@ -96,7 +96,7 @@ describe('useTokenApproval', () => {
     vi.mocked(useReadContract).mockReturnValue({
       data: BigInt(0),
       isLoading: false,
-      refetch: vi.fn(),
+      refetch: vi.fn().mockResolvedValue({}),
       error: null,
     } as any)
 
@@ -126,7 +126,7 @@ describe('useTokenApproval', () => {
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt('2000000000'),
         isLoading: false,
-        refetch: vi.fn(),
+        refetch: vi.fn().mockResolvedValue({}),
         error: null,
       } as any)
 
@@ -140,7 +140,7 @@ describe('useTokenApproval', () => {
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: true,
-        refetch: vi.fn(),
+        refetch: vi.fn().mockResolvedValue({}),
         error: null,
       } as any)
 
@@ -230,7 +230,7 @@ describe('useTokenApproval', () => {
       vi.mocked(useReadContract).mockReturnValue({
         data: MAX_UINT256,
         isLoading: false,
-        refetch: vi.fn(),
+        refetch: vi.fn().mockResolvedValue({}),
         error: null,
       } as any)
 
@@ -343,7 +343,7 @@ describe('useTokenApproval', () => {
 
   describe('allowance checking', () => {
     it('should check allowance on demand', async () => {
-      const mockRefetch = vi.fn()
+      const mockRefetch = vi.fn().mockResolvedValue({})
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
@@ -430,7 +430,7 @@ describe('useTokenApproval', () => {
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
-        refetch: vi.fn(),
+        refetch: vi.fn().mockResolvedValue({}),
         error: mockError,
       } as any)
 
@@ -442,7 +442,7 @@ describe('useTokenApproval', () => {
 
   describe('auto-refresh behavior', () => {
     it('should auto-refresh allowance after successful approval by default', async () => {
-      const mockRefetch = vi.fn()
+      const mockRefetch = vi.fn().mockResolvedValue({})
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
@@ -481,7 +481,7 @@ describe('useTokenApproval', () => {
 
   describe('wallet state changes', () => {
     it('should refresh allowance when wallet changes', async () => {
-      const mockRefetch = vi.fn()
+      const mockRefetch = vi.fn().mockResolvedValue({})
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
@@ -513,7 +513,7 @@ describe('useTokenApproval', () => {
         address: undefined,
       } as any)
 
-      const mockRefetch = vi.fn()
+      const mockRefetch = vi.fn().mockResolvedValue({})
       vi.mocked(useReadContract).mockReturnValue({
         data: BigInt(0),
         isLoading: false,
@@ -524,6 +524,72 @@ describe('useTokenApproval', () => {
       renderHook(() => useTokenApproval(mockConfig))
 
       expect(mockRefetch).not.toHaveBeenCalled()
+    })
+
+    it('should log and not crash when auto-refresh refetch rejects', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const rpcError = new Error('RPC timeout')
+      const mockRefetch = vi.fn().mockRejectedValue(rpcError)
+      vi.mocked(useReadContract).mockReturnValue({
+        data: BigInt(0),
+        isLoading: false,
+        refetch: mockRefetch,
+        error: null,
+      } as any)
+
+      // Should not throw; error is caught and logged
+      renderHook(() => useTokenApproval(mockConfig))
+
+      await waitFor(() => {
+        expect(mockRefetch).toHaveBeenCalled()
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Failed to auto-refresh token allowance:',
+          rpcError,
+          expect.objectContaining({userAddress: mockUserAddress}),
+        )
+      })
+
+      consoleSpy.mockRestore()
+    })
+
+    it('should surface allowanceError from failed refetch via approvalState.error', () => {
+      // When wagmi itself surfaces an allowanceError (e.g. contract read failure),
+      // it flows through approvalState.error regardless of the effect path.
+      const contractError = new Error('Contract read failed')
+      vi.mocked(useReadContract).mockReturnValue({
+        data: BigInt(0),
+        isLoading: false,
+        refetch: vi.fn().mockResolvedValue({}),
+        error: contractError,
+      } as any)
+
+      const {result} = renderHook(() => useTokenApproval(mockConfig))
+
+      expect(result.current.approvalState.error).toBe(contractError)
+    })
+
+    it('should still auto-refresh when allowanceError is already present', async () => {
+      // The auto-refresh effect guards only on networkError (wallet level), not
+      // on allowanceError (contract read level). A pre-existing allowanceError
+      // must not suppress the refresh, and must persist after the refresh cycle.
+      const existingError = new Error('Previous RPC read failed')
+      const mockRefetch = vi.fn().mockResolvedValue({})
+      vi.mocked(useReadContract).mockReturnValue({
+        data: BigInt(0),
+        isLoading: false,
+        refetch: mockRefetch,
+        error: existingError,
+      } as any)
+
+      const {result} = renderHook(() => useTokenApproval(mockConfig))
+
+      // auto-refresh must still fire
+      await waitFor(() => {
+        expect(mockRefetch).toHaveBeenCalled()
+      })
+
+      // existing error must still be present in approvalState after refresh
+      expect(result.current.approvalState.error).toBe(existingError)
     })
   })
 })
