@@ -7,6 +7,7 @@ import {
   Coins,
   Copy,
   DollarSign,
+  ExternalLink,
   Globe,
   Hash,
   Heart,
@@ -17,7 +18,6 @@ import {
   Star,
   TrendingDown,
   TrendingUp,
-  Twitter,
   Users,
   X,
   Zap,
@@ -510,7 +510,7 @@ export function TokenDetail({
             <SocialLinkButton href={metadata.website} icon={<Globe className="h-4 w-4" />} label="Website" />
           )}
           {metadata.twitter != null && metadata.twitter.trim().length > 0 && (
-            <SocialLinkButton href={metadata.twitter} icon={<Twitter className="h-4 w-4" />} label="Twitter" />
+            <SocialLinkButton href={metadata.twitter} icon={<ExternalLink className="h-4 w-4" />} label="X (Twitter)" />
           )}
           {metadata.telegram != null && metadata.telegram.trim().length > 0 && (
             <SocialLinkButton href={metadata.telegram} icon={<MessageCircle className="h-4 w-4" />} label="Telegram" />
