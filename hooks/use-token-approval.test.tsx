@@ -525,5 +525,47 @@ describe('useTokenApproval', () => {
 
       expect(mockRefetch).not.toHaveBeenCalled()
     })
+
+    it('should log and not crash when auto-refresh refetch rejects', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const rpcError = new Error('RPC timeout')
+      const mockRefetch = vi.fn().mockRejectedValue(rpcError)
+      vi.mocked(useReadContract).mockReturnValue({
+        data: BigInt(0),
+        isLoading: false,
+        refetch: mockRefetch,
+        error: null,
+      } as any)
+
+      // Should not throw; error is caught and logged
+      renderHook(() => useTokenApproval(mockConfig))
+
+      await waitFor(() => {
+        expect(mockRefetch).toHaveBeenCalled()
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Failed to auto-refresh token allowance:',
+          rpcError,
+          expect.objectContaining({userAddress: mockUserAddress}),
+        )
+      })
+
+      consoleSpy.mockRestore()
+    })
+
+    it('should surface allowanceError from failed refetch via approvalState.error', () => {
+      // When wagmi itself surfaces an allowanceError (e.g. contract read failure),
+      // it flows through approvalState.error regardless of the effect path.
+      const contractError = new Error('Contract read failed')
+      vi.mocked(useReadContract).mockReturnValue({
+        data: BigInt(0),
+        isLoading: false,
+        refetch: vi.fn().mockResolvedValue({}),
+        error: contractError,
+      } as any)
+
+      const {result} = renderHook(() => useTokenApproval(mockConfig))
+
+      expect(result.current.approvalState.error).toBe(contractError)
+    })
   })
 })
