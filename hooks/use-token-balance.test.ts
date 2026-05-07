@@ -99,6 +99,8 @@ describe('Token Balance Utilities', () => {
       ])
 
       // Mock native balance call
+      // Type assertion used for wagmi v2/v3 compatibility: v2 requires 'formatted', v3 removes it.
+      // Production code only accesses .value and .decimals, so the partial mock is safe at runtime.
       vi.mocked(getBalance).mockResolvedValueOnce({
         value: BigInt('2000000000000000000'),
         decimals: 18,
@@ -126,6 +128,8 @@ describe('Token Balance Utilities', () => {
         .mockRejectedValueOnce(new Error('Token 2 failed'))
 
       // Mock native balance success
+      // Type assertion used for wagmi v2/v3 compatibility: v2 requires 'formatted', v3 removes it.
+      // Production code only accesses .value and .decimals, so the partial mock is safe at runtime.
       vi.mocked(getBalance).mockResolvedValueOnce({
         value: BigInt('2000000000000000000'),
         decimals: 18,
