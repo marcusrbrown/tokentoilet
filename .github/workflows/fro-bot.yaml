@@ -41,7 +41,7 @@ concurrency:
 env:
   PR_REVIEW_PROMPT: |
     You are reviewing a pull request for Token Toilet — a Web3 DeFi
-    application built with Next.js 16 + React 19 + TypeScript 5.9 + Wagmi v2
+    application built with Next.js 16 + React 19 + TypeScript 6 + Wagmi v2
     + Reown AppKit + Tailwind CSS v4 + Vitest + Storybook, deployed to Vercel.
     Read AGENTS.md for full project conventions before reviewing.
 
@@ -114,7 +114,7 @@ env:
 
   SCHEDULE_PROMPT: |
     Perform daily repository autohealing for Token Toilet — a Web3 DeFi
-    application built with Next.js 16 + React 19 + TypeScript 5.9 + Wagmi v2
+    application built with Next.js 16 + React 19 + TypeScript 6 + Wagmi v2
     + Reown AppKit + Tailwind CSS v4 + Vitest + Storybook, deployed to Vercel.
     Read AGENTS.md for full project conventions before making changes.
 
@@ -147,6 +147,7 @@ env:
     Trusted PR authors for branch repair are Marcus and these automation bots:
     - renovate[bot]
     - dependabot[bot]
+    - mrbro-bot[bot]
     - fro-bot
 
     1. ERRORED PRs
@@ -383,6 +384,10 @@ env:
     - DO NOT create new daily issues. Always update the perpetual issue.
     - DO NOT close the perpetual issue.
     - ALWAYS prepend new updates to existing content (newest at top).
+    - When the issue body approaches 50,000 characters, archive older
+      updates by removing all but the 30 most recent daily sections, and
+      note the archival in a line like:
+      "_[Archived N older updates on YYYY-MM-DD]_"
     - DO NOT comment on individual issues or PRs unless category 1 fixed
       a failing PR (then ONLY post the fix-summary comment on that PR).
 
