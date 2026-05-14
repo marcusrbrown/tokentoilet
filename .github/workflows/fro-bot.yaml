@@ -13,12 +13,16 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, review_requested]
   schedule:
+    # Daily at 03:30 UTC — staggered off other repos in the portfolio
+    # so the Anthropic rate-limit doesn't crowd the same minute every day.
     - cron: '30 3 * * *'
   workflow_dispatch:
     inputs:
       prompt:
-        description: Custom prompt for the Fro Bot agent
-        required: true
+        description: >-
+          Custom prompt for Fro Bot. Leave empty to run the daily autohealing
+          schedule prompt on demand.
+        required: false
 
 permissions:
   contents: read
@@ -29,16 +33,17 @@ concurrency:
       github.event.issue.number ||
       github.event.pull_request.number ||
       github.event.discussion.number ||
+      (github.event_name == 'schedule' && 'scheduled-maintenance') ||
       github.run_id
     }}
   cancel-in-progress: false
 
 env:
   PR_REVIEW_PROMPT: |
-    You are reviewing a pull request for Token Toilet — a Web3 DeFi application
-    built with Next.js 16 + React 19 + TypeScript 5.9 + Wagmi v2 + Reown AppKit
-    + Tailwind CSS v4 + Vitest + Storybook. Read AGENTS.md for full project
-    conventions before reviewing.
+    You are reviewing a pull request for Token Toilet — a Web3 DeFi
+    application built with Next.js 16 + React 19 + TypeScript 6 + Wagmi v2
+    + Reown AppKit + Tailwind CSS v4 + Vitest + Storybook, deployed to Vercel.
+    Read AGENTS.md for full project conventions before reviewing.
 
     Focus your review on:
 
@@ -109,7 +114,7 @@ env:
 
   SCHEDULE_PROMPT: |
     Perform daily repository autohealing for Token Toilet — a Web3 DeFi
-    application built with Next.js 16 + React 19 + TypeScript 5.9 + Wagmi v2
+    application built with Next.js 16 + React 19 + TypeScript 6 + Wagmi v2
     + Reown AppKit + Tailwind CSS v4 + Vitest + Storybook, deployed to Vercel.
     Read AGENTS.md for full project conventions before making changes.
 
@@ -138,6 +143,13 @@ env:
     do not batch unrelated dependency changes into a security fix. Do NOT
     modify package.json versions outside category 2 security remediation.
 
+    TRUSTED AUTHORS
+    Trusted PR authors for branch repair are Marcus and these automation bots:
+    - renovate[bot]
+    - dependabot[bot]
+    - mrbro-bot[bot]
+    - fro-bot
+
     1. ERRORED PRs
        Find open PRs with failing CI checks. Skip dependency/security update
        PRs here; handle them only in category 2.
@@ -154,8 +166,12 @@ env:
        b. Read the failing check logs to diagnose the root cause.
        c. Fix the issue (type errors, lint failures, test regressions,
           build breaks).
-       d. Commit with a clear message and push to the PR branch.
+       d. Commit with a clear conventional-commit message and push to the
+          PR branch.
        e. Comment on the PR explaining what failed and what was fixed.
+       f. Never modify .github/workflows/ or this prompt while repairing
+          an errored PR. If the failing run appears caused by the Fro Bot
+          workflow, skip the PR and log it under "Needs Human Attention".
 
     2. SECURITY
        Review Dependabot/Renovate alerts and open PRs for vulnerable deps.
@@ -175,6 +191,8 @@ env:
          committed source (should use env vars).
        - Flag any direct usage of `eval()` or `Function()` constructors
          near user-supplied data.
+       - Verify that `.env.example` or `.env.local.example` files do not
+         contain real values, only placeholder templates.
 
     3. CODE QUALITY & REPO HYGIENE
        This category is primarily report-only. Focus on things only a
@@ -205,9 +223,11 @@ env:
          * Error handling: try/catch with console.error on Web3 ops,
            never throw on connect/disconnect
          * Functional state updates in useEffect
-         Report findings but put actual code fixes into category 4.
+       Report findings but put actual code fixes into category 4.
+
        - Check that AGENTS.md accurately reflects the current directory
-         structure. If drift is found, open a PR with corrections.
+         structure and project conventions. If drift is found, open an
+         issue (not a PR) describing the drift.
 
     4. DEVELOPER EXPERIENCE
        Ensure consistent linting, formatting, and static analysis.
@@ -215,6 +235,8 @@ env:
        found in category 3.
        Open a PR for all fixes — never commit directly to the default
        branch. Group related lint/format/convention fixes into a single PR.
+       Use a clear conventional-commit title like
+       `chore(lint): apply auto-fixes from autohealing run`.
 
     5. QUALITY GATES VERIFICATION
        Verify the project's quality gates pass on the default branch:
@@ -233,59 +255,90 @@ env:
        - If the fix is complex, open an issue with diagnosis and
          recommended approach.
 
-    Hard boundaries:
-    - Never force-push, rewrite history, or delete branches.
-    - Never push directly to the default branch. Direct pushes are allowed
-      only to an existing non-default PR branch you are repairing under
-      category 1 or category 2.
-    - Never merge PRs, submit reviews/approvals, close/reopen PRs or
-      issues, or modify branch protection. This workflow may only push
-      fixes, open/update PRs, open/update issues, and comment on PRs when
-      a fix was pushed.
-    - Never modify secrets, org settings, environments, or branch
-      protection.
-    - Never make checks pass by disabling tests, deleting failing
-      assertions, lowering coverage/performance budgets, weakening
-      lint/type rules, or editing workflows/configuration only to suppress
-      failures.
-    - Do not modify .github/workflows/, lint/test/build config, hook
-      config, or automation prompt files unless the failing run is caused
-      by a genuine bug in that file, the change is narrowly scoped, and
-      the summary explains why.
-    - If the smallest safe fix would weaken a guardrail or reduce
-      validation, skip it and log it under "Needs Human Attention".
-    - Do not create multiple summary issues.
+    6. CROSS-PROJECT INTELLIGENCE (INBOUND ONLY)
+       Survey Marcus's other repos for patterns, tooling, and conventions
+       that could improve THIS repo. The goal is inbound intelligence —
+       what can we learn from the portfolio to make Token Toilet better?
 
-    Project conventions (MUST follow for code changes):
-    - TypeScript strict mode: no `any`, no `@ts-ignore`, no `@ts-expect-error`
-    - Import alias: `@/` for project paths
-    - Web3 hooks: use `useWallet` abstraction, not direct wagmi hooks
-    - Error handling: `try/catch` with `console.error`, never throw on
-      connect/disconnect
-    - Styling: Tailwind CSS v4 CSS-first, no `tailwind.config.ts`, no
-      `@apply`, CSS custom properties in `@theme` blocks
-    - Package manager: pnpm (not npm/yarn)
-    - YAML extension: .yaml, not .yml
+       Use `gh` CLI for all queries. Observation only — never modify
+       other repos.
 
-    OUTPUT FORMAT — SINGLE SUMMARY ISSUE
-    After completing all work, find an existing open issue titled
-    "Daily Autohealing Report — YYYY-MM-DD" (using today's UTC date).
-    If it exists, update its body. If not, create it.
+       Focus repos (check these every run; the list should evolve over
+       time — drop repos that consistently have nothing actionable, add
+       repos that become relevant):
+       - `marcusrbrown/yield-farmer` — DeFi/yield strategy patterns, Fro Bot
+         prompt evolution, Web3 safety checks, single-issue autohealing
+       - `marcusrbrown/poly` — capability-ABC layering, Python cost patterns
+         applicable to TypeScript, CI safety practices
+       - `marcusrbrown/renovate-config` — dependency governance patterns
+       - `marcusrbrown/.github` — shared repository conventions, org-level
+         workflows and templates
+       - `fro-bot/agent` — Fro Bot/OpenCode runtime capabilities and
+         release notes
 
-    The issue body MUST use this structure. If a section has no rows, do
-    not emit an empty table — write "None." directly under that heading.
+       For each focus repo, check:
+       a. Fro Bot version: compare `fro-bot/agent@` SHA if present.
+       b. CI patterns: any workflow improvements we could adopt?
+       c. Renovate config: any preset evolution worth adopting?
+       d. Tooling patterns: any build/test/CI tools we don't use?
+       e. New dependencies or conventions worth evaluating.
 
-    ## Daily Autohealing Report — YYYY-MM-DD (UTC)
+       Keep findings actionable and specific to Token Toilet. Skip repos
+       with nothing notable. Adapt foreign-stack findings (Python, Bun/TS)
+       only when there's a clear Next.js/TypeScript equivalent.
+
+       Hard boundaries:
+       - NEVER modify other repositories. Observation only.
+       - NEVER open PRs, issues, or comments in other repositories.
+       - NEVER clone or check out other repositories.
+       - All findings go into the perpetual summary issue in THIS
+         repository only.
+       - If a `gh` query fails for a repo, skip it and note why.
+
+    7. UPSTREAM MODERNIZATION WATCH (SUNDAYS UTC ONLY)
+       On Sundays UTC, review release notes for pinned upstreams:
+       - `fro-bot/agent` used by .github/workflows/fro-bot.yaml
+       - `actions/checkout` used by .github/workflows/fro-bot.yaml
+       - `Next.js`, `React`, `Wagmi`, `Reown AppKit`, `Tailwind CSS`
+         — watch for major/breaking changes only
+       - OpenCode/Fro Bot runtime docs relevant to opencode run, HTTP
+         mode, configured tools, skills, agents, hooks, and durable
+         session state
+
+       Identify new hardening or observability features worth adopting.
+       Do not bump versions or modify workflows in this category. Document
+       findings in the perpetual issue.
+
+       Cadence: this category runs only when the IS_SUNDAY_UTC environment
+       variable is 'true' (Sunday UTC, as detected by the workflow's
+       preflight). Before doing any category 7 work, read this variable.
+       On other days, skip entirely and omit the corresponding section
+       from the daily summary.
+
+    SINGLE ISSUE MANAGEMENT
+    Manage a SINGLE perpetual issue titled "Daily Autohealing Report".
+
+    Finding the perpetual issue:
+    1. Search for an open issue titled "Daily Autohealing Report" (exact match).
+    2. If found, use that issue for all updates.
+    3. If not found, create a new issue with that exact title.
+
+    Updating the issue:
+    PREPEND a new dated section to the TOP of the issue body. Newest
+    update is always first. If a section has no rows, do not emit an
+    empty table — write "None." directly under that heading.
+
+    ## Update — YYYY-MM-DD (UTC)
 
     ### Errored PRs
     | PR | Failure | Fix | Status |
     | --- | --- | --- | --- |
-    | #N | [root cause] | [what was fixed] | ✅ Fixed / ⚠️ Needs review |
+    | #N | [root cause] | [what was fixed] | ✅ Fixed / ⚠️ Needs review / ⏭️ Skipped |
 
     ### Security
     | Advisory / PR | Severity | Action Taken |
     | --- | --- | --- |
-    | [advisory or #N] | Critical/High/Medium | [fix pushed / PR created / skipped] |
+    | [advisory or #N] | Critical/High/Medium | [fix pushed / PR created / skipped / unavailable] |
 
     ### Code Quality & Repo Hygiene
     | Check | Result | Action |
@@ -314,16 +367,76 @@ env:
     | Design system | ✅ / ❌ | [details] |
     | Web3 validation | ✅ / ❌ | [details] |
 
+    ### Cross-Project Intelligence (Inbound)
+    | Repo | Finding | Actionable for Token Toilet? | Priority |
+    | --- | --- | --- | --- |
+    | [repo] | [what they do that we don't] | [specific action or monitor] | High/Med/Low |
+
+    ### Upstream Modernization Watch
+    [Sunday-only section. On Sundays UTC, include findings or write "Scan
+    clean" if no actionable items. On other days, omit this entire
+    section from the daily update.]
+
     ### Needs Human Attention
     - [items that could not be auto-fixed, with context]
 
-    Do NOT create multiple issues. Do NOT comment on individual issues.
-    Produce exactly one summary issue per run.
+    Rules for the perpetual issue:
+    - DO NOT create new daily issues. Always update the perpetual issue.
+    - DO NOT close the perpetual issue.
+    - ALWAYS prepend new updates to existing content (newest at top).
+    - When the issue body approaches 50,000 characters, archive older
+      updates by removing all but the 30 most recent daily sections, and
+      note the archival in a line like:
+      "_[Archived N older updates on YYYY-MM-DD]_"
+    - DO NOT comment on individual issues or PRs unless category 1 fixed
+      a failing PR (then ONLY post the fix-summary comment on that PR).
+
+    Hard boundaries:
+    - Never force-push, rewrite history, or delete branches.
+    - Never push directly to the default branch. Direct pushes are allowed
+      only to an existing non-default PR branch you are repairing under
+      category 1 or category 2.
+    - Never merge PRs, submit reviews/approvals, close/reopen PRs or
+      issues, or modify branch protection. This workflow may only push
+      fixes, open/update PRs, open/update issues, and comment on PRs when
+      a fix was pushed.
+    - Never modify secrets, org settings, environments, or branch
+      protection.
+    - Never make checks pass by disabling tests, deleting failing
+      assertions, lowering coverage/performance budgets, weakening
+      lint/type rules, or editing workflows/configuration only to suppress
+      failures.
+    - Do not modify .github/workflows/, lint/test/build config, hook
+      config, or automation prompt files unless the failing run is caused
+      by a genuine bug in that file, the change is narrowly scoped, and
+      the summary explains why.
+    - If the smallest safe fix would weaken a guardrail or reduce
+      validation, skip it and log it under "Needs Human Attention".
+    - Cross-project intelligence (category 6) MUST NOT modify other repos.
+    - Upstream modernization watch (category 7) MUST NOT bump pinned
+      versions (Renovate-owned) or modify upstream repositories.
+    - Do not create multiple summary issues.
+
+    Project conventions (MUST follow for code changes):
+    - TypeScript strict mode: no `any`, no `@ts-ignore`, no `@ts-expect-error`
+    - Import alias: `@/` for project paths
+    - Web3 hooks: use `useWallet` abstraction, not direct wagmi hooks
+    - Error handling: `try/catch` with `console.error`, never throw on
+      connect/disconnect
+    - Styling: Tailwind CSS v4 CSS-first, no `tailwind.config.ts`, no
+      `@apply`, CSS custom properties in `@theme` blocks
+    - Package manager: pnpm (not npm/yarn)
+    - YAML extension: .yaml, not .yml
 
 jobs:
   fro-bot:
     name: Fro Bot
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      discussions: write
     if: >-
       (
         github.event.pull_request == null ||
@@ -335,7 +448,8 @@ jobs:
         (
           github.event_name == 'issues' &&
           !endsWith(github.event.issue.user.login || '', '[bot]') &&
-          (github.event.issue.user.login || '') != 'fro-bot'
+          (github.event.issue.user.login || '') != 'fro-bot' &&
+          contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association || '')
         ) ||
         (
           github.event_name == 'pull_request' &&
@@ -354,6 +468,31 @@ jobs:
         )
       )
     steps:
+      - name: Refuse fork PR heads from comment triggers
+        # issue_comment events carry no pull_request payload, so the
+        # job-level fork guard does not see comment-triggered checkouts
+        # of PR heads. Resolve the PR via the API and refuse fork heads
+        # before any code from that ref runs.
+        if: github.event_name == 'issue_comment' && github.event.issue.pull_request
+        env:
+          GH_TOKEN: ${{ secrets.FRO_BOT_PAT }}
+        run: |
+          pr_number="${{ github.event.issue.number }}"
+          is_fork=$(gh api "repos/${{ github.repository }}/pulls/${pr_number}" --jq '.head.repo.fork // "unknown"')
+          if [ "$is_fork" != "false" ]; then
+            echo "::error::Refusing to check out fork PR head from comment trigger (PR #${pr_number}, fork=${is_fork})."
+            exit 1
+          fi
+
+      - name: Detect Sunday UTC for category 7 cadence
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "$(date -u +%u)" = "7" ]; then
+            echo "IS_SUNDAY_UTC=true" >> "$GITHUB_ENV"
+          else
+            echo "IS_SUNDAY_UTC=false" >> "$GITHUB_ENV"
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -364,7 +503,11 @@ jobs:
               || github.event.pull_request.head.sha
               || ''
             }}
+          # FRO_BOT_PAT scope: contents/issues/pull-requests/discussions
+          # write permissions, scoped to this repo only. No org/admin/
+          # secrets scopes.
           token: ${{ secrets.FRO_BOT_PAT }}
+          persist-credentials: false
 
       - name: Setup project
         uses: ./.github/actions/setup
@@ -373,10 +516,11 @@ jobs:
         uses: fro-bot/agent@1563f2987343b5e8d30ba818920d0ac563c617fa # v0.43.0
         env:
           OPENCODE_PROMPT_ARTIFACT: 'true'
+          IS_SUNDAY_UTC: ${{ env.IS_SUNDAY_UTC || 'false' }}
           PROMPT: >-
             ${{
-              (github.event_name == 'workflow_dispatch' && (github.event.inputs.prompt || ''))
-              || (github.event_name == 'schedule' && env.SCHEDULE_PROMPT)
+              (github.event_name == 'workflow_dispatch' && github.event.inputs.prompt)
+              || ((github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !github.event.inputs.prompt)) && env.SCHEDULE_PROMPT)
               || (github.event_name == 'pull_request' && env.PR_REVIEW_PROMPT)
               || ''
             }}
