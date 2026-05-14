@@ -53,6 +53,7 @@ const nextConfig: NextConfig = {
       pino: 'pino/browser',
       'thread-stream': path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
       'sonic-boom': path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
+      accounts: path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
     },
   },
 
@@ -95,6 +96,7 @@ const nextConfig: NextConfig = {
         pino: 'pino/browser',
         'thread-stream': path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
         'sonic-boom': path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
+        accounts: path.join(workspaceRoot, 'config/stubs/empty-module.ts'),
       }
     }
     return config
