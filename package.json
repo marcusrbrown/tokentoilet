@@ -55,7 +55,7 @@
     "@bfra.me/eslint-config": "0.51.0",
     "@bfra.me/prettier-config": "0.16.9",
     "@eslint-react/eslint-plugin": "5.7.7",
-    "@next/bundle-analyzer": "16.2.2",
+    "@next/bundle-analyzer": "16.2.6",
     "@next/eslint-plugin-next": "16.2.6",
     "@storybook/addon-essentials": "9.0.0-alpha.12",
     "@storybook/addon-interactions": "9.0.0-alpha.10",
