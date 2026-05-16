@@ -160,7 +160,7 @@ importers:
         specifier: 10.5.0
         version: 10.5.0(postcss@8.5.14)
       class-variance-authority:
-        specifier: ^0.7.1
+        specifier: 0.7.1
         version: 0.7.1
       clsx:
         specifier: 2.1.1
