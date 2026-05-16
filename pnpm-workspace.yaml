@@ -1,6 +1,19 @@
 packages:
   - .
 
+allowBuilds:
+  '@reown/appkit': true
+  '@tailwindcss/oxide': true
+  bufferutil: false
+  core-js-pure: false
+  esbuild: true
+  keccak: false
+  sharp: true
+  simple-git-hooks: true
+  unrs-resolver: true
+  utf-8-validate: false
+
+# Kept for pnpm v10 compatibility; pnpm v11 uses allowBuilds above
 onlyBuiltDependencies:
   - '@reown/appkit'
   - '@tailwindcss/oxide'
