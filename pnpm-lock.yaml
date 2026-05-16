@@ -88,8 +88,8 @@ importers:
         specifier: 0.51.0
         version: 0.51.0(@eslint-react/eslint-plugin@5.7.7(eslint@10.2.0(jiti@2.7.0))(typescript@6.0.3))(@next/eslint-plugin-next@16.2.6)(@typescript-eslint/eslint-plugin@8.59.3(@typescript-eslint/parser@8.59.3(eslint@10.2.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.2.0(jiti@2.7.0))(typescript@6.0.3))(@typescript-eslint/rule-tester@8.59.3(eslint@10.2.0(jiti@2.7.0))(typescript@6.0.3))(@typescript-eslint/typescript-estree@8.59.3(typescript@6.0.3))(@typescript-eslint/utils@8.59.3(eslint@10.2.0(jiti@2.7.0))(typescript@6.0.3))(chokidar@5.0.0)(eslint-config-prettier@10.1.8(eslint@10.2.0(jiti@2.7.0)))(eslint-import-resolver-node@0.3.10)(eslint-plugin-jsx-a11y@6.10.2(eslint@10.2.0(jiti@2.7.0)))(eslint-plugin-prettier@5.5.5(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.2.0(jiti@2.7.0)))(eslint@10.2.0(jiti@2.7.0))(prettier@3.8.3))(eslint-plugin-react-hooks@7.0.1(eslint@10.2.0(jiti@2.7.0)))(eslint-plugin-react-refresh@0.5.2(eslint@10.2.0(jiti@2.7.0)))(eslint@10.2.0(jiti@2.7.0))(typescript@6.0.3)
       '@bfra.me/prettier-config':
-        specifier: 0.16.7
-        version: 0.16.7(prettier@3.8.3)
+        specifier: 0.16.9
+        version: 0.16.9(prettier@3.8.3)
       '@eslint-react/eslint-plugin':
         specifier: 5.7.7
         version: 5.7.7(eslint@10.2.0(jiti@2.7.0))(typescript@6.0.3)
@@ -875,8 +875,8 @@ packages:
       eslint-plugin-react-refresh:
         optional: true
 
-  '@bfra.me/prettier-config@0.16.7':
-    resolution: {integrity: sha512-WBNnEzlTcsaQ0C82jmF88iuDxke3S3ZP6PyMWldh/PTN/1JLoFAb/54M5PMn2qg+BEC1Xe/5pLAE0MnIWue3KQ==}
+  '@bfra.me/prettier-config@0.16.9':
+    resolution: {integrity: sha512-SW24PtVnYjN+Ar/Anegn2+s1ABt6u8iJx3Xc2DiSSZ4xlBzf1tYqn7BWW/zqeeV2Nk/G0BuRB/eeR4WrYYEvhQ==}
     peerDependencies:
       prettier: ^3.0.0
 
@@ -8017,7 +8017,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@bfra.me/prettier-config@0.16.7(prettier@3.8.3)':
+  '@bfra.me/prettier-config@0.16.9(prettier@3.8.3)':
     dependencies:
       prettier: 3.8.3
 
