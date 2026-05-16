@@ -69,6 +69,9 @@ const config: StorybookConfig = {
         '@/lib': path.resolve(modulePath, '../lib'),
         '@/hooks': path.resolve(modulePath, '../hooks'),
         '@/app': path.resolve(modulePath, '../app'),
+        'thread-stream': path.resolve(modulePath, '../config/stubs/empty-module.ts'),
+        'sonic-boom': path.resolve(modulePath, '../config/stubs/empty-module.ts'),
+        accounts: path.resolve(modulePath, '../config/stubs/empty-module.ts'),
       }
 
       // Ensure TypeScript and design token files are processed correctly
