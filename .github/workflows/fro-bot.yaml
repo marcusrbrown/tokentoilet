@@ -513,7 +513,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Run Fro Bot
-        uses: fro-bot/agent@3ec8d72ffdcf71de6e51f88a0de6c49ed79ed286 # v0.43.1
+        uses: fro-bot/agent@46db883fd2435c2f76ba4953b7b8c2b8e867bc39 # v0.43.2
         env:
           OPENCODE_PROMPT_ARTIFACT: 'true'
           IS_SUNDAY_UTC: ${{ env.IS_SUNDAY_UTC || 'false' }}
