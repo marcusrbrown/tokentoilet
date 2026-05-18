@@ -136,7 +136,7 @@ export function useTokenMetadata(
           errors: [
             {
               source: 'hook-validation',
-              tokenAddress: tokenAddress ?? ('0x0' as Address),
+              tokenAddress: tokenAddress ?? '0x0',
               chainId: chainId ?? 1,
               error: 'Token address and chain ID are required',
               timestamp: Date.now(),

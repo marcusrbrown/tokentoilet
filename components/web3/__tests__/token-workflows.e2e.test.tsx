@@ -40,7 +40,7 @@ vi.mock('wagmi', () => ({
 
 vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(() => ({
-    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' as Address,
+    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
     isConnected: true,
     chainId: 11155111,
     currentNetwork: {id: 11155111, name: 'Sepolia', nativeCurrency: {symbol: 'ETH'}},

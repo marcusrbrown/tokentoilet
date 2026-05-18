@@ -190,8 +190,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
 
       await expect(async () => {
         await act(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          await result.current.switchToChain(1 as any)
+          await result.current.switchToChain(1)
         })
       }).rejects.toThrow('Cannot switch to unsupported chain ID: 1')
 
@@ -205,8 +204,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
 
       await expect(async () => {
         await act(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          await result.current.switchToChain(137 as any)
+          await result.current.switchToChain(137)
         })
       }).rejects.toThrow('Cannot switch to unsupported chain ID: 137')
 
@@ -220,8 +218,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
 
       await expect(async () => {
         await act(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          await result.current.switchToChain(42161 as any)
+          await result.current.switchToChain(42161)
         })
       }).rejects.toThrow('Cannot switch to unsupported chain ID: 42161')
 
@@ -235,8 +232,7 @@ describe('useWallet - Error Handling for Connection Failures', () => {
 
       await expect(async () => {
         await act(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          await result.current.switchToChain(56 as any)
+          await result.current.switchToChain(56)
         })
       }).rejects.toThrow('Cannot switch to unsupported chain ID: 56')
 

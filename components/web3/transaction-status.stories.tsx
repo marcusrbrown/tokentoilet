@@ -1,5 +1,4 @@
 import type {Meta, StoryObj} from '@storybook/react'
-import type {Hash} from 'viem'
 import type {QueuedTransaction} from '@/lib/web3/transaction-queue'
 
 import {TransactionStatusCard} from './transaction-status'
@@ -8,7 +7,7 @@ import {TransactionStatusCard} from './transaction-status'
 const SAMPLE_TRANSACTIONS: QueuedTransaction[] = [
   {
     id: 'tx-pending-001',
-    hash: '0x742d35cc6644c35532b7c3b8b2b1aab1b0c0c935742d35cc6644c35532b7c3b8' as Hash,
+    hash: '0x742d35cc6644c35532b7c3b8b2b1aab1b0c0c935742d35cc6644c35532b7c3b8',
     chainId: 1,
     status: 'pending',
     type: 'dispose',
@@ -22,7 +21,7 @@ const SAMPLE_TRANSACTIONS: QueuedTransaction[] = [
   },
   {
     id: 'tx-confirmed-001',
-    hash: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f9841f9840a85d5af5bf1d1762f9' as Hash,
+    hash: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f9841f9840a85d5af5bf1d1762f9',
     chainId: 137,
     status: 'confirmed',
     type: 'donate',
@@ -39,7 +38,7 @@ const SAMPLE_TRANSACTIONS: QueuedTransaction[] = [
   },
   {
     id: 'tx-failed-001',
-    hash: '0x8076c74c5e3f5852037f31ff0093eeb8c8add8d38076c74c5e3f5852037f31ff' as Hash,
+    hash: '0x8076c74c5e3f5852037f31ff0093eeb8c8add8d38076c74c5e3f5852037f31ff',
     chainId: 42161,
     status: 'failed',
     type: 'approval',
@@ -54,7 +53,7 @@ const SAMPLE_TRANSACTIONS: QueuedTransaction[] = [
   },
   {
     id: 'tx-timeout-001',
-    hash: '0x123456789abcdef123456789abcdef123456789abcdef123456789abcdef1234' as Hash,
+    hash: '0x123456789abcdef123456789abcdef123456789abcdef123456789abcdef1234',
     chainId: 1,
     status: 'timeout',
     type: 'transfer',

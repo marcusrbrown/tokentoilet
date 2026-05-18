@@ -1,5 +1,3 @@
-import type {Address} from 'viem'
-
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {render, screen, waitFor} from '@testing-library/react'
 import {Suspense} from 'react'
@@ -10,7 +8,7 @@ import {DynamicTokenList, DynamicTransactionQueue, DynamicWalletDashboard, Dynam
 // Mock wagmi hooks
 vi.mock('wagmi', () => ({
   useAccount: vi.fn(() => ({
-    address: '0x1234567890123456789012345678901234567890' as Address,
+    address: '0x1234567890123456789012345678901234567890',
     isConnected: true,
     connector: {id: 'metamask', name: 'MetaMask'},
   })),
@@ -59,7 +57,7 @@ vi.mock('@/hooks/use-wallet-switcher', () => ({
 // Mock useWallet hook
 vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(() => ({
-    address: '0x1234567890123456789012345678901234567890' as Address,
+    address: '0x1234567890123456789012345678901234567890',
     isConnected: true,
     chainId: 1,
     currentNetwork: {id: 1, name: 'Ethereum', nativeCurrency: {symbol: 'ETH'}},

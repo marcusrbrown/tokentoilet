@@ -415,7 +415,7 @@ describe('useTokenApproval', () => {
 
       // Simulate successful approval
       if (mutationConfig?.onSuccess) {
-        mutationConfig.onSuccess(mockHash, {} as any, {} as any, {} as any)
+        mutationConfig.onSuccess(mockHash, {} as any, {}, {} as any)
       }
 
       await waitFor(() => {
@@ -466,7 +466,7 @@ describe('useTokenApproval', () => {
 
       // Simulate successful approval
       if (mutationConfig?.onSuccess) {
-        mutationConfig.onSuccess(mockHash, {} as any, {} as any, {} as any)
+        mutationConfig.onSuccess(mockHash, {} as any, {}, {} as any)
       }
 
       // Wait for auto-refresh timeout (2000ms)

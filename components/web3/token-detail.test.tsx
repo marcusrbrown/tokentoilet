@@ -64,7 +64,7 @@ Object.assign(window, {
 
 describe('TokenDetail', () => {
   const mockToken: CategorizedToken = {
-    address: '0x1234567890123456789012345678901234567890' as Address,
+    address: '0x1234567890123456789012345678901234567890',
     chainId: 1,
     name: 'Test Token',
     symbol: 'TEST',
@@ -79,7 +79,7 @@ describe('TokenDetail', () => {
     analysisTimestamp: Date.now(),
     confidenceScore: 0.9,
     metadata: {
-      address: '0x1234567890123456789012345678901234567890' as Address,
+      address: '0x1234567890123456789012345678901234567890',
       chainId: 1,
       name: 'Test Token',
       symbol: 'TEST',

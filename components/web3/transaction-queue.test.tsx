@@ -39,7 +39,7 @@ describe('TransactionQueue', () => {
   const mockTransactions: QueuedTransaction[] = [
     {
       id: 'tx_1',
-      hash: '0x1234567890123456789012345678901234567890123456789012345678901234' as Hash,
+      hash: '0x1234567890123456789012345678901234567890123456789012345678901234',
       chainId: 1 as const,
       type: 'transfer',
       status: 'pending',
@@ -50,7 +50,7 @@ describe('TransactionQueue', () => {
     },
     {
       id: 'tx_2',
-      hash: '0xabcdef1234567890123456789012345678901234567890123456789012345678' as Hash,
+      hash: '0xabcdef1234567890123456789012345678901234567890123456789012345678',
       chainId: 1 as const,
       type: 'approval',
       status: 'confirmed',
@@ -62,7 +62,7 @@ describe('TransactionQueue', () => {
     },
     {
       id: 'tx_3',
-      hash: '0xfedcba0987654321098765432109876543210987654321098765432109876543' as Hash,
+      hash: '0xfedcba0987654321098765432109876543210987654321098765432109876543',
       chainId: 1 as const,
       type: 'dispose',
       status: 'failed',

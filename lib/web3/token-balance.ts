@@ -423,7 +423,7 @@ export async function checkCrossChainBalances(
   tokensByChain: Record<SupportedChainId, {address: Address; decimals?: number}[]>,
   options: BalanceCheckConfig = {},
 ): Promise<Record<SupportedChainId, BalanceCheckResult>> {
-  const results: Record<SupportedChainId, BalanceCheckResult> = {} as Record<SupportedChainId, BalanceCheckResult>
+  const results: Record<SupportedChainId, BalanceCheckResult> = {}
 
   // Process chains in parallel for better performance
   const chainPromises = Object.entries(tokensByChain).map(async ([chainIdStr, tokens]) => {

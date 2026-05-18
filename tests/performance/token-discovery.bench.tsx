@@ -65,7 +65,7 @@ function generateMockToken(index: number, chainId: number): DiscoveredToken {
     name: `Token ${symbol} ${index}`,
     decimals: 18,
     balance,
-    chainId: chainId as 1 | 137 | 42161,
+    chainId,
     formattedBalance: (Number(balance) / 1e18).toFixed(4),
   }
 }

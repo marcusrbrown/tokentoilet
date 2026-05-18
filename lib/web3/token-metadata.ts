@@ -489,7 +489,7 @@ export async function fetchBatchTokenMetadata(
         errors: [
           {
             source: 'batch-system',
-            tokenAddress: '0x0' as Address,
+            tokenAddress: '0x0',
             chainId: 1,
             error: reason?.message ?? 'Batch fetch failed',
             timestamp: Date.now(),

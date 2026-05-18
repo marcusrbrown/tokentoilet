@@ -249,7 +249,7 @@ describe('TokenAmountInput', () => {
     it('shows balance verification success', () => {
       mockUseSingleTokenBalance.mockReturnValue({
         balance: {
-          address: '0xA0b86a33E6441b1e78a8C46B9d688d5d5d3B2D1c' as `0x${string}`,
+          address: '0xA0b86a33E6441b1e78a8C46B9d688d5d5d3B2D1c',
           balance: BigInt('1000000000000000000'),
           formattedBalance: '1.0',
           decimals: 18,

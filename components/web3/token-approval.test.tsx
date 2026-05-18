@@ -27,7 +27,7 @@ const mockUseTokenApproval = vi.mocked(useTokenApproval)
 
 describe('TokenApproval', () => {
   const mockToken: CategorizedToken = {
-    address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+    address: '0x1234567890123456789012345678901234567890',
     chainId: 1,
     symbol: 'TEST',
     name: 'Test Token',
