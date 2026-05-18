@@ -39,7 +39,7 @@ describe('useTokenDiscovery', () => {
   const mockAddress = '0x1234567890123456789012345678901234567890' as Address
   const mockTokens: DiscoveredToken[] = [
     {
-      address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94' as Address,
+      address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94',
       symbol: 'USDC',
       name: 'USD Coin',
       decimals: 6,
@@ -48,7 +48,7 @@ describe('useTokenDiscovery', () => {
       formattedBalance: '1000',
     },
     {
-      address: '0x6B175474E89094C44Da98b954EedeAC495271d0F' as Address,
+      address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       symbol: 'DAI',
       name: 'Dai Stablecoin',
       decimals: 18,
@@ -366,7 +366,7 @@ describe('useChainTokenDiscovery', () => {
     const mockResult: TokenDiscoveryResult = {
       tokens: [
         {
-          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94' as Address,
+          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94',
           symbol: 'USDC',
           name: 'USD Coin',
           decimals: 6,
@@ -530,7 +530,7 @@ describe('useNonZeroTokens', () => {
     const mockResult: TokenDiscoveryResult = {
       tokens: [
         {
-          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94' as Address,
+          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94',
           symbol: 'USDC',
           name: 'USD Coin',
           decimals: 6,
@@ -588,7 +588,7 @@ describe('useTokensByBalance', () => {
     const mockResult: TokenDiscoveryResult = {
       tokens: [
         {
-          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94' as Address,
+          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94',
           symbol: 'USDC',
           name: 'USD Coin',
           decimals: 6,
@@ -597,7 +597,7 @@ describe('useTokensByBalance', () => {
           formattedBalance: '1000',
         },
         {
-          address: '0x6B175474E89094C44Da98b954EedeAC495271d0F' as Address,
+          address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
           symbol: 'DAI',
           name: 'Dai Stablecoin',
           decimals: 18,
@@ -655,7 +655,7 @@ describe('useTokensByChain', () => {
     const mockResult: TokenDiscoveryResult = {
       tokens: [
         {
-          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94' as Address,
+          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94',
           symbol: 'USDC',
           name: 'USD Coin',
           decimals: 6,
@@ -664,7 +664,7 @@ describe('useTokensByChain', () => {
           formattedBalance: '1000',
         },
         {
-          address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' as Address,
+          address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
           symbol: 'USDC',
           name: 'USD Coin (PoS)',
           decimals: 6,
@@ -698,7 +698,7 @@ describe('useTokensByChain', () => {
     const mockResult: TokenDiscoveryResult = {
       tokens: [
         {
-          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94' as Address,
+          address: '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94',
           symbol: 'USDC',
           name: 'USD Coin',
           decimals: 6,

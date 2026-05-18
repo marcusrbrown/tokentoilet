@@ -1,4 +1,3 @@
-import type {Address} from 'viem'
 import {useCallback, useState} from 'react'
 import toast from 'react-hot-toast'
 import {erc20Abi, formatUnits} from 'viem'
@@ -43,7 +42,7 @@ export function useTokenDisposal(token: CategorizedToken): UseTokenDisposalRetur
           description: `Burn ${formatUnits(token.balance, token.decimals)} ${token.symbol}`,
           value: token.balance,
           to: BURN_ADDRESS,
-          from: userAddress as Address,
+          from: userAddress,
         })
 
         toast.success(`${token.symbol} disposal submitted`)

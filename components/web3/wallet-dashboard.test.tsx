@@ -273,7 +273,7 @@ describe('Unsupported Network State', () => {
       suggestedChainId: 1,
       userFriendlyMessage: 'Switch to Ethereum Mainnet to continue',
       name: 'NetworkValidationError',
-    } as NetworkValidationError,
+    },
   }
 
   const unsupportedWalletState = {

@@ -367,7 +367,7 @@ export function useNativeBalance(
 
       // Convert to TokenBalance format for consistency
       return {
-        address: '0x0000000000000000000000000000000000000000' as Address, // Zero address for native
+        address: '0x0000000000000000000000000000000000000000', // Zero address for native
         balance: nativeBalance.balance,
         formattedBalance: nativeBalance.formattedBalance,
         decimals: 18, // Native tokens typically use 18 decimals
@@ -481,7 +481,7 @@ export function useCrossChainBalances(
   })
 
   // Process results for convenience accessors
-  const balancesByChain = query.data ?? ({} as Record<SupportedChainId, BalanceCheckResult>)
+  const balancesByChain = query.data ?? {}
   const allTokenBalances = Object.values(balancesByChain).flatMap(result => result.tokenBalances)
   const nativeBalances = Object.fromEntries(
     Object.entries(balancesByChain)

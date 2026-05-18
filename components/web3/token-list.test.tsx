@@ -23,7 +23,7 @@ vi.mock('wagmi', () => ({
 // Mock useWallet hook
 vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(() => ({
-    address: '0x1234567890123456789012345678901234567890' as Address,
+    address: '0x1234567890123456789012345678901234567890',
     isConnected: true,
     chainId: 11155111,
     currentNetwork: {id: 11155111, name: 'Sepolia', nativeCurrency: {symbol: 'ETH'}},
@@ -94,7 +94,7 @@ const createWrapper = () => {
 
 // Mock token data generators
 const createMockDiscoveredToken = (overrides: Partial<DiscoveredToken> = {}): DiscoveredToken => ({
-  address: '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A2' as Address,
+  address: '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A2',
   chainId: 11155111,
   symbol: 'TEST',
   name: 'Test Token',
@@ -128,7 +128,7 @@ describe('TokenList', () => {
 
     // Default mock setup
     mockUseAccount.mockReturnValue({
-      address: '0x1234567890123456789012345678901234567890' as Address,
+      address: '0x1234567890123456789012345678901234567890',
       isConnected: true,
       chainId: 11155111,
       isConnecting: false,

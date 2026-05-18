@@ -48,8 +48,8 @@ const generateMockTokens = (count: number): CategorizedToken[] => {
       mockToken({
         symbol: symbols[idx],
         name: names[idx],
-        category: categories[i % categories.length] as TokenCategory,
-        valueClass: valueClasses[i % valueClasses.length] as TokenValueClass,
+        category: categories[i % categories.length],
+        valueClass: valueClasses[i % valueClasses.length],
         balance: BigInt(Math.floor(Math.random() * 1000000000000000000)),
         estimatedValueUSD: Math.random() * 10000,
         priceUSD: Math.random() * 100,

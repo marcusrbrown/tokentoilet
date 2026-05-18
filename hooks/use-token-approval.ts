@@ -161,7 +161,7 @@ export function useTokenApproval(config: TokenApprovalConfig): UseTokenApprovalR
             : `Approve ${formatUnits(finalApprovalAmount, token.decimals)} ${token.symbol}`,
           value: finalApprovalAmount,
           to: spender,
-          from: userAddress as Address,
+          from: userAddress,
         })
 
         toast.success(

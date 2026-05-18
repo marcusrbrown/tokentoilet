@@ -134,4 +134,4 @@ window.getComputedStyle = vi.fn((element: Element, pseudoElt?: string | null) =>
   }
   // For regular elements, use jsdom's implementation
   return originalGetComputedStyle(element)
-}) as typeof window.getComputedStyle
+})

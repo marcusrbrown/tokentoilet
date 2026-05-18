@@ -1,4 +1,3 @@
-import type {Hash} from 'viem'
 import {render, screen} from '@testing-library/react'
 import {describe, expect, it} from 'vitest'
 import type {QueuedTransaction} from '@/lib/web3/transaction-queue'
@@ -8,7 +7,7 @@ import {TransactionStatusCard} from './transaction-status'
 describe('TransactionStatusCard', () => {
   const baseMockTransaction: QueuedTransaction = {
     id: 'tx_12345678',
-    hash: '0xabc123def456789012345678901234567890abcdef123456789012345678901234' as Hash,
+    hash: '0xabc123def456789012345678901234567890abcdef123456789012345678901234',
     chainId: 1,
     type: 'transfer',
     status: 'pending',

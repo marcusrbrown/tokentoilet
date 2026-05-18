@@ -1,4 +1,3 @@
-import type {Address} from 'viem'
 import {describe, expect, it} from 'vitest'
 
 import {TokenRiskScore, type EnhancedTokenMetadata} from '../lib/web3/token-metadata'
@@ -7,7 +6,7 @@ import {filterTokenMetadata, getTokenMetadataStats} from './use-token-metadata'
 describe('use-token-metadata utils', () => {
   const mockTokens: EnhancedTokenMetadata[] = [
     {
-      address: '0x1111111111111111111111111111111111111111' as Address,
+      address: '0x1111111111111111111111111111111111111111',
       chainId: 1,
       name: 'High Quality Token',
       symbol: 'HQT',
@@ -23,7 +22,7 @@ describe('use-token-metadata utils', () => {
       cacheKey: 'token1',
     },
     {
-      address: '0x2222222222222222222222222222222222222222' as Address,
+      address: '0x2222222222222222222222222222222222222222',
       chainId: 1,
       name: 'Medium Quality Token',
       symbol: 'MQT',
@@ -34,7 +33,7 @@ describe('use-token-metadata utils', () => {
       cacheKey: 'token2',
     },
     {
-      address: '0x3333333333333333333333333333333333333333' as Address,
+      address: '0x3333333333333333333333333333333333333333',
       chainId: 1,
       name: '',
       symbol: '',
