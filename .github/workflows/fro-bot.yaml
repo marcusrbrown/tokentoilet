@@ -53,6 +53,12 @@ env:
        - React hook dependency arrays and stale closures
        - Functional state updates in useEffect (`setX(prev => ...)` not `setX(x + 1)`)
        - Ref capture at effect execution time for cleanup
+       - Workflow gating (if: conditions, needs: chains, the skipped-needs
+         trap — finalize jobs that depend on conditional prepare jobs MUST
+         use !cancelled() to bypass the implicit success() guard)
+       - Silent failure paths: continue-on-error: true on local deterministic
+         steps is a red flag (use it only for external-API fetches with
+         clear fallback behavior)
 
     2. WEB3 SECURITY (elevated scrutiny)
        - Token approval flows: infinite approvals flagged, amount validation
@@ -211,6 +217,18 @@ env:
        - Scan for stale TODO/FIXME/HACK annotations older than 90 days
          (use git blame). Collect them into a single issue or update an
          existing "Stale TODOs" issue.
+       - Workflow health: check the last 7 days of runs for each workflow.
+         Flag any workflow where >50% of expected runs failed, or where
+         scheduled runs produced zero successful auto-generated commits
+         when they should have. (Caught a 1.5-year silent outage in
+         marcusrbrown/marcusrbrown in May 2026; we want it caught fast
+         in this repo too.)
+       - Configuration freshness: flag any pinned contract addresses, RPC
+         endpoint URLs, or chain config entries that haven't been verified
+         against the upstream registry in 90+ days (use git blame). Flag
+         deprecated SDK methods imported but not yet migrated (e.g.,
+         Wagmi/AppKit APIs marked deprecated in release notes). Report
+         findings — do not auto-fix configuration values.
        - Verify convention compliance:
          * No `as any`, `@ts-ignore`, or `@ts-expect-error` in source
          * No direct wagmi/AppKit hook usage outside `hooks/` directory
@@ -392,6 +410,9 @@ env:
       a failing PR (then ONLY post the fix-summary comment on that PR).
 
     Hard boundaries:
+    - Never edit Marcus's first-person content (README intro, blog posts,
+      marketing copy, any user-facing language). Report stale claims;
+      don't rewrite them.
     - Never force-push, rewrite history, or delete branches.
     - Never push directly to the default branch. Direct pushes are allowed
       only to an existing non-default PR branch you are repairing under
