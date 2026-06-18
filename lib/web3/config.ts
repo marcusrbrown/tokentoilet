@@ -2,8 +2,8 @@ import {WagmiAdapter} from '@reown/appkit-adapter-wagmi'
 import {createAppKit} from '@reown/appkit/react'
 import {http} from 'viem'
 
-import {env} from '../../env'
-import {DEFAULT_SUPPORTED_NETWORK_V1, SUPPORTED_NETWORKS_V1} from './chains'
+import {env} from '@/env'
+import {DEFAULT_SUPPORTED_NETWORK_V1, SUPPORTED_NETWORKS_V1} from '@/lib/web3/chains'
 
 // Use validated environment variables
 export const projectId = env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
