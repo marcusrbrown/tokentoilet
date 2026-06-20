@@ -1,5 +1,4 @@
 globs:
-  - '!.ai/**'
   - '!AGENTS.md'
   - '!docs/brainstorms/**'
   - '!docs/plans/**'

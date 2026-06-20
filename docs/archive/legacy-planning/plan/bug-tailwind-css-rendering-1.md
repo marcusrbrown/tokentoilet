@@ -1,3 +1,5 @@
+> **⚠️ ARCHIVED — Pre-Systematic legacy planning.** This document predates the Systematic workflow process and the MVP rebaseline. It is retained for historical reference only and does not reflect current project scope or conventions. For current scope, see [`docs/brainstorms/2026-04-16-mvp-rebaseline-requirements.md`](../../../brainstorms/2026-04-16-mvp-rebaseline-requirements.md).
+
 ---
 goal: Fix critical Tailwind CSS v4 rendering issues causing completely unstyled website
 version: 1.0
