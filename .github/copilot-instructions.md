@@ -1,15 +1,15 @@
 # Token Toilet - AI Agent Instructions
 
-Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi v2 + Reown AppKit, featuring a complete design system with violet branding and glass morphism aesthetics.
+Token Toilet is a Web3 DeFi application for disposing of unwanted ERC-20 tokens by transferring them to a burn address on Sepolia testnet. Built with Next.js 16 App Router + TypeScript + Wagmi v2 + Reown AppKit, featuring a complete design system with violet branding and glass morphism aesthetics.
 
 ## Documentation Structure
 
 **Primary Documentation**: All core project documentation is referenced in `llms.txt` at the project root
-- **Product Specs**: `docs/prd.md` - comprehensive product requirements (715 lines)
-- **Development Plan**: `docs/plan.md` - detailed roadmap and progress tracking (384 lines)
-- **Design System**: `docs/design-system/getting-started.md` - complete component library guide (534 lines)
-- **Design System Migration**: `docs/design-system/migration-guide.md` - component migration patterns (970 lines)
-- **Contributing**: `CONTRIBUTING.md` - development workflow and coding standards (499 lines)
+- **Current MVP Scope**: `docs/brainstorms/2026-04-16-mvp-rebaseline-requirements.md` - canonical MVP requirements (single-chain Sepolia ERC-20 burn-address disposal flow)
+- **Design System**: `docs/design-system/getting-started.md` - complete component library guide
+- **Design System Migration**: `docs/design-system/migration-guide.md` - component migration patterns
+- **Contributing**: `CONTRIBUTING.md` - development workflow and coding standards
+- **Archived (deferred post-v1.0 vision)**: `docs/archive/prd.md` and `docs/archive/plan.md` — original multi-chain/charity/NFT/Fountain PRD and plan, retained for historical reference only
 
 **Always reference `llms.txt` first** when looking for project context - it provides structured links to all relevant documentation.
 
@@ -18,7 +18,7 @@ Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while s
 **Web3 Provider Chain**: `app/layout.tsx` → `app/providers.tsx` → `Web3Provider` (Wagmi + TanStack Query) → `ThemeSync`
 - All Web3 state flows through Wagmi's provider system via `WagmiAdapter`
 - Reown AppKit (formerly Web3Modal) handles wallet connections with violet theming
-- Configuration centralized in `lib/web3/config.ts` with multi-chain support (Ethereum, Polygon, Arbitrum)
+- Configuration centralized in `lib/web3/config.ts` with single-chain Sepolia testnet support for v1.0; multi-chain (Ethereum mainnet, Polygon, Arbitrum) deferred post-v1.0
 - `ThemeSync` component bridges Next-themes with Reown AppKit theming
 
 **Component Organization**:
@@ -35,7 +35,7 @@ Token Toilet is a Web3 DeFi application for disposing of unwanted tokens while s
 import { useWallet } from '@/hooks/use-wallet'
 
 // Reown AppKit integration via useAppKit from @reown/appkit/react
-// Multi-chain support: Ethereum mainnet (1), Polygon (137), Arbitrum (42161)
+// Single-chain: Sepolia testnet (11155111) for v1.0; multi-chain deferred post-v1.0
 // Network validation with detailed error classification and auto-switching
 ```
 
@@ -91,9 +91,7 @@ vi.mock('@reown/appkit/react', () => ({
 
 // Mock network imports for consistent testing
 vi.mock('@reown/appkit/networks', () => ({
-  mainnet: {id: 1},
-  polygon: {id: 137},
-  arbitrum: {id: 42161},
+  sepolia: {id: 11155111},
 }))
 
 // Mock token approval hook for component tests
@@ -194,7 +192,7 @@ const displayAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
 
 ## Development Workflow
 
-**Package Manager**: pnpm@10.18.0 (enforced via packageManager field)
+**Package Manager**: pnpm@11.7.0 (enforced via packageManager field)
 
 **Local Development**:
 ```bash
@@ -229,11 +227,11 @@ pnpm type-check   # TypeScript type checking without build
   - Custom validation schemas: `rpcUrlSchema` (HTTPS required), `walletConnectProjectIdSchema` (32+ char hex)
   - Access via `import {env} from '@/env'` - NEVER use `process.env` directly
   - Schema validation skipped in CI/test/build, but required for dev/production
-- Multi-chain support requires `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` from [WalletConnect Cloud](https://cloud.walletconnect.com)
-- Optional RPC URLs: `NEXT_PUBLIC_ETHEREUM_RPC_URL`, `NEXT_PUBLIC_POLYGON_RPC_URL`, `NEXT_PUBLIC_ARBITRUM_RPC_URL`
+- WalletConnect integration requires `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` from [WalletConnect Cloud](https://cloud.walletconnect.com)
+- Optional RPC URL: `NEXT_PUBLIC_SEPOLIA_RPC_URL` (Sepolia is the only supported network for v1.0)
 
 **Key Files**:
-- `lib/web3/config.ts` - WagmiAdapter with multi-chain RPC endpoints and Reown AppKit theming
+- `lib/web3/config.ts` - WagmiAdapter with Sepolia RPC endpoint and Reown AppKit theming
 - `hooks/use-wallet.ts` - Complete wallet abstraction with NetworkValidationError types (305 lines)
 - `hooks/use-token-approval.ts` - Token approval workflow with gas estimation (330 lines)
 - `hooks/use-wallet-persistence.ts` - LocalStorage-based wallet connection persistence
@@ -323,8 +321,8 @@ const displayAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
 
 ## Reference Documentation
 **Always start with `llms.txt`** - it provides structured navigation to:
-- Product requirements in `docs/prd.md` (715 lines)
-- Development roadmap in `docs/plan.md` (384 lines)
-- Design system guide in `docs/design-system/getting-started.md` (507 lines)
-- Design system migration guide in `docs/design-system/migration-guide.md` (970 lines)
-- Contributing guidelines in `CONTRIBUTING.md` (499 lines)
+- **Current MVP scope**: `docs/brainstorms/2026-04-16-mvp-rebaseline-requirements.md` — canonical requirements for the shipped v1.0 (Sepolia ERC-20 burn-address disposal)
+- **Archived specs** (deferred post-v1.0 vision): `docs/archive/prd.md` and `docs/archive/plan.md`
+- Design system guide in `docs/design-system/getting-started.md`
+- Design system migration guide in `docs/design-system/migration-guide.md`
+- Contributing guidelines in `CONTRIBUTING.md`
