@@ -9,7 +9,7 @@ Token Toilet provides a way to dispose of unwanted ERC-20 tokens on Sepolia test
 - [Main README](readme.md): Primary project documentation, features overview, and getting started guide
 - [Contributing Guide](CONTRIBUTING.md): Comprehensive contributing guidelines, development workflow, and coding standards
 - [Changelog](CHANGELOG.md): Project version history, notable changes, and release notes following semantic versioning
-- [MVP Strategy](mvp.md): Implementation priorities and development approach for the minimum viable product
+- [MVP Strategy](mvp.md): **ARCHIVED** — original pre-rebaseline implementation plan (multi-chain/charity/NFT/Fountain); superseded by the MVP Rebaseline Requirements under Specifications below
 - [Legacy Concept](legacy.md): Original project concept and humorous explanation of the "toilet, fountain, and sprinkler" ecosystem
 - [Design System Guide](docs/design-system/getting-started.md): Comprehensive design system documentation with components, tokens, and Web3 patterns
 - [AI Agent Instructions](.github/copilot-instructions.md): Technical architecture and development patterns for AI agents working on the project

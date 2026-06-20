@@ -10,7 +10,6 @@ export default defineConfig(
       'llms.txt',
       '.ai/',
       'docs/**/*.md',
-      'docs/archive/**',
       'CONTRIBUTING.md',
       'CHANGELOG.md',
     ],
