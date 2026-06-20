@@ -1,8 +1,8 @@
 # Token Toilet
 
-> A Web3 DeFi application for disposing of unwanted tokens while supporting charitable causes. Built with Next.js 15 App Router + TypeScript + Wagmi v2 + Reown AppKit, featuring a complete design system with violet branding and glass morphism aesthetics.
+> A Web3 DeFi application for disposing of unwanted ERC-20 tokens by transferring them to a burn address on Sepolia testnet. Built with Next.js 16 App Router + TypeScript + Wagmi v2 + Reown AppKit, featuring a complete design system with violet branding and glass morphism aesthetics.
 
-Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20, ERC-721) while contributing to charity through a "token fountain" mechanism. The project combines token disposal with charitable giving, creating an entertaining way to clean up crypto wallets while generating value for good causes.
+Token Toilet provides a way to dispose of unwanted ERC-20 tokens on Sepolia testnet by transferring them to the burn address `0x000000000000000000000000000000000000dEaD`. The v1.0 MVP is single-chain (Sepolia) and ERC-20 only. Multi-chain support (Ethereum mainnet, Polygon, Arbitrum), ERC-721 disposal, charity integration (The Giving Block), NFT proof-of-disposal receipts, and the Fountain/blind-box mechanism are deferred to post-v1.0.
 
 ## Documentation
 
@@ -16,8 +16,9 @@ Token Toilet provides a fun, gamified way to dispose of unwanted tokens (ERC-20,
 
 ## Specifications
 
-- [Product Requirements Document](docs/prd.md): Comprehensive product specifications, technical architecture, and user experience requirements
-- [Development Plan](docs/plan.md): Detailed development roadmap, current progress tracking, and implementation phases
+- [MVP Rebaseline Requirements](docs/brainstorms/2026-04-16-mvp-rebaseline-requirements.md): **Current canonical scope** — single-chain Sepolia ERC-20 burn-address disposal flow, deferred features, and success criteria for v1.0
+- [Product Requirements Document](docs/archive/prd.md): **ARCHIVED** — original multi-chain/charity/NFT/Fountain PRD, retained for historical reference and future roadmap planning
+- [Development Plan](docs/archive/plan.md): **ARCHIVED** — original development roadmap, retained for historical reference
 
 ## Development
 

@@ -1,6 +1,8 @@
+> **⚠️ ARCHIVED — Superseded post-v1.0 vision.** This document describes the original multi-chain / charity / NFT / Fountain product vision, most of which was intentionally deferred when the MVP was rebaselined to a single-chain (Sepolia) ERC-20 burn-address disposal flow. It is retained for historical reference and future roadmap planning only. For current scope, see [`docs/brainstorms/2026-04-16-mvp-rebaseline-requirements.md`](../../brainstorms/2026-04-16-mvp-rebaseline-requirements.md).
+
 # Token Toilet RFCs
 
-This document serves as the master index for all Token Toilet implementation RFCs (Request for Comments). Each RFC breaks down a major feature area from the [PRD](../docs/prd.md) into actionable technical specifications.
+This document serves as the master index for all Token Toilet implementation RFCs (Request for Comments). Each RFC breaks down a major feature area from the [PRD](../prd.md) into actionable technical specifications.
 
 ## RFC Summary Table
 
@@ -169,7 +171,7 @@ When an RFC is implemented, update its status in this table:
 
 ## Feature ID Reference
 
-Features from the [PRD FEATURES.md](../docs/FEATURES.md) are addressed across RFCs:
+Features from the [PRD FEATURES.md](../FEATURES.md) are addressed across RFCs:
 
 | Feature ID | Feature Name | RFC |
 |------------|--------------|-----|
@@ -183,7 +185,7 @@ Features from the [PRD FEATURES.md](../docs/FEATURES.md) are addressed across RF
 
 ## Technical Stack Reference
 
-All RFCs assume the following stack (from [RULES.md](../docs/RULES.md)):
+All RFCs assume the following stack (from [RULES.md](../RULES.md)):
 
 | Category | Technology |
 |----------|------------|
@@ -197,7 +199,7 @@ All RFCs assume the following stack (from [RULES.md](../docs/RULES.md)):
 
 ## Key Conventions
 
-From [RULES.md](../docs/RULES.md):
+From [RULES.md](../RULES.md):
 
 - **Named exports only** - No default exports
 - **`useWallet` abstraction** - Never import wagmi directly in components
@@ -207,7 +209,7 @@ From [RULES.md](../docs/RULES.md):
 
 ## Related Documents
 
-- [PRD](../docs/prd.md) - Product Requirements Document
-- [FEATURES.md](../docs/FEATURES.md) - Feature specifications with acceptance criteria
-- [RULES.md](../docs/RULES.md) - Development conventions and patterns
-- [plan.md](../docs/plan.md) - Development timeline
+- [PRD](../prd.md) - Product Requirements Document
+- [FEATURES.md](../FEATURES.md) - Feature specifications with acceptance criteria
+- [RULES.md](../RULES.md) - Development conventions and patterns
+- [plan.md](../plan.md) - Development timeline

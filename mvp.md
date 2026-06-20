@@ -1,3 +1,5 @@
+> **⚠️ ARCHIVED — Superseded post-v1.0 vision.** This document describes the original multi-chain / charity / NFT / Fountain product vision, most of which was intentionally deferred when the MVP was rebaselined to a single-chain (Sepolia) ERC-20 burn-address disposal flow. It is retained for historical reference and future roadmap planning only. For current scope, see [`docs/brainstorms/2026-04-16-mvp-rebaseline-requirements.md`](docs/brainstorms/2026-04-16-mvp-rebaseline-requirements.md).
+
 # Token Toilet MVP Strategy 🚽
 
 ## 1. Frontend Development

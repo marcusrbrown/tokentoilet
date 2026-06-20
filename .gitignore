@@ -63,7 +63,3 @@ legacy.md
 # Storybook static build output
 /storybook-static
 
-# RFCs
-!RFCs/
-RFCs/*
-!RFCs/RFCS.md
