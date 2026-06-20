@@ -416,7 +416,8 @@ export function TokenDetail({
               <div>
                 <span className="text-gray-600 dark:text-gray-400 block">Value</span>
                 <span className="font-semibold text-green-600 dark:text-green-400">
-                  ${formatNumber(token.estimatedValueUSD)}
+                  &#36;
+                  {formatNumber(token.estimatedValueUSD)}
                 </span>
               </div>
             )}

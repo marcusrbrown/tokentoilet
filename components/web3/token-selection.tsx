@@ -531,7 +531,8 @@ export function TokenSelection({
               <div className="p-3 bg-violet-50/50 dark:bg-violet-900/20 rounded-lg">
                 <div className="text-sm font-medium text-violet-900 dark:text-violet-100">Total Value</div>
                 <div className="text-lg font-semibold text-violet-700 dark:text-violet-300">
-                  ${selectionStats.totalValue.toFixed(2)}
+                  &#36;
+                  {selectionStats.totalValue.toFixed(2)}
                 </div>
               </div>
               <div className="p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg">
@@ -750,7 +751,8 @@ export function TokenSelection({
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Selection Summary:</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                {selectionStats.totalSelected} tokens • ${selectionStats.totalValue.toFixed(2)} total value
+                {selectionStats.totalSelected} tokens • &#36;
+                {selectionStats.totalValue.toFixed(2)} total value
               </div>
             </div>
 

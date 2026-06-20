@@ -62,33 +62,35 @@ const defaultOptions: UseTransactionQueueOptions = {
   debug: process.env.NODE_ENV === 'development',
 }
 
+const readTransactions = (queue: ReturnType<typeof getTransactionQueue>) => {
+  try {
+    return queue.getTransactions()
+  } catch (error) {
+    console.error('Failed to load transactions from queue:', error)
+
+    return []
+  }
+}
+
 export function useTransactionQueue(options: UseTransactionQueueOptions = {}): UseTransactionQueueReturn {
   const config = useMemo(() => ({...defaultOptions, ...options}), [options])
 
-  // State for all transactions
-  const [transactions, setTransactions] = useState<QueuedTransaction[]>([])
-
   // Ref to store the queue instance
   const queueRef = useRef(getTransactionQueue(config))
+
+  // State for all transactions
+  const [transactions, setTransactions] = useState<QueuedTransaction[]>(() => readTransactions(queueRef.current))
 
   // Event listener references for cleanup
   const listenersRef = useRef<Set<TransactionQueueEventListener>>(new Set())
 
   // Loads from localStorage-backed queue - not deriving from previous state
   const loadTransactions = useCallback(() => {
-    try {
-      const allTransactions = queueRef.current.getTransactions()
-      setTransactions(() => allTransactions)
-    } catch (error) {
-      console.error('Failed to load transactions from queue:', error)
-      setTransactions(() => [])
-    }
+    setTransactions(readTransactions(queueRef.current))
   }, [])
 
   // Initialize queue and set up event listeners
   useEffect(() => {
-    loadTransactions()
-
     const eventListener: TransactionQueueEventListener = _event => {
       loadTransactions()
     }
