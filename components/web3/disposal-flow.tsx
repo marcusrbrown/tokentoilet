@@ -52,7 +52,10 @@ function DisposalExecutor({
   }, [canDispose, dispose, error, isPending, isSimulating, isSuccess, isSimulationEnabled])
 
   useEffect(() => {
-    if (hasTriggeredRef.current && !hasReportedRef.current && (isSuccess || error != null)) {
+    // Report any terminal outcome (success or error), even when no write was
+    // triggered — a failed preflight is a terminal result that must advance the
+    // batch, otherwise a reverting token deadlocks the disposal flow.
+    if (!hasReportedRef.current && (isSuccess || error != null)) {
       hasReportedRef.current = true
       onComplete({
         address: token.address,

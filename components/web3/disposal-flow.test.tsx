@@ -242,8 +242,8 @@ describe('DisposalFlow', () => {
       expect(screen.getByText(/checking transfer safety/i)).toBeInTheDocument()
     })
 
-    it('calls onComplete with success:false when simulation fails; does NOT reach write', async () => {
-      // Given simulation failed
+    it('advances to results with a failed token when simulation fails; never writes', async () => {
+      // Given a single selected token whose preflight simulation has failed
       const simulationError = new Error('Transfer would revert')
       vi.mocked(useTokenDisposal).mockReturnValue({
         dispose: mockDispose,
@@ -261,9 +261,11 @@ describe('DisposalFlow', () => {
       await userEvent.click(screen.getByRole('button', {name: /continue/i}))
       await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
 
-      // Then the error is shown and dispose is not called for a write
-      expect(screen.getByText(/transfer would revert/i)).toBeInTheDocument()
-      // dispose() is called once (to hit guards), but since error is already set, no write occurs
+      // Then the flow does NOT deadlock: it reports completion and advances to
+      // the results screen showing the token as failed ("Failed checks will be skipped").
+      expect(await screen.findByText(/results/i)).toBeInTheDocument()
+      expect(screen.getByText(/1 failed/i)).toBeInTheDocument()
+      // And a doomed transfer is never written (no blind signature prompt).
       expect(mockDispose).not.toHaveBeenCalled()
     })
 
