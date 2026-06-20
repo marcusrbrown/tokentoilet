@@ -182,7 +182,7 @@ describe('TokenSelection', () => {
       address: '0x1234567890123456789012345678901234567890',
       isConnected: true,
       chainId: 1,
-    } as UseAccountReturnType)
+    } as unknown as UseAccountReturnType)
 
     mockUseChainId.mockReturnValue(1)
 

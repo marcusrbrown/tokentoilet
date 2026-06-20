@@ -135,7 +135,7 @@ describe('TokenList', () => {
       isDisconnected: false,
       isReconnecting: false,
       status: 'connected',
-    } as UseAccountReturnType)
+    } as unknown as UseAccountReturnType)
 
     mockUseChainId.mockReturnValue(11155111)
 
