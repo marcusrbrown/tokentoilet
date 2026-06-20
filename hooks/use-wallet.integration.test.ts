@@ -580,7 +580,7 @@ describe('Wallet Connection Integration Tests - TASK-026', () => {
       const rpcError = new Error('RPC endpoint not responding')
       const classified = wallet.current.classifyWalletError(rpcError, {
         action: 'connect',
-        chainId: 1,
+        chainId: 11155111,
       })
 
       expect(classified.code).toBeDefined()
