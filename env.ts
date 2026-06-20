@@ -30,7 +30,7 @@ export const schemas = {
       .string()
       .transform(val => val === 'true')
       .pipe(z.boolean())
-      .default(true),
+      .default(false),
     NEXT_PUBLIC_ENABLE_TESTNETS: z
       .string()
       .transform(val => val === 'true')
