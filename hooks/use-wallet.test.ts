@@ -161,8 +161,7 @@ describe('useWallet - Network Switching', () => {
 
       await expect(async () => {
         await act(async () => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          await result.current.switchToChain(56 as any) // BSC - unsupported
+          await result.current.switchToChain(56) // BSC - unsupported
         })
       }).rejects.toThrow('Cannot switch to unsupported chain ID: 56')
     })

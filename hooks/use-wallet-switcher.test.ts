@@ -355,7 +355,7 @@ describe('useWalletSwitcher', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         testConnectors.map((connector, index) => ({
           connector,
-          accounts: [`0x${'0'.repeat(39)}${index}` as `0x${string}`],
+          accounts: [`0x${'0'.repeat(39)}${index}`],
           chainId: 1,
         })) as any,
       )

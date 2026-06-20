@@ -36,16 +36,15 @@ vi.mock('@/lib/web3/wallet-error-detector', () => ({
 }))
 
 describe('WalletErrorRecovery', () => {
-  const createError = (overrides: Partial<WalletSpecificError> = {}): WalletSpecificError =>
-    ({
-      name: 'TestError',
-      message: 'Test error message',
-      code: 'METAMASK_LOCKED',
-      userFriendlyMessage: 'Test user friendly message',
-      walletProvider: 'metamask',
-      recoveryInstructions: ['Step 1', 'Step 2'],
-      ...overrides,
-    }) as WalletSpecificError
+  const createError = (overrides: Partial<WalletSpecificError> = {}): WalletSpecificError => ({
+    name: 'TestError',
+    message: 'Test error message',
+    code: 'METAMASK_LOCKED',
+    userFriendlyMessage: 'Test user friendly message',
+    walletProvider: 'metamask',
+    recoveryInstructions: ['Step 1', 'Step 2'],
+    ...overrides,
+  })
 
   describe('rendering', () => {
     it('should render error message', () => {

@@ -1,5 +1,4 @@
 import type {ReactNode} from 'react'
-import type {Address} from 'viem'
 
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {render, waitFor} from '@testing-library/react'
@@ -9,7 +8,7 @@ import {describe, expect, it, vi} from 'vitest'
 // Mock wagmi hooks
 vi.mock('wagmi', () => ({
   useAccount: vi.fn(() => ({
-    address: '0x1234567890123456789012345678901234567890' as Address,
+    address: '0x1234567890123456789012345678901234567890',
     isConnected: true,
     connector: {id: 'metamask', name: 'MetaMask'},
   })),

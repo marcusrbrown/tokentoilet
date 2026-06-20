@@ -136,7 +136,7 @@ describe('useTokenDisposal', () => {
 
     // Given a submitted disposal transaction
     // When wagmi reports a successful submission
-    mutationConfig?.onSuccess?.(hash, {} as never, {} as never, {} as never)
+    mutationConfig?.onSuccess?.(hash, {} as never, {}, {} as never)
 
     // Then the transaction is queued for receipt monitoring
     expect(mockAddTransaction).toHaveBeenCalledWith({
@@ -160,7 +160,7 @@ describe('useTokenDisposal', () => {
     // Given a submitted disposal transaction
     // When wagmi reports an error
     act(() => {
-      mutationConfig?.onError?.(failure as never, {} as never, {} as never, {} as never)
+      mutationConfig?.onError?.(failure as never, {} as never, {}, {} as never)
     })
 
     // Then the hook exposes the error and notifies the user

@@ -24,7 +24,7 @@ import {TokenRiskScore} from './token-metadata'
 
 // Mock data for testing
 const mockDiscoveredToken: DiscoveredToken = {
-  address: '0x1234567890123456789012345678901234567890' as Address,
+  address: '0x1234567890123456789012345678901234567890',
   chainId: 1,
   symbol: 'TEST',
   name: 'Test Token',
@@ -34,7 +34,7 @@ const mockDiscoveredToken: DiscoveredToken = {
 }
 
 const mockSpamToken: DiscoveredToken = {
-  address: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd' as Address,
+  address: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
   chainId: 1,
   symbol: 'VISIT',
   name: 'Visit our website to claim 1000 USDT',
@@ -44,7 +44,7 @@ const mockSpamToken: DiscoveredToken = {
 }
 
 const mockCategorizedToken: CategorizedToken = {
-  address: '0x1234567890123456789012345678901234567890' as Address,
+  address: '0x1234567890123456789012345678901234567890',
   chainId: 1,
   symbol: 'TEST',
   name: 'Test Token',
@@ -278,13 +278,13 @@ describe('Token Filtering Utilities', () => {
       },
       {
         ...mockCategorizedToken,
-        address: '0x2222222222222222222222222222222222222222' as Address,
+        address: '0x2222222222222222222222222222222222222222',
         category: TokenCategory.UNWANTED,
         estimatedValueUSD: 0.01,
       },
       {
         ...mockCategorizedToken,
-        address: '0x3333333333333333333333333333333333333333' as Address,
+        address: '0x3333333333333333333333333333333333333333',
         category: TokenCategory.SPAM,
         spamScore: 90,
       },
@@ -345,14 +345,14 @@ describe('Token Filtering Utilities', () => {
       },
       {
         ...mockCategorizedToken,
-        address: '0x2222222222222222222222222222222222222222' as Address,
+        address: '0x2222222222222222222222222222222222222222',
         name: 'B Token',
         estimatedValueUSD: 50,
         formattedBalance: '2.0',
       },
       {
         ...mockCategorizedToken,
-        address: '0x3333333333333333333333333333333333333333' as Address,
+        address: '0x3333333333333333333333333333333333333333',
         name: 'C Token',
         estimatedValueUSD: 25,
         formattedBalance: '3.0',
@@ -405,7 +405,7 @@ describe('Token Filtering Utilities', () => {
         },
         {
           ...mockCategorizedToken,
-          address: '0x2222222222222222222222222222222222222222' as Address,
+          address: '0x2222222222222222222222222222222222222222',
           name: 'A Token',
           estimatedValueUSD: 25,
           formattedBalance: '2.0',
@@ -434,14 +434,14 @@ describe('Token Filtering Utilities', () => {
       },
       {
         ...mockCategorizedToken,
-        address: '0x2222222222222222222222222222222222222222' as Address,
+        address: '0x2222222222222222222222222222222222222222',
         category: TokenCategory.VALUABLE,
         valueClass: TokenValueClass.MEDIUM_VALUE,
         estimatedValueUSD: 50,
       },
       {
         ...mockCategorizedToken,
-        address: '0x3333333333333333333333333333333333333333' as Address,
+        address: '0x3333333333333333333333333333333333333333',
         category: TokenCategory.UNWANTED,
         valueClass: TokenValueClass.DUST,
         estimatedValueUSD: 0.01,
