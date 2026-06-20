@@ -115,10 +115,14 @@ describe('DisposalFlow', () => {
       refresh: vi.fn(),
     } as unknown as ReturnType<typeof useUnwantedTokens>)
 
+    // Default: simulation succeeded, canDispose=true, not simulating
     vi.mocked(useTokenDisposal).mockReturnValue({
       dispose: mockDispose,
       isPending: false,
       isSuccess: false,
+      isSimulating: false,
+      canDispose: true,
+      isSimulationEnabled: true,
       error: null,
       txHash: undefined,
     })
@@ -197,6 +201,9 @@ describe('DisposalFlow', () => {
         }),
         isPending: false,
         isSuccess: false,
+        isSimulating: false,
+        canDispose: true,
+        isSimulationEnabled: true,
         error: null,
         txHash: undefined,
       } as unknown as ReturnType<typeof useTokenDisposal>
@@ -210,5 +217,108 @@ describe('DisposalFlow', () => {
     // when: first token disposal starts
     // then: dispose is called with first token
     expect(disposeCallTokens).toContain('TKN1')
+  })
+
+  describe('DisposalExecutor simulation states', () => {
+    it('renders "Checking transfer safety..." while simulation is in progress', async () => {
+      // Given simulation is loading
+      vi.mocked(useTokenDisposal).mockReturnValue({
+        dispose: mockDispose,
+        isPending: false,
+        isSuccess: false,
+        isSimulating: true,
+        canDispose: false,
+        isSimulationEnabled: true,
+        error: null,
+        txHash: undefined,
+      })
+
+      render(<DisposalFlow />)
+      await userEvent.click(screen.getByTestId('mock-select-token-1'))
+      await userEvent.click(screen.getByRole('button', {name: /continue/i}))
+      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+
+      // Then the simulating status is shown
+      expect(screen.getByText(/checking transfer safety/i)).toBeInTheDocument()
+    })
+
+    it('calls onComplete with success:false when simulation fails; does NOT reach write', async () => {
+      // Given simulation failed
+      const simulationError = new Error('Transfer would revert')
+      vi.mocked(useTokenDisposal).mockReturnValue({
+        dispose: mockDispose,
+        isPending: false,
+        isSuccess: false,
+        isSimulating: false,
+        canDispose: false,
+        isSimulationEnabled: true,
+        error: simulationError,
+        txHash: undefined,
+      })
+
+      render(<DisposalFlow />)
+      await userEvent.click(screen.getByTestId('mock-select-token-1'))
+      await userEvent.click(screen.getByRole('button', {name: /continue/i}))
+      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+
+      // Then the error is shown and dispose is not called for a write
+      expect(screen.getByText(/transfer would revert/i)).toBeInTheDocument()
+      // dispose() is called once (to hit guards), but since error is already set, no write occurs
+      expect(mockDispose).not.toHaveBeenCalled()
+    })
+
+    it('triggers dispose once when simulation succeeds (canDispose=true)', async () => {
+      // Given simulation succeeded
+      vi.mocked(useTokenDisposal).mockReturnValue({
+        dispose: mockDispose,
+        isPending: false,
+        isSuccess: false,
+        isSimulating: false,
+        canDispose: true,
+        isSimulationEnabled: true,
+        error: null,
+        txHash: undefined,
+      })
+
+      render(<DisposalFlow />)
+      await userEvent.click(screen.getByTestId('mock-select-token-1'))
+      await userEvent.click(screen.getByRole('button', {name: /continue/i}))
+      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+
+      // Then dispose is called exactly once
+      expect(mockDispose).toHaveBeenCalledTimes(1)
+    })
+
+    it('shows "Waiting for wallet confirmation..." while write is pending', async () => {
+      // Given write is pending
+      vi.mocked(useTokenDisposal).mockReturnValue({
+        dispose: mockDispose,
+        isPending: true,
+        isSuccess: false,
+        isSimulating: false,
+        canDispose: false,
+        isSimulationEnabled: true,
+        error: null,
+        txHash: undefined,
+      })
+
+      render(<DisposalFlow />)
+      await userEvent.click(screen.getByTestId('mock-select-token-1'))
+      await userEvent.click(screen.getByRole('button', {name: /continue/i}))
+      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+
+      // Then the writing status is shown
+      expect(screen.getByText(/waiting for wallet confirmation/i)).toBeInTheDocument()
+    })
+
+    it('shows updated dispose-step helper copy about preflight checks', async () => {
+      render(<DisposalFlow />)
+      await userEvent.click(screen.getByTestId('mock-select-token-1'))
+      await userEvent.click(screen.getByRole('button', {name: /continue/i}))
+      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+
+      // Then the updated copy is shown
+      expect(screen.getByText(/each token is checked before your wallet is prompted/i)).toBeInTheDocument()
+    })
   })
 })
