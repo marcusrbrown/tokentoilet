@@ -45,6 +45,12 @@ env:
     + Reown AppKit + Tailwind CSS v4 + Vitest + Storybook, deployed to Vercel.
     Read AGENTS.md for full project conventions before reviewing.
 
+    Do the review directly yourself using the rubric below. Do NOT invoke
+    the `ce:review` skill or any other multi-agent Systematic review
+    workflow — they spawn parallel persona subagents that are too slow and
+    too costly for per-PR CI. A single-pass review against this rubric is
+    the required approach here.
+
     Focus your review on:
 
     1. CORRECTNESS & EDGE CASES
