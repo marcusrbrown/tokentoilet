@@ -54,7 +54,7 @@ vi.mock('@reown/appkit/react', () => ({
 
 vi.mock('wagmi', () => ({
   useAccount: vi.fn(() => ({
-    address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+    address: '0x1234567890123456789012345678901234567890',
     isConnected: true,
     chain: {id: 1},
   })),
@@ -66,7 +66,7 @@ vi.mock('wagmi', () => ({
 
 vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(() => ({
-    address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+    address: '0x1234567890123456789012345678901234567890',
     isConnected: true,
     isConnecting: false,
     error: null,
@@ -234,7 +234,7 @@ vi.mock('next/image', () => ({
  */
 function createMockToken(overrides?: Partial<CategorizedToken>): CategorizedToken {
   return {
-    address: '0x6B175474E89094C44Da98b954EedeAC495271d0F' as `0x${string}`,
+    address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
     name: 'Dai Stablecoin',
     symbol: 'DAI',
     decimals: 18,

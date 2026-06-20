@@ -93,7 +93,7 @@ export function DisposalFlow() {
   const dummyToken: CategorizedToken = useMemo(
     () =>
       unwantedTokens[0] ?? {
-        address: '0x0000000000000000000000000000000000000000' as Address,
+        address: '0x0000000000000000000000000000000000000000',
         chainId: DEFAULT_SUPPORTED_NETWORK_V1.id,
         symbol: '',
         name: '',

@@ -121,7 +121,7 @@ describe('DisposalFlow', () => {
       isSuccess: false,
       error: null,
       txHash: undefined,
-    } as unknown as ReturnType<typeof useTokenDisposal>)
+    })
   })
 
   it('renders select step initially with disabled Continue button', () => {

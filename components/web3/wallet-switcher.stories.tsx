@@ -240,7 +240,7 @@ export const SingleWallet: Story = {
         {
           id: 'metamask-1-0x1234567890123456789012345678901234567890',
           connector: {uid: 'metamask-1', name: 'MetaMask'},
-          address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+          address: '0x1234567890123456789012345678901234567890',
           isActive: true,
           chainId: 1,
           walletName: 'MetaMask',
@@ -250,7 +250,7 @@ export const SingleWallet: Story = {
       activeWallet: {
         id: 'metamask-1-0x1234567890123456789012345678901234567890',
         connector: {uid: 'metamask-1', name: 'MetaMask'},
-        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+        address: '0x1234567890123456789012345678901234567890',
         isActive: true,
         chainId: 1,
         walletName: 'MetaMask',
@@ -286,7 +286,7 @@ export const ManyWallets: Story = {
         {
           id: 'metamask-1-0x1234567890123456789012345678901234567890',
           connector: {uid: 'metamask-1', name: 'MetaMask'},
-          address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+          address: '0x1234567890123456789012345678901234567890',
           isActive: true,
           chainId: 1,
           walletName: 'MetaMask',
@@ -295,7 +295,7 @@ export const ManyWallets: Story = {
         {
           id: 'walletconnect-1-0x9876543210987654321098765432109876543210',
           connector: {uid: 'walletconnect-1', name: 'WalletConnect'},
-          address: '0x9876543210987654321098765432109876543210' as `0x${string}`,
+          address: '0x9876543210987654321098765432109876543210',
           isActive: false,
           chainId: 137,
           walletName: 'WalletConnect',
@@ -304,7 +304,7 @@ export const ManyWallets: Story = {
         {
           id: 'coinbase-1-0x5555555555555555555555555555555555555555',
           connector: {uid: 'coinbase-1', name: 'Coinbase Wallet'},
-          address: '0x5555555555555555555555555555555555555555' as `0x${string}`,
+          address: '0x5555555555555555555555555555555555555555',
           isActive: false,
           chainId: 42161,
           walletName: 'Coinbase Wallet',
@@ -313,7 +313,7 @@ export const ManyWallets: Story = {
         {
           id: 'rabby-1-0x7777777777777777777777777777777777777777',
           connector: {uid: 'rabby-1', name: 'Rabby'},
-          address: '0x7777777777777777777777777777777777777777' as `0x${string}`,
+          address: '0x7777777777777777777777777777777777777777',
           isActive: false,
           chainId: 1,
           walletName: 'Rabby Wallet',
@@ -322,7 +322,7 @@ export const ManyWallets: Story = {
         {
           id: 'rainbow-1-0x8888888888888888888888888888888888888888',
           connector: {uid: 'rainbow-1', name: 'Rainbow'},
-          address: '0x8888888888888888888888888888888888888888' as `0x${string}`,
+          address: '0x8888888888888888888888888888888888888888',
           isActive: false,
           chainId: 42161,
           walletName: 'Rainbow',
@@ -345,7 +345,7 @@ export const UnsupportedNetwork: Story = {
         {
           id: 'metamask-1-0x1234567890123456789012345678901234567890',
           connector: {uid: 'metamask-1', name: 'MetaMask'},
-          address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+          address: '0x1234567890123456789012345678901234567890',
           isActive: true,
           chainId: 999, // Unsupported network
           walletName: 'MetaMask',
@@ -355,7 +355,7 @@ export const UnsupportedNetwork: Story = {
       activeWallet: {
         id: 'metamask-1-0x1234567890123456789012345678901234567890',
         connector: {uid: 'metamask-1', name: 'MetaMask'},
-        address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+        address: '0x1234567890123456789012345678901234567890',
         isActive: true,
         chainId: 999,
         walletName: 'MetaMask',

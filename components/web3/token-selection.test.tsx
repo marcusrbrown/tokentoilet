@@ -1,4 +1,3 @@
-import type {Address} from 'viem'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -37,7 +36,7 @@ describe('TokenSelection', () => {
   // Test data
   const mockTokens: CategorizedToken[] = [
     {
-      address: '0x1234567890123456789012345678901234567890' as Address,
+      address: '0x1234567890123456789012345678901234567890',
       chainId: 1,
       symbol: 'TEST1',
       name: 'Test Token 1',
@@ -55,7 +54,7 @@ describe('TokenSelection', () => {
       confidenceScore: 95,
     },
     {
-      address: '0x2345678901234567890123456789012345678901' as Address,
+      address: '0x2345678901234567890123456789012345678901',
       chainId: 1,
       symbol: 'SPAM1',
       name: 'Spam Token 1',
@@ -72,7 +71,7 @@ describe('TokenSelection', () => {
       confidenceScore: 90,
     },
     {
-      address: '0x3456789012345678901234567890123456789012' as Address,
+      address: '0x3456789012345678901234567890123456789012',
       chainId: 1,
       symbol: 'DUST1',
       name: 'Dust Token 1',
@@ -89,7 +88,7 @@ describe('TokenSelection', () => {
       confidenceScore: 75,
     },
     {
-      address: '0x4567890123456789012345678901234567890123' as Address,
+      address: '0x4567890123456789012345678901234567890123',
       chainId: 1,
       symbol: 'UNW1',
       name: 'Unwanted Token 1',
@@ -106,7 +105,7 @@ describe('TokenSelection', () => {
       confidenceScore: 80,
     },
     {
-      address: '0x5678901234567890123456789012345678901234' as Address,
+      address: '0x5678901234567890123456789012345678901234',
       chainId: 1,
       symbol: 'FAV1',
       name: 'Favorite Token 1',
@@ -180,7 +179,7 @@ describe('TokenSelection', () => {
 
     // Setup default wagmi mocks
     mockUseAccount.mockReturnValue({
-      address: '0x1234567890123456789012345678901234567890' as Address,
+      address: '0x1234567890123456789012345678901234567890',
       isConnected: true,
       chainId: 1,
     } as UseAccountReturnType)

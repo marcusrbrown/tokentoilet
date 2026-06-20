@@ -105,7 +105,7 @@ describe('Token Balance Utilities', () => {
         value: BigInt('2000000000000000000'),
         decimals: 18,
         symbol: 'ETH',
-      } as Awaited<ReturnType<typeof getBalance>>)
+      })
 
       const result = await checkAllBalances(mockConfig, mockUserAddress, tokens, mockChainId, DEFAULT_BALANCE_CONFIG)
 
@@ -134,7 +134,7 @@ describe('Token Balance Utilities', () => {
         value: BigInt('2000000000000000000'),
         decimals: 18,
         symbol: 'ETH',
-      } as Awaited<ReturnType<typeof getBalance>>)
+      })
 
       const result = await checkAllBalances(mockConfig, mockUserAddress, tokens, mockChainId, DEFAULT_BALANCE_CONFIG)
 
