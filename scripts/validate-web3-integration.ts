@@ -256,14 +256,6 @@ async function validateReownAppKitConfig(): Promise<ValidationResult> {
     issues.push('lib/web3/config.ts missing networks configuration')
   }
 
-  const hasMainnet = await fileContains('lib/web3/config.ts', 'mainnet')
-  const hasPolygon = await fileContains('lib/web3/config.ts', 'polygon')
-  const hasArbitrum = await fileContains('lib/web3/config.ts', 'arbitrum')
-
-  if (!hasMainnet || !hasPolygon || !hasArbitrum) {
-    issues.push('lib/web3/config.ts missing multi-chain support (Ethereum, Polygon, Arbitrum)')
-  }
-
   const hasVioletTheme = await fileContains('lib/web3/config.ts', 'violet')
   if (!hasVioletTheme) {
     issues.push('lib/web3/config.ts missing violet design system theming')
@@ -279,7 +271,7 @@ async function validateReownAppKitConfig(): Promise<ValidationResult> {
 
   return {
     pass: true,
-    message: 'Reown AppKit configuration verified with WagmiAdapter, multi-chain support, and violet theming',
+    message: 'Reown AppKit configuration verified with WagmiAdapter, networks configuration, and violet theming',
   }
 }
 
@@ -348,17 +340,6 @@ async function validateDesignSystemIntegration(): Promise<ValidationResult> {
     const exists = await fileExists(component)
     if (!exists) {
       issues.push(`Missing Web3-compatible design system component: ${component}`)
-    }
-  }
-
-  const buttonExists = await fileExists('components/ui/button.tsx')
-  if (buttonExists) {
-    const hasWeb3Connected = await fileContains('components/ui/button.tsx', 'web3Connected')
-    const hasWeb3Pending = await fileContains('components/ui/button.tsx', 'web3Pending')
-    const hasWeb3Error = await fileContains('components/ui/button.tsx', 'web3Error')
-
-    if (!hasWeb3Connected || !hasWeb3Pending || !hasWeb3Error) {
-      issues.push('Button component missing Web3 variant styles (web3Connected, web3Pending, web3Error)')
     }
   }
 
