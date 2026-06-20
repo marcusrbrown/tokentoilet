@@ -711,8 +711,6 @@ it('shows loading skeleton while component loads', async () => {
 
 **Expected Impact:** 50-100 KB bundle reduction when dynamic components are integrated into feature pages.
 
-See `.ai/metrics/performance-validation-2025-10-11.md` for detailed performance validation results.
-
 ## Best Practices Summary
 
 ### Development Guidelines

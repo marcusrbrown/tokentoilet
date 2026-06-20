@@ -1,3 +1,5 @@
+> **⚠️ ARCHIVED — Pre-Systematic legacy planning.** This document predates the Systematic workflow process and the MVP rebaseline. It is retained for historical reference only and does not reflect current project scope or conventions. For current scope, see [`docs/brainstorms/2026-04-16-mvp-rebaseline-requirements.md`](../../../brainstorms/2026-04-16-mvp-rebaseline-requirements.md).
+
 # Feature Prompts
 
 This document collects prompts that can be used with AI assistants to generate implementation plans using the [/create-implementation-plan](https://github.com/PlagueHO/awesome-copilot/blob/9fe63b3aed16abc391fe7d2b957e0d4bf3517ce8/prompts/create-implementation-plan.prompt.md) prompt in Copilot Chat.

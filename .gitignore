@@ -46,19 +46,6 @@ legacy.md
 .specstory/.what-is-this.md
 
 # AI-related files
-# Ignore the entire .ai directory but keep specific subdirectories
-!.ai/
-.ai/*
-!.ai/analysis/
-!.ai/analysis/*
-!.ai/docs/
-!.ai/docs/*
-!.ai/metrics/
-!.ai/metrics/*
-!.ai/notes/
-!.ai/notes/*
-!.ai/plan/
-!.ai/plan/*
 
 # Storybook static build output
 /storybook-static

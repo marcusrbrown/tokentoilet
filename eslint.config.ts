@@ -8,7 +8,6 @@ export default defineConfig(
       '.github/prompts',
       'AGENTS.md',
       'llms.txt',
-      '.ai/',
       'docs/**/*.md',
       'CONTRIBUTING.md',
       'CHANGELOG.md',
