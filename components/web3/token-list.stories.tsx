@@ -172,7 +172,8 @@ const MockTokenList = ({
                       <div className="font-semibold text-gray-900 dark:text-gray-100">{token.formattedBalance}</div>
                       {token.estimatedValueUSD != null && (
                         <div className="text-sm text-gray-600 dark:text-gray-400">
-                          ${token.estimatedValueUSD.toFixed(2)}
+                          &#36;
+                          {token.estimatedValueUSD.toFixed(2)}
                         </div>
                       )}
                     </div>

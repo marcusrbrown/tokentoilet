@@ -252,21 +252,21 @@ const Modal = ({
   ...props
 }: ModalProps & {ref?: React.RefObject<HTMLDivElement | null>}) => {
   const modalRef = useRef<HTMLDivElement>(null)
-  const previousActiveElement = useRef<Element | null>(null)
+  const previousActiveElementRef = useRef<Element | null>(null)
 
   // Focus management
   useEffect(() => {
     if (open) {
       // Store the previously focused element
-      previousActiveElement.current = document.activeElement
+      previousActiveElementRef.current = document.activeElement
 
       // Focus the modal
       if (modalRef.current) {
         modalRef.current.focus()
       }
-    } else if (previousActiveElement.current && 'focus' in previousActiveElement.current) {
+    } else if (previousActiveElementRef.current && 'focus' in previousActiveElementRef.current) {
       // Restore focus to the previously focused element
-      ;(previousActiveElement.current as HTMLElement).focus()
+      ;(previousActiveElementRef.current as HTMLElement).focus()
     }
   }, [open]) // Escape key handler
   useEffect(() => {

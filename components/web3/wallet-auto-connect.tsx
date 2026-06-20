@@ -25,7 +25,7 @@ export function WalletAutoConnect({
 }: WalletAutoConnectProps) {
   const {open} = useAppKit()
   const {address, isConnected, chainId} = useWallet()
-  const hasAttemptedReconnect = useRef(false)
+  const hasAttemptedReconnectRef = useRef(false)
 
   const {
     isAvailable,
@@ -51,13 +51,13 @@ export function WalletAutoConnect({
       !autoReconnect ||
       isConnected ||
       isRestoring ||
-      hasAttemptedReconnect.current
+      hasAttemptedReconnectRef.current
     ) {
       return
     }
 
     if (shouldRestore() && typeof lastWalletId === 'string' && lastWalletId.length > 0) {
-      hasAttemptedReconnect.current = true
+      hasAttemptedReconnectRef.current = true
 
       if (debug) {
         console.warn('[WalletAutoConnect] Attempting to restore connection to wallet:', lastWalletId, {
@@ -142,7 +142,7 @@ export function WalletAutoConnect({
 
   // Clear stored data when user manually disconnects
   useEffect(() => {
-    if (!isConnected && hasAttemptedReconnect.current) {
+    if (!isConnected && hasAttemptedReconnectRef.current) {
       // Only clear if we previously had a connection (prevent clearing on initial load)
       clearStoredData()
         .then(() => {
@@ -153,7 +153,7 @@ export function WalletAutoConnect({
         .catch(error => {
           console.error('Failed to clear stored data:', error)
         })
-      hasAttemptedReconnect.current = false
+      hasAttemptedReconnectRef.current = false
     }
   }, [isConnected, clearStoredData, debug])
 
