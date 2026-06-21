@@ -35,20 +35,27 @@ function DisposalExecutor({
   token: CategorizedToken
   onComplete: (result: DisposalResult) => void
 }) {
-  const {dispose, isPending, isSuccess, error} = useTokenDisposal(token)
+  const {dispose, isPending, isSuccess, isSimulating, canDispose, isSimulationEnabled, error} = useTokenDisposal(token)
   const hasTriggeredRef = useRef(false)
   const hasReportedRef = useRef(false)
 
   useEffect(() => {
-    if (!hasTriggeredRef.current) {
+    if (hasTriggeredRef.current || hasReportedRef.current) return
+    if (error != null || isSuccess || isPending || isSimulating) return
+    // Normal path: simulation produced a safe request (canDispose).
+    // Guard/invalid path: simulation disabled — call dispose() once to hit the hook's guards.
+    if (canDispose || !isSimulationEnabled) {
       hasTriggeredRef.current = true
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       dispose()
     }
-  }, [dispose])
+  }, [canDispose, dispose, error, isPending, isSimulating, isSuccess, isSimulationEnabled])
 
   useEffect(() => {
-    if (hasTriggeredRef.current && !hasReportedRef.current && (isSuccess || error != null)) {
+    // Report any terminal outcome (success or error), even when no write was
+    // triggered — a failed preflight is a terminal result that must advance the
+    // batch, otherwise a reverting token deadlocks the disposal flow.
+    if (!hasReportedRef.current && (isSuccess || error != null)) {
       hasReportedRef.current = true
       onComplete({
         address: token.address,
@@ -60,15 +67,21 @@ function DisposalExecutor({
     }
   }, [isSuccess, error, token.address, token.name, token.symbol, onComplete])
 
+  const status =
+    error == null ? (isSuccess ? 'success' : isPending ? 'writing' : isSimulating ? 'simulating' : 'queued') : 'failed'
+
   return (
     <Card className="p-4">
       <div className="flex items-center gap-3 mb-2">
-        {isPending && <Clock className="h-5 w-5 text-yellow-500 animate-spin" />}
-        {isSuccess && <CheckCircle className="h-5 w-5 text-green-500" />}
-        {error != null && <AlertCircle className="h-5 w-5 text-red-500" />}
-        {!isPending && !isSuccess && error == null && <Clock className="h-5 w-5 text-gray-400" />}
+        {status === 'simulating' && <Clock className="h-5 w-5 text-blue-500 animate-spin" />}
+        {status === 'writing' && <Clock className="h-5 w-5 text-yellow-500 animate-spin" />}
+        {status === 'success' && <CheckCircle className="h-5 w-5 text-green-500" />}
+        {status === 'failed' && <AlertCircle className="h-5 w-5 text-red-500" />}
+        {status === 'queued' && <Clock className="h-5 w-5 text-gray-400" />}
         <span className="font-medium">{token.name}</span>
       </div>
+      {status === 'simulating' && <p className="text-sm text-blue-500 ml-8">Checking transfer safety...</p>}
+      {status === 'writing' && <p className="text-sm text-yellow-500 ml-8">Waiting for wallet confirmation...</p>}
       {error != null && <p className="text-sm text-red-500 ml-8">{error.message}</p>}
     </Card>
   )
@@ -181,7 +194,9 @@ export function DisposalFlow() {
           <h2 className="text-xl font-bold">
             Disposing {currentIndex + 1} of {selectedTokens.length}...
           </h2>
-          <p className="text-gray-500 text-sm mt-1">Please confirm the transactions in your wallet.</p>
+          <p className="text-gray-500 text-sm mt-1">
+            Each token is checked before your wallet is prompted. Failed checks will be skipped.
+          </p>
         </div>
 
         <DisposalExecutor key={tokenToDispose.address} token={tokenToDispose} onComplete={handleDisposalComplete} />
