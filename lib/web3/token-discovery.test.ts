@@ -12,7 +12,7 @@
  */
 
 import type {Address} from 'viem'
-import {createPublicClient, HttpRequestError} from 'viem'
+import {createPublicClient, HttpRequestError, InvalidRequestRpcError, RpcError} from 'viem'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
 import {getAlchemyEndpoint, isAlchemyConfigured} from './alchemy-endpoints'
@@ -28,10 +28,14 @@ vi.mock('./alchemy-endpoints', () => ({
   isAlchemyConfigured: vi.fn(),
 }))
 
-vi.mock('./alchemy-token-api', () => ({
-  fetchWalletTokenBalances: vi.fn(),
-  fetchAlchemyTokenMetadataBatch: vi.fn(),
-}))
+vi.mock('./alchemy-token-api', async importOriginal => {
+  const actual = await importOriginal<typeof import('./alchemy-token-api')>()
+  return {
+    ...actual,
+    fetchWalletTokenBalances: vi.fn(),
+    fetchAlchemyTokenMetadataBatch: vi.fn(),
+  }
+})
 
 vi.mock('viem', async () => {
   const actual = await vi.importActual<typeof import('viem')>('viem')
@@ -400,7 +404,8 @@ describe('error path — AUTH_MISSING from invalid Alchemy key', () => {
     expect(result.errors).toHaveLength(1)
     expect(result.errors[0]?.type).toBe('AUTH_MISSING')
     expect(result.errors[0]?.chainId).toBe(SEPOLIA_CHAIN_ID)
-    expect(result.errors[0]?.message).toContain('401')
+    // Message is status-agnostic (covers both HTTP and JSON-RPC auth paths).
+    expect(result.errors[0]?.message).toContain('rejected')
 
     // Must NOT produce an API_ERROR for this chain.
     const apiErrors = result.errors.filter(e => e.type === 'API_ERROR')
@@ -422,7 +427,46 @@ describe('error path — AUTH_MISSING from invalid Alchemy key', () => {
     expect(result.errors).toHaveLength(1)
     expect(result.errors[0]?.type).toBe('AUTH_MISSING')
     expect(result.errors[0]?.chainId).toBe(SEPOLIA_CHAIN_ID)
-    expect(result.errors[0]?.message).toContain('403')
+    // Message is status-agnostic (covers both HTTP and JSON-RPC auth paths).
+    expect(result.errors[0]?.message).toContain('rejected')
+
+    const apiErrors = result.errors.filter(e => e.type === 'API_ERROR')
+    expect(apiErrors).toHaveLength(0)
+  })
+
+  it('maps a JSON-RPC InvalidRequestRpcError to AUTH_MISSING (the case the old code missed)', async () => {
+    // Alchemy returns auth failures as JSON-RPC error bodies (code -32600).
+    // viem surfaces these as InvalidRequestRpcError — no .status, so the old
+    // HttpRequestError check fell through to API_ERROR (retryable). This is
+    // the primary regression this fix targets.
+    mockFetchWalletTokenBalances.mockRejectedValue(new InvalidRequestRpcError(new Error('Must be authenticated!')))
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
+
+    expect(result.tokens).toHaveLength(0)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0]?.type).toBe('AUTH_MISSING')
+    expect(result.errors[0]?.chainId).toBe(SEPOLIA_CHAIN_ID)
+
+    // Must NOT fall through to API_ERROR.
+    const apiErrors = result.errors.filter(e => e.type === 'API_ERROR')
+    expect(apiErrors).toHaveLength(0)
+  })
+
+  it('maps a JSON-RPC RpcError with code -32600 to AUTH_MISSING', async () => {
+    // Generic RpcError with code -32600 (e.g. "Origin not on whitelist.").
+    mockFetchWalletTokenBalances.mockRejectedValue(
+      new RpcError(new Error('Origin not on whitelist.'), {
+        code: -32600,
+        shortMessage: 'Origin not on whitelist.',
+      }),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
+
+    expect(result.tokens).toHaveLength(0)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0]?.type).toBe('AUTH_MISSING')
 
     const apiErrors = result.errors.filter(e => e.type === 'API_ERROR')
     expect(apiErrors).toHaveLength(0)

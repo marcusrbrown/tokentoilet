@@ -29,6 +29,43 @@
 
 import type {Address, PublicClient} from 'viem'
 
+import {BaseError, HttpRequestError, InvalidRequestRpcError, RpcError} from 'viem'
+
+// ---------------------------------------------------------------------------
+// Auth-error classifier
+// ---------------------------------------------------------------------------
+
+/**
+ * Alchemy auth-error message strings returned in JSON-RPC error bodies.
+ * These appear when the key is absent, invalid, or the origin is not on the
+ * allowlist — all non-retryable conditions.
+ */
+const ALCHEMY_AUTH_MESSAGES = ['Must be authenticated!', 'Invalid access key', 'Origin not on whitelist.'] as const
+
+/**
+ * Returns `true` when `error` represents an Alchemy authentication failure —
+ * either an HTTP 401/403 (viem `HttpRequestError`) or a JSON-RPC -32600 auth
+ * error (`InvalidRequestRpcError` / `RpcError`) that viem surfaces when the
+ * transport receives an error body instead of a status code.
+ *
+ * Covers both paths so callers don't need to know which transport layer
+ * surfaced the rejection.
+ */
+export function isAlchemyAuthError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  if (error instanceof HttpRequestError) {
+    return error.status === 401 || error.status === 403
+  }
+  const base = error instanceof BaseError ? error : undefined
+  const rpcLike = base?.walk(err => err instanceof InvalidRequestRpcError || err instanceof RpcError)
+  if (rpcLike instanceof InvalidRequestRpcError) return true
+  if (rpcLike instanceof RpcError) {
+    if (rpcLike.code === -32600) return true
+    return ALCHEMY_AUTH_MESSAGES.some(m => rpcLike.message.includes(m))
+  }
+  return ALCHEMY_AUTH_MESSAGES.some(m => error.message.includes(m))
+}
+
 // ---------------------------------------------------------------------------
 // Alchemy JSON-RPC response types
 // ---------------------------------------------------------------------------

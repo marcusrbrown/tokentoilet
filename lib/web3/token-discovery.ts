@@ -23,12 +23,12 @@ import type {Config} from 'wagmi'
 
 import type {SupportedChainId} from '../../hooks/use-wallet'
 
-import {createPublicClient, erc20Abi, http, HttpRequestError} from 'viem'
+import {createPublicClient, erc20Abi, http} from 'viem'
 import {mainnet, sepolia} from 'viem/chains'
 import {readContracts} from 'wagmi/actions'
 
 import {getAlchemyEndpoint, isAlchemyConfigured} from './alchemy-endpoints'
-import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances} from './alchemy-token-api'
+import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances, isAlchemyAuthError} from './alchemy-token-api'
 import {sanitizeTokenDisplay} from './display-sanitization'
 
 // ---------------------------------------------------------------------------
@@ -118,7 +118,9 @@ export interface TokenDiscoveryResult {
  * Type union is additive — existing `'RPC_ERROR' | 'CONTRACT_ERROR' |
  * 'VALIDATION_ERROR' | 'UNKNOWN_ERROR'` assertions remain valid.
  * New types:
- * - `'AUTH_MISSING'`: Alchemy API key absent → discovery unavailable.
+ * - `'AUTH_MISSING'`: Alchemy key absent, invalid, or origin not on allowlist
+ *   (HTTP 401/403 or JSON-RPC -32600 auth error) → discovery unavailable,
+ *   non-retryable.
  * - `'API_ERROR'`: Per-chain Alchemy scan failed → retryable.
  */
 export interface TokenDiscoveryError {
@@ -280,17 +282,18 @@ async function discoverChainTokens(
   } catch (error) {
     // Per-chain scan failure → explicit error, not silent empty (R11).
     console.error(`[token-discovery] fetchWalletTokenBalances failed for chain ${chainId}:`, error)
-    // HTTP 401/403 means the Alchemy key is invalid (rejected by the server).
-    // Map to AUTH_MISSING (non-retryable) so the UI shows "configure key"
-    // instead of the retryable "Could not scan wallet" state.
-    if (error instanceof HttpRequestError && (error.status === 401 || error.status === 403)) {
+    // HTTP 401/403 or JSON-RPC -32600 auth errors mean the Alchemy key is
+    // invalid or the origin is not on the allowlist. Map to AUTH_MISSING
+    // (non-retryable) so the UI shows "configure key" instead of the
+    // retryable "Could not scan wallet" state.
+    if (isAlchemyAuthError(error)) {
       return {
         tokens: [],
         errors: [
           {
             chainId,
-            message: `Alchemy API key rejected (HTTP ${error.status}) — token discovery unavailable`,
-            originalError: error,
+            message: 'Alchemy API key rejected — token discovery unavailable',
+            originalError: error instanceof Error ? error : undefined,
             type: 'AUTH_MISSING',
           },
         ],
