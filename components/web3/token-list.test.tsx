@@ -310,6 +310,34 @@ describe('TokenList', () => {
       expect(mockRefetch).toHaveBeenCalledTimes(1)
     })
 
+    it('renders discovered tokens (not the fatal error state) when discovery is partial — UNSUPPORTED_CHAIN with tokens present', () => {
+      // A chain in the set was unsupported, but a supported chain returned
+      // tokens. The partial-success result must still render the tokens rather
+      // than the fatal "Could not scan wallet" screen.
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [createMockDiscoveredToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [
+          {type: 'UNSUPPORTED_CHAIN', chainId: 1, message: 'Chain 1 is not supported by token discovery'},
+        ],
+        chainsScanned: 2,
+        contractsChecked: 1,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      // The fatal "Could not scan wallet" screen and its retry button must not
+      // appear — UNSUPPORTED_CHAIN with tokens present is a partial success, not
+      // a fatal discovery failure.
+      expect(screen.queryByText('Could not scan wallet')).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', {name: /Try Again/i})).not.toBeInTheDocument()
+    })
+
     it('renders empty-success state with neutral copy distinct from error and unavailable', () => {
       mockUseTokenDiscovery.mockReturnValue({
         tokens: [],
