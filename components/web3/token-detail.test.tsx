@@ -264,6 +264,82 @@ describe('TokenDetail', () => {
     })
   })
 
+  describe('Logo Render Guards (security)', () => {
+    it('renders the remote logo when all guards pass', () => {
+      // Default mockToken: isVerified=true, spamScore=5, category=VALUABLE
+      // Default mockMetadataReturn: logoURI='https://example.com/logo.png' (safe https)
+      render(<TokenDetail {...mockProps} />)
+
+      const logoEl = screen.getByRole('img', {name: 'Test Token logo'})
+      expect(logoEl).toBeInTheDocument()
+      expect(logoEl).toHaveStyle({backgroundImage: 'url(https://example.com/logo.png)'})
+    })
+
+    it('falls back to icon when logoURI is undefined', () => {
+      mockUseTokenMetadata.mockReturnValue({
+        ...mockMetadataReturn,
+        metadata: {...mockMetadataReturn.metadata, logoURI: undefined},
+      })
+
+      render(<TokenDetail {...mockProps} />)
+
+      expect(screen.queryByRole('img', {name: 'Test Token logo'})).not.toBeInTheDocument()
+    })
+
+    it('falls back to icon when logoURI is empty/whitespace', () => {
+      mockUseTokenMetadata.mockReturnValue({
+        ...mockMetadataReturn,
+        metadata: {...mockMetadataReturn.metadata, logoURI: '   '},
+      })
+
+      render(<TokenDetail {...mockProps} />)
+
+      expect(screen.queryByRole('img', {name: 'Test Token logo'})).not.toBeInTheDocument()
+    })
+
+    it('falls back to icon when logoURI is not https (javascript: scheme)', () => {
+      const maliciousUrl = 'javascript:alert(1)'
+      mockUseTokenMetadata.mockReturnValue({
+        ...mockMetadataReturn,
+        metadata: {...mockMetadataReturn.metadata, logoURI: maliciousUrl},
+      })
+
+      const {container} = render(<TokenDetail {...mockProps} />)
+
+      expect(screen.queryByRole('img', {name: 'Test Token logo'})).not.toBeInTheDocument()
+      // The attacker URL must not appear anywhere in the rendered output's style
+      expect(container.innerHTML).not.toContain(maliciousUrl)
+    })
+
+    it('falls back to icon when logoURI has CSS-url() breakout chars', () => {
+      const maliciousUrl = 'https://evil.example.com/a.png")burglary;('
+      mockUseTokenMetadata.mockReturnValue({
+        ...mockMetadataReturn,
+        metadata: {...mockMetadataReturn.metadata, logoURI: maliciousUrl},
+      })
+
+      const {container} = render(<TokenDetail {...mockProps} />)
+
+      expect(screen.queryByRole('img', {name: 'Test Token logo'})).not.toBeInTheDocument()
+      // The attacker URL must not appear anywhere in the rendered output's style
+      expect(container.innerHTML).not.toContain(maliciousUrl)
+    })
+
+    it('falls back to icon when token is not verified', () => {
+      render(<TokenDetail {...mockProps} token={{...mockToken, isVerified: false}} />)
+
+      expect(screen.queryByRole('img', {name: 'Test Token logo'})).not.toBeInTheDocument()
+    })
+
+    it('falls back to icon when token is suspected spam', () => {
+      // isSuspectedSpam returns true when category === SPAM or spamScore > 70
+      // Using category SPAM to trigger the guard
+      render(<TokenDetail {...mockProps} token={{...mockToken, category: TokenCategory.SPAM}} />)
+
+      expect(screen.queryByRole('img', {name: 'Test Token logo'})).not.toBeInTheDocument()
+    })
+  })
+
   describe('Modal Behavior', () => {
     it('renders as modal when isModal is true', () => {
       render(<TokenDetail {...mockProps} isModal={true} open={true} onClose={vi.fn()} />)
