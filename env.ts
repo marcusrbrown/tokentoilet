@@ -24,6 +24,7 @@ const walletConnectProjectIdSchema = z
 export const schemas = {
   // @keep-sorted
   client: {
+    NEXT_PUBLIC_ALCHEMY_API_KEY: z.string().min(1).optional(),
     NEXT_PUBLIC_APP_URL: z.url('Must be a valid URL'),
     NEXT_PUBLIC_ENABLE_ANALYTICS: z
       .string()
@@ -51,6 +52,9 @@ export const env = createEnv({
     // App URLs and Public Config
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+
+    // Optional Alchemy API key for token discovery
+    NEXT_PUBLIC_ALCHEMY_API_KEY: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
 
     // Optional RPC endpoint override
     NEXT_PUBLIC_SEPOLIA_RPC_URL: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
