@@ -1129,6 +1129,36 @@ describe('TokenList', () => {
     })
   })
 
+  describe('Privacy Disclosure (R9d)', () => {
+    it('renders Alchemy privacy disclosure in the populated state', () => {
+      const mockTokens = [createMockCategorizedToken()]
+
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: mockTokens,
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByText(/Token discovery uses Alchemy to read your wallet's token balances/)).toBeInTheDocument()
+      expect(screen.getByText(/Your wallet address is shared with Alchemy for this purpose/)).toBeInTheDocument()
+    })
+  })
+
   describe('Configuration Options', () => {
     it('disables features when configured', () => {
       render(

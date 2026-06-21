@@ -72,6 +72,18 @@ For testing or CI environments, you can skip validation:
 SKIP_ENV_VALIDATION=true pnpm build
 ```
 
+## Alchemy Token Discovery
+
+### `NEXT_PUBLIC_ALCHEMY_API_KEY`
+
+Token discovery calls Alchemy's `alchemy_getTokenBalances` API directly from the browser. This requires an Alchemy API key and sends the connected wallet address to Alchemy to enumerate ERC-20 holdings.
+
+**Privacy note:** When a wallet is connected and discovery runs, the wallet address is transmitted to Alchemy (a third-party service) as part of the API request. This is required for discovery to function — there is no local alternative. The key should be domain-restricted in the Alchemy dashboard to prevent abuse, since it is exposed to the browser.
+
+Without this key, the app shows a "Token discovery unavailable" state and does not fall back to a hardcoded token list.
+
+See `.env.example` for setup instructions.
+
 ## RPC Provider Setup
 
 ### Alchemy Setup

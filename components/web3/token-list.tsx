@@ -669,6 +669,12 @@ export function TokenList({
           </div>
         </div>
       )}
+
+      {/* Privacy disclosure (R9d) — inert footnote, not a consent gate */}
+      <p className="px-4 pb-3 text-xs text-gray-400 dark:text-gray-600">
+        Token discovery uses Alchemy to read your wallet&apos;s token balances. Your wallet address is shared with
+        Alchemy for this purpose.
+      </p>
     </div>
   )
 }
