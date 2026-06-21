@@ -201,6 +201,11 @@ export function TokenList({
     e => e.type !== 'AUTH_MISSING' && e.type !== 'UNSUPPORTED_CHAIN',
   )
   const hasDiscoveryError = fatalDiscoveryErrors.length > 0 && discoveredTokens.length === 0
+  // discoverUserTokens never throws — failures land in the structured
+  // discoveryErrors array, so query.error (discoveryError) is null on those
+  // paths. Surface the first fatal structured message instead of swallowing it
+  // behind the generic fallback copy.
+  const fatalDiscoveryMessage = fatalDiscoveryErrors[0]?.message
 
   // -------------------------------------------------------------------------
   // Spam filter application (R9b)
@@ -358,7 +363,10 @@ export function TokenList({
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Could not scan wallet</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {discoveryError?.message ?? filteringError?.message ?? 'An error occurred while scanning your wallet.'}
+            {discoveryError?.message ??
+              fatalDiscoveryMessage ??
+              filteringError?.message ??
+              'An error occurred while scanning your wallet.'}
           </p>
           <Button onClick={refetchTokens} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />

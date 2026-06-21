@@ -287,6 +287,29 @@ describe('TokenList', () => {
       expect(screen.getByRole('button', {name: /Try Again/i})).toBeInTheDocument()
     })
 
+    it('surfaces the structured discoveryErrors message instead of the generic fallback', () => {
+      // discoverUserTokens never throws, so the generic query.error is null and
+      // only the structured discoveryErrors array carries the real reason. The
+      // error UI must show that message, not the generic fallback copy.
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: false,
+        discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'Could not scan wallet on chain 11155111'}],
+        chainsScanned: 1,
+        contractsChecked: 0,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByText('Could not scan wallet on chain 11155111')).toBeInTheDocument()
+      expect(screen.queryByText('An error occurred while scanning your wallet.')).not.toBeInTheDocument()
+    })
+
     it('retry button calls refetch on API_ERROR', async () => {
       const user = userEvent.setup()
       const mockRefetch = vi.fn()
