@@ -26,11 +26,13 @@ export function isAlchemyConfigured(): boolean {
 /**
  * Returns the full Alchemy RPC endpoint URL for the given chain id, or
  * `undefined` when:
- *  - `NEXT_PUBLIC_ALCHEMY_API_KEY` is absent or empty (→ caller emits AUTH_MISSING)
+ *  - `NEXT_PUBLIC_ALCHEMY_API_KEY` is absent or empty
  *  - the chain id is not in the supported Alchemy host map
  *
- * This is the signal `discoverUserTokens` uses to emit an `AUTH_MISSING` error
- * and surface the "discovery unavailable" UX state.
+ * Callers must distinguish these two cases via `isAlchemyConfigured()`: a
+ * missing key is fatal for all chains (AUTH_MISSING), whereas an unmapped chain
+ * affects only that chain (UNSUPPORTED_CHAIN — skip it and scan the rest). Do
+ * not collapse both back into a single AUTH_MISSING path.
  */
 export function getAlchemyEndpoint(chainId: number): string | undefined {
   const key = env.NEXT_PUBLIC_ALCHEMY_API_KEY

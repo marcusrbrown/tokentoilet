@@ -193,7 +193,14 @@ export function TokenList({
 
   const safeDiscoveryErrors = discoveryErrors ?? []
   const hasAuthMissing = safeDiscoveryErrors.some(e => e.type === 'AUTH_MISSING')
-  const hasDiscoveryError = safeDiscoveryErrors.length > 0 && !hasAuthMissing
+  // UNSUPPORTED_CHAIN is a partial-discovery warning, not a fatal failure: one
+  // chain in the set is unsupported but others may have returned tokens. Only a
+  // genuine scan failure (e.g. API_ERROR) should block rendering, and only when
+  // there are no tokens to show — partial results must still render.
+  const fatalDiscoveryErrors = safeDiscoveryErrors.filter(
+    e => e.type !== 'AUTH_MISSING' && e.type !== 'UNSUPPORTED_CHAIN',
+  )
+  const hasDiscoveryError = fatalDiscoveryErrors.length > 0 && discoveredTokens.length === 0
 
   // -------------------------------------------------------------------------
   // Spam filter application (R9b)
