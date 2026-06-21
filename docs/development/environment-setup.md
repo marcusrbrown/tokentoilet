@@ -35,22 +35,14 @@ This guide explains how to configure environment variables for the Token Toilet 
 - **How to get**: Visit [WalletConnect Cloud](https://cloud.walletconnect.com)
 - **Validation**: Must be a valid hexadecimal string
 
-### Optional RPC Endpoint Overrides
+### Optional RPC Endpoint Override
 
-By default, the application uses public RPC endpoints. You can override these for better performance:
+By default, the application uses a public Sepolia RPC endpoint. You can override it for better reliability:
 
-#### `NEXT_PUBLIC_ETHEREUM_RPC_URL`
-- **Default**: Public Ethereum RPC
-- **Example**: `https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY`
+#### `NEXT_PUBLIC_SEPOLIA_RPC_URL`
+- **Default**: Public Sepolia RPC
+- **Example**: `https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY`
 - **Providers**: Alchemy, Infura, Ankr, etc.
-
-#### `NEXT_PUBLIC_POLYGON_RPC_URL`
-- **Default**: Public Polygon RPC
-- **Example**: `https://polygon-mainnet.g.alchemy.com/v2/YOUR_API_KEY`
-
-#### `NEXT_PUBLIC_ARBITRUM_RPC_URL`
-- **Default**: Public Arbitrum RPC
-- **Example**: `https://arb-mainnet.g.alchemy.com/v2/YOUR_API_KEY`
 
 ### Optional Feature Flags
 
