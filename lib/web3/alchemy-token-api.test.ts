@@ -139,6 +139,44 @@ describe('fetchWalletTokenBalances', () => {
     })
   })
 
+  describe('edge case — empty-string pageKey terminates pagination (AF2)', () => {
+    it('treats pageKey="" as terminal and does not make a second request', async () => {
+      let callCount = 0
+      const client = makeClient(async () => {
+        callCount++
+        return {
+          tokenBalances: [{contractAddress: ADDR_A, tokenBalance: '0x1'}],
+          // Alchemy returns "" instead of omitting pageKey — must not loop
+          pageKey: '',
+        }
+      })
+
+      const result = await fetchWalletTokenBalances(client, USER)
+
+      // Must stop after the first page — no infinite loop
+      expect(callCount).toBe(1)
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual({contractAddress: ADDR_A, balance: BigInt(1)})
+    })
+
+    it('does not include pageKey in the request options when pageKey is ""', async () => {
+      const calls: {method: string; params: unknown[]}[] = []
+      const client = makeClient(async args => {
+        calls.push(args)
+        return {
+          tokenBalances: [{contractAddress: ADDR_A, tokenBalance: '0x1'}],
+          pageKey: '',
+        }
+      })
+
+      await fetchWalletTokenBalances(client, USER)
+
+      // The single request must NOT include a pageKey option
+      const firstCall = calls[0] as unknown as {params: [string, string, {maxCount: number; pageKey?: string}]}
+      expect(firstCall.params[2].pageKey).toBeUndefined()
+    })
+  })
+
   describe('error path — request rejection', () => {
     it('throws when the RPC request rejects (caller maps to TokenDiscoveryError)', async () => {
       const rpcError = new Error('alchemy RPC error: rate limited')

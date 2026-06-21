@@ -17,7 +17,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest'
 
 import {getAlchemyEndpoint} from './alchemy-endpoints'
 import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances} from './alchemy-token-api'
-import {discoverUserTokens, type TokenDiscoveryError} from './token-discovery'
+import {discoverUserTokens, formatTokenBalance, type TokenDiscoveryError} from './token-discovery'
 
 // vi.mock calls are hoisted by Vitest before module evaluation regardless of
 // their position in the file. Placing them after imports is the project
@@ -428,6 +428,38 @@ describe('regression — chainsScanned', () => {
     const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
 
     expect(result.chainsScanned).toBe(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// AF1: formatTokenBalance precision — high-decimal tokens (decimals > 15)
+// ---------------------------------------------------------------------------
+
+describe('formatTokenBalance — high-decimal precision (AF1)', () => {
+  it('correctly formats a token with decimals=25 (old Number exponentiation lost precision)', () => {
+    // 1 token with 25 decimals = 10^25 raw units.
+    // The old code: BigInt(10 ** 25) → BigInt(10000000000000000303786028) (wrong, Number loses precision)
+    // The new code: BigInt(10) ** BigInt(25) → 10000000000000000000000000n (correct)
+    const oneToken = BigInt(10) ** BigInt(25) // 1 full token at 25 decimals
+    const result = formatTokenBalance(oneToken, 25)
+    expect(result).toBe('1')
+  })
+
+  it('correctly formats a fractional balance at decimals=25', () => {
+    // 1.5 tokens at 25 decimals = 15 * 10^24
+    const balance = BigInt(15) * BigInt(10) ** BigInt(24)
+    const result = formatTokenBalance(balance, 25)
+    expect(result).toBe('1.5')
+  })
+
+  it('correctly formats a token with decimals=30 (extreme spam-token range)', () => {
+    const oneToken = BigInt(10) ** BigInt(30)
+    const result = formatTokenBalance(oneToken, 30)
+    expect(result).toBe('1')
+  })
+
+  it('returns 0 for zero balance regardless of decimals', () => {
+    expect(formatTokenBalance(BigInt(0), 25)).toBe('0')
   })
 })
 

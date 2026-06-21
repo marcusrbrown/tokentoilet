@@ -23,7 +23,7 @@ import {useTokenPrice} from '@/hooks/use-token-price'
 import {formatUsdValue, getPriceChangeDisplay, rawToDecimal} from '@/lib/token-utils'
 import {cn} from '@/lib/utils'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {isSuspectedSpam, TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 // Token list item variants for consistent glass morphism styling across states
@@ -137,7 +137,7 @@ function getCategoryIcon(category: TokenCategory): React.ReactNode {
 }
 
 function getTokenVariant(token: CategorizedToken): 'default' | 'warning' | 'error' | 'success' {
-  if (token.category === 'spam' || token.spamScore > 70) {
+  if (isSuspectedSpam(token)) {
     return 'error'
   }
   if (token.category === 'dust' || token.riskScore === TokenRiskScore.HIGH) {
@@ -388,8 +388,8 @@ export function TokenListItem({
             <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{token.name}</p>
             <div className="flex items-center gap-2 mt-1">
               {getValueClassBadge(token.valueClass)}
-              {/* Spam badge (R6, R9b): shown for category === SPAM or spamScore > 70 */}
-              {(token.category === TokenCategory.SPAM || token.spamScore > 70) && (
+              {/* Spam badge (R6, R9b): shown for suspected spam tokens */}
+              {isSuspectedSpam(token) && (
                 <Badge variant="error" size="sm">
                   Suspected Spam
                 </Badge>

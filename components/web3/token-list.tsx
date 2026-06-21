@@ -25,7 +25,7 @@ import {useTokenDiscovery} from '@/hooks/use-token-discovery'
 import {useTokenFiltering} from '@/hooks/use-token-filtering'
 import {cn} from '@/lib/utils'
 import type {CategorizedToken, TokenFilter, TokenSortOptions} from '@/lib/web3/token-filtering'
-import {TokenCategory} from '@/lib/web3/token-filtering'
+import {isSuspectedSpam} from '@/lib/web3/token-filtering'
 
 import {TokenListItem} from './token-list-item'
 
@@ -120,16 +120,6 @@ const EMPTY_SELECTED_TOKENS: Address[] = []
  * Spam filter tab values for the segmented control above the token list.
  */
 type SpamFilter = 'all' | 'non-spam' | 'spam'
-
-/**
- * Determine whether a categorized token is suspected spam.
- *
- * Reuses the same threshold already used in token-list-item.tsx (`getTokenVariant`)
- * and token-detail.tsx (`getRiskLevelFromToken`): category === SPAM OR spamScore > 70.
- */
-function isSuspectedSpam(token: CategorizedToken): boolean {
-  return token.category === TokenCategory.SPAM || token.spamScore > 70
-}
 
 /**
  * High-performance token list with virtual scrolling for efficient batch disposal operations.
@@ -259,13 +249,14 @@ export function TokenList({
 
   /**
    * Select all — EXCLUDES suspected-spam tokens (R9b: never auto-select spam).
-   * Bulk-select only picks non-spam tokens from the current page.
+   * Operates on the full spam-filtered set (not just the current page) so that
+   * tokens on pages 2+ are also included when pagination is enabled.
    */
   const handleSelectAll = useCallback(() => {
-    const nonSpamAddresses = paginatedTokens.filter(t => !isSuspectedSpam(t)).map(t => t.address)
+    const nonSpamAddresses = spamFilteredTokens.filter(t => !isSuspectedSpam(t)).map(t => t.address)
     setInternalSelectedTokens(nonSpamAddresses)
     onTokenSelectionChange?.(nonSpamAddresses)
-  }, [paginatedTokens, onTokenSelectionChange])
+  }, [spamFilteredTokens, onTokenSelectionChange])
 
   const handleDeselectAll = useCallback(() => {
     setInternalSelectedTokens([])

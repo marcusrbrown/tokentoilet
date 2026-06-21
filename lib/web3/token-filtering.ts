@@ -3,6 +3,7 @@ import type {Address} from 'viem'
 import type {SupportedChainId} from '../../hooks/use-wallet'
 import type {DiscoveredToken} from './token-discovery'
 import type {EnhancedTokenMetadata} from './token-metadata'
+import {isConfusableTokenName} from './display-sanitization'
 import {TokenRiskScore} from './token-metadata'
 import {quickSecurityCheck, TokenSecurityRisk, type TokenSecurityValidation} from './token-validation'
 
@@ -374,6 +375,11 @@ export function calculateSpamScore(token: {
       spamScore += 20
       break
     }
+  }
+
+  // Check for mixed-script / confusable name or symbol (homoglyph phishing signal)
+  if (isConfusableTokenName(token.name) || isConfusableTokenName(token.symbol)) {
+    spamScore += 20
   }
 
   // Check suspicious decimals
@@ -786,6 +792,23 @@ function compareTokens(
     default:
       return 0
   }
+}
+
+/**
+ * Shared predicate: returns true when a token is suspected spam.
+ *
+ * A token is suspected spam when its category is SPAM OR its spam score
+ * exceeds 70. The threshold `> 70` matches the existing component behaviour
+ * in token-list.tsx, token-list-item.tsx, and token-detail.tsx (all used
+ * `> 70` before this extraction). Note that `autoCategorizeToken` uses
+ * `>= spamScoreThreshold` (default 70) to assign the SPAM category, so a
+ * token with spamScore === 70 will be categorised as SPAM and caught by the
+ * category check here — the `> 70` numeric guard is therefore consistent.
+ *
+ * Use this in all components instead of duplicating the condition.
+ */
+export function isSuspectedSpam(token: CategorizedToken): boolean {
+  return token.category === TokenCategory.SPAM || token.spamScore > 70
 }
 
 /**

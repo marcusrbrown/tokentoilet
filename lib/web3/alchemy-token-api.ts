@@ -115,8 +115,9 @@ export async function fetchWalletTokenBalances(
   let pageKey: string | undefined
 
   do {
+    // Only include pageKey in options when it is a non-empty string.
     const options: {maxCount: number; pageKey?: string} =
-      pageKey === undefined ? {maxCount: MAX_COUNT} : {maxCount: MAX_COUNT, pageKey}
+      pageKey !== undefined && pageKey !== '' ? {maxCount: MAX_COUNT, pageKey} : {maxCount: MAX_COUNT}
 
     // Throws on RPC failure — intentional; caller maps to API_ERROR.
     // alchemy_getTokenBalances is not in viem's built-in EIP-1193 method
@@ -136,7 +137,9 @@ export async function fetchWalletTokenBalances(
       }
     }
 
-    pageKey = page.pageKey
+    // Treat empty-string pageKey as terminal (same as absent) to guard against
+    // Alchemy returning "" instead of omitting the field, which would loop forever.
+    pageKey = page.pageKey === '' ? undefined : page.pageKey
   } while (pageKey !== undefined)
 
   return allBalances

@@ -26,11 +26,13 @@
 const MAX_DISPLAY_LENGTH = 64
 
 /**
- * Control characters: U+0000–U+001F (C0 controls) and U+007F (DEL).
+ * Control characters: U+0000–U+001F (C0 controls), U+007F (DEL), and
+ * U+0080–U+009F (C1 controls, including U+009B CSI — an ANSI escape introducer
+ * that can inject terminal escapes into server logs via console.error).
  * These are invisible and can be used to manipulate terminal/UI rendering.
  */
-// eslint-disable-next-line no-control-regex -- intentionally matches C0 control chars to strip them
-const CONTROL_CHARS_RE = /[\u0000-\u001F\u007F]/g
+// eslint-disable-next-line no-control-regex -- intentionally matches C0/C1 control chars to strip them
+const CONTROL_CHARS_RE = /[\u0000-\u001F\u007F-\u009F]/g
 
 /**
  * Bidirectional / RTL override characters.

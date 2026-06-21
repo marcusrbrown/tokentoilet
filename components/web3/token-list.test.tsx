@@ -1037,6 +1037,88 @@ describe('TokenList', () => {
     })
   })
 
+  describe('Select All — cross-page coverage (AF4)', () => {
+    it('selects all non-spam tokens across ALL pages, not just the current page', async () => {
+      const user = userEvent.setup()
+      const onSelectionChange = vi.fn()
+
+      // Create 60 non-spam tokens (more than the default 50 per page)
+      const page1Tokens = Array.from({length: 50}, (_, i) =>
+        createMockCategorizedToken({
+          address: `0x${'1'.repeat(39)}${i.toString(16)}` as Address,
+          symbol: `P1T${i}`,
+          name: `Page1 Token ${i}`,
+          category: TokenCategory.UNKNOWN,
+          spamScore: 5,
+        }),
+      )
+      const page2Tokens = Array.from({length: 10}, (_, i) =>
+        createMockCategorizedToken({
+          address: `0x${'2'.repeat(39)}${i.toString(16)}` as Address,
+          symbol: `P2T${i}`,
+          name: `Page2 Token ${i}`,
+          category: TokenCategory.UNKNOWN,
+          spamScore: 5,
+        }),
+      )
+      const spamToken = createMockSpamToken({
+        address: '0xDeAdBeEf00000000000000000000000000000099' as Address,
+      })
+
+      const allTokens = [...page1Tokens, ...page2Tokens, spamToken]
+
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: allTokens,
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: allTokens.length,
+        filteredTokens: allTokens.length,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: allTokens.length,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(
+        <TokenList
+          config={{
+            enableBatchSelection: true,
+            enableVirtualScrolling: false,
+            enablePagination: true,
+            itemsPerPage: 50,
+          }}
+          onTokenSelectionChange={onSelectionChange}
+        />,
+        {wrapper: createWrapper()},
+      )
+
+      // We should be on page 1 with 50 tokens visible
+      expect(screen.getByText(/Page 1/)).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', {name: 'Select All'}))
+
+      // Must have been called with all 60 non-spam tokens (page1 + page2), NOT just 50
+      expect(onSelectionChange).toHaveBeenCalledTimes(1)
+      const selectedAddresses = onSelectionChange.mock.calls[0][0] as Address[]
+      expect(selectedAddresses).toHaveLength(60) // 50 + 10, not just 50
+
+      // Spam token must not be included
+      expect(selectedAddresses).not.toContain(spamToken.address)
+
+      // All page2 tokens must be included even though they're not visible
+      for (const t of page2Tokens) {
+        expect(selectedAddresses).toContain(t.address)
+      }
+    })
+  })
+
   describe('Pagination', () => {
     it('displays pagination when enabled and needed', () => {
       const mockTokens = Array.from({length: 100}, (_, index) =>

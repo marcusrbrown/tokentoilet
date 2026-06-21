@@ -54,6 +54,27 @@ describe('sanitizeTokenDisplay', () => {
     it('strips multiple control characters', () => {
       expect(sanitizeTokenDisplay('\u0001\u0002\u001FTOKEN\u007F')).toBe('TOKEN')
     })
+
+    // AF6: C1 control range U+0080–U+009F
+    it('strips U+009B (CSI — ANSI escape introducer, C1 range)', () => {
+      expect(sanitizeTokenDisplay('BAD\u009BTOKEN')).toBe('BADTOKEN')
+    })
+
+    it('strips U+0085 (NEL — Next Line, C1 range)', () => {
+      expect(sanitizeTokenDisplay('BAD\u0085TOKEN')).toBe('BADTOKEN')
+    })
+
+    it('strips U+0080 (first C1 control character)', () => {
+      expect(sanitizeTokenDisplay('BAD\u0080TOKEN')).toBe('BADTOKEN')
+    })
+
+    it('strips U+009F (last C1 control character)', () => {
+      expect(sanitizeTokenDisplay('BAD\u009FTOKEN')).toBe('BADTOKEN')
+    })
+
+    it('strips a mix of C0 and C1 control characters', () => {
+      expect(sanitizeTokenDisplay('\u0001\u009B\u0085TOKEN\u009F')).toBe('TOKEN')
+    })
   })
 
   describe('bidirectional / RTL override character stripping', () => {

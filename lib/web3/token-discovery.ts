@@ -367,43 +367,6 @@ export async function fetchTokenMetadata(
 }
 
 // ---------------------------------------------------------------------------
-// fetchTokenBalance (kept intact — used by processToken)
-// ---------------------------------------------------------------------------
-
-/**
- * Fetch token balance for a specific user address
- */
-export async function fetchTokenBalance(
-  config: Config,
-  tokenAddress: Address,
-  userAddress: Address,
-  chainId: SupportedChainId,
-): Promise<bigint | null> {
-  try {
-    const result = await readContracts(config, {
-      allowFailure: false,
-      contracts: [
-        {
-          address: tokenAddress,
-          abi: erc20Abi,
-          functionName: 'balanceOf',
-          args: [userAddress],
-          chainId,
-        },
-      ],
-    })
-
-    return result[0]
-  } catch (error) {
-    console.error(
-      `Failed to fetch balance for token ${tokenAddress} and user ${userAddress} on chain ${chainId}:`,
-      error,
-    )
-    return null
-  }
-}
-
-// ---------------------------------------------------------------------------
 // formatTokenBalance
 // ---------------------------------------------------------------------------
 
@@ -415,7 +378,7 @@ export function formatTokenBalance(balance: bigint, decimals: number, maxDisplay
 
   try {
     // Convert to decimal string
-    const divisor = BigInt(10 ** decimals)
+    const divisor = BigInt(10) ** BigInt(decimals)
     const whole = balance / divisor
     const remainder = balance % divisor
 
