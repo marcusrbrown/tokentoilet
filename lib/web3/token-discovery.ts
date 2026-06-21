@@ -23,7 +23,7 @@ import type {Config} from 'wagmi'
 
 import type {SupportedChainId} from '../../hooks/use-wallet'
 
-import {createPublicClient, erc20Abi, http} from 'viem'
+import {createPublicClient, erc20Abi, http, HttpRequestError} from 'viem'
 import {mainnet, sepolia} from 'viem/chains'
 import {readContracts} from 'wagmi/actions'
 
@@ -278,8 +278,25 @@ async function discoverChainTokens(
   try {
     balances = await fetchWalletTokenBalances(client, userAddress)
   } catch (error) {
-    // Per-chain scan failure → explicit API_ERROR, not silent empty (R11).
+    // Per-chain scan failure → explicit error, not silent empty (R11).
     console.error(`[token-discovery] fetchWalletTokenBalances failed for chain ${chainId}:`, error)
+    // HTTP 401/403 means the Alchemy key is invalid (rejected by the server).
+    // Map to AUTH_MISSING (non-retryable) so the UI shows "configure key"
+    // instead of the retryable "Could not scan wallet" state.
+    if (error instanceof HttpRequestError && (error.status === 401 || error.status === 403)) {
+      return {
+        tokens: [],
+        errors: [
+          {
+            chainId,
+            message: `Alchemy API key rejected (HTTP ${error.status}) — token discovery unavailable`,
+            originalError: error,
+            type: 'AUTH_MISSING',
+          },
+        ],
+        contractsChecked: 0,
+      }
+    }
     return {
       tokens: [],
       errors: [

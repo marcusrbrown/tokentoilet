@@ -12,7 +12,7 @@
  */
 
 import type {Address} from 'viem'
-import {createPublicClient} from 'viem'
+import {createPublicClient, HttpRequestError} from 'viem'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
 import {getAlchemyEndpoint, isAlchemyConfigured} from './alchemy-endpoints'
@@ -377,6 +377,70 @@ describe('error path — API_ERROR', () => {
     expect(result.errors.length).toBeGreaterThan(0)
     const apiErrors = result.errors.filter(e => e.type === 'API_ERROR')
     expect(apiErrors).toHaveLength(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Error path: AUTH_MISSING from invalid key (HTTP 401/403)
+// ---------------------------------------------------------------------------
+
+describe('error path — AUTH_MISSING from invalid Alchemy key', () => {
+  it('maps HTTP 401 from the balances fetch to AUTH_MISSING (not API_ERROR)', async () => {
+    mockFetchWalletTokenBalances.mockRejectedValue(
+      new HttpRequestError({
+        status: 401,
+        url: 'https://eth-sepolia.g.alchemy.com/v2/invalid-key',
+        details: 'Unauthorized',
+      }),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
+
+    expect(result.tokens).toHaveLength(0)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0]?.type).toBe('AUTH_MISSING')
+    expect(result.errors[0]?.chainId).toBe(SEPOLIA_CHAIN_ID)
+    expect(result.errors[0]?.message).toContain('401')
+
+    // Must NOT produce an API_ERROR for this chain.
+    const apiErrors = result.errors.filter(e => e.type === 'API_ERROR')
+    expect(apiErrors).toHaveLength(0)
+  })
+
+  it('maps HTTP 403 from the balances fetch to AUTH_MISSING (not API_ERROR)', async () => {
+    mockFetchWalletTokenBalances.mockRejectedValue(
+      new HttpRequestError({
+        status: 403,
+        url: 'https://eth-sepolia.g.alchemy.com/v2/invalid-key',
+        details: 'Forbidden',
+      }),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
+
+    expect(result.tokens).toHaveLength(0)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0]?.type).toBe('AUTH_MISSING')
+    expect(result.errors[0]?.chainId).toBe(SEPOLIA_CHAIN_ID)
+    expect(result.errors[0]?.message).toContain('403')
+
+    const apiErrors = result.errors.filter(e => e.type === 'API_ERROR')
+    expect(apiErrors).toHaveLength(0)
+  })
+
+  it('maps a non-auth failure (generic Error) to API_ERROR, not AUTH_MISSING', async () => {
+    mockFetchWalletTokenBalances.mockRejectedValue(new Error('network down'))
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
+
+    expect(result.tokens).toHaveLength(0)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0]?.type).toBe('API_ERROR')
+    expect(result.errors[0]?.chainId).toBe(SEPOLIA_CHAIN_ID)
+
+    // Must NOT be AUTH_MISSING — this is a network error, not an auth rejection.
+    const authErrors = result.errors.filter(e => e.type === 'AUTH_MISSING')
+    expect(authErrors).toHaveLength(0)
   })
 })
 
