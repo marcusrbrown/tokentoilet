@@ -15,7 +15,7 @@ import type {Address} from 'viem'
 import {createPublicClient} from 'viem'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {getAlchemyEndpoint} from './alchemy-endpoints'
+import {getAlchemyEndpoint, isAlchemyConfigured} from './alchemy-endpoints'
 import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances} from './alchemy-token-api'
 import {discoverUserTokens, formatTokenBalance, type TokenDiscoveryError} from './token-discovery'
 
@@ -23,7 +23,9 @@ import {discoverUserTokens, formatTokenBalance, type TokenDiscoveryError} from '
 // their position in the file. Placing them after imports is the project
 // convention (see hooks/use-token-discovery.test.tsx).
 vi.mock('./alchemy-endpoints', () => ({
+  [Symbol.toStringTag]: 'Module',
   getAlchemyEndpoint: vi.fn(),
+  isAlchemyConfigured: vi.fn(),
 }))
 
 vi.mock('./alchemy-token-api', () => ({
@@ -44,6 +46,7 @@ vi.mock('viem', async () => {
 // ---------------------------------------------------------------------------
 
 const mockGetAlchemyEndpoint = vi.mocked(getAlchemyEndpoint)
+const mockIsAlchemyConfigured = vi.mocked(isAlchemyConfigured)
 const mockFetchWalletTokenBalances = vi.mocked(fetchWalletTokenBalances)
 const mockFetchAlchemyTokenMetadataBatch = vi.mocked(fetchAlchemyTokenMetadataBatch)
 const mockCreatePublicClient = vi.mocked(createPublicClient)
@@ -82,7 +85,8 @@ function makeMetadataMap(
 
 beforeEach(() => {
   vi.clearAllMocks()
-  // Default: endpoint available.
+  // Default: key is present and endpoint is available.
+  mockIsAlchemyConfigured.mockReturnValue(true)
   mockGetAlchemyEndpoint.mockReturnValue(FAKE_ENDPOINT)
   // Default: createPublicClient returns a stub client.
   // Cast through unknown to avoid the full PublicClient shape requirement.
@@ -252,7 +256,7 @@ describe('edge case — many-token wallet (multi-page)', () => {
 
 describe('error path — AUTH_MISSING', () => {
   it('returns exactly one AUTH_MISSING error and empty tokens when key is absent', async () => {
-    mockGetAlchemyEndpoint.mockReturnValue(undefined)
+    mockIsAlchemyConfigured.mockReturnValue(false)
 
     const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
 
@@ -267,7 +271,7 @@ describe('error path — AUTH_MISSING', () => {
   })
 
   it('does NOT fall back to any hardcoded token list when key is absent', async () => {
-    mockGetAlchemyEndpoint.mockReturnValue(undefined)
+    mockIsAlchemyConfigured.mockReturnValue(false)
 
     const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
 
@@ -276,6 +280,74 @@ describe('error path — AUTH_MISSING', () => {
     // The error type must be AUTH_MISSING, not a success with hardcoded tokens.
     const authMissingErrors = result.errors.filter(e => e.type === 'AUTH_MISSING')
     expect(authMissingErrors).toHaveLength(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Error path: UNSUPPORTED_CHAIN (key present, chain unmapped)
+// ---------------------------------------------------------------------------
+
+const UNMAPPED_CHAIN_ID = 999999
+
+describe('error path — UNSUPPORTED_CHAIN', () => {
+  it('skips unmapped chain and still scans valid chains when key is present', async () => {
+    // isAlchemyConfigured returns true (default), but the unmapped chain has no endpoint.
+    mockGetAlchemyEndpoint.mockImplementation((chainId: number) => {
+      if (chainId === SEPOLIA_CHAIN_ID) return FAKE_ENDPOINT
+      return undefined
+    })
+
+    mockFetchWalletTokenBalances.mockResolvedValue([{contractAddress: TOKEN_A_ADDRESS, balance: BigInt(1_000_000)}])
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap([{address: TOKEN_A_ADDRESS, name: 'USD Coin', symbol: 'USDC', decimals: 6}]),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [UNMAPPED_CHAIN_ID, SEPOLIA_CHAIN_ID],
+    })
+
+    // Valid chain tokens ARE returned.
+    expect(result.tokens).toHaveLength(1)
+    expect(result.tokens[0]?.symbol).toBe('USDC')
+
+    // UNSUPPORTED_CHAIN error for the unmapped chain.
+    const unsupportedErrors = result.errors.filter(e => e.type === 'UNSUPPORTED_CHAIN')
+    expect(unsupportedErrors).toHaveLength(1)
+    expect(unsupportedErrors[0]?.chainId).toBe(UNMAPPED_CHAIN_ID)
+
+    // No AUTH_MISSING error — the key is present.
+    const authErrors = result.errors.filter(e => e.type === 'AUTH_MISSING')
+    expect(authErrors).toHaveLength(0)
+  })
+
+  it('returns empty tokens and one UNSUPPORTED_CHAIN error for a single unmapped chain', async () => {
+    mockGetAlchemyEndpoint.mockReturnValue(undefined)
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [UNMAPPED_CHAIN_ID],
+    })
+
+    expect(result.tokens).toHaveLength(0)
+
+    const unsupportedErrors = result.errors.filter(e => e.type === 'UNSUPPORTED_CHAIN')
+    expect(unsupportedErrors).toHaveLength(1)
+    expect(unsupportedErrors[0]?.chainId).toBe(UNMAPPED_CHAIN_ID)
+
+    // Must NOT be AUTH_MISSING — the key is present.
+    const authErrors = result.errors.filter(e => e.type === 'AUTH_MISSING')
+    expect(authErrors).toHaveLength(0)
+
+    // No API calls made for an unsupported chain.
+    expect(mockFetchWalletTokenBalances).not.toHaveBeenCalled()
+  })
+
+  it('UNSUPPORTED_CHAIN is a valid member of the TokenDiscoveryError type union', () => {
+    const error: TokenDiscoveryError = {
+      chainId: SEPOLIA_CHAIN_ID,
+      message: 'Chain 999999 is not supported by token discovery',
+      type: 'UNSUPPORTED_CHAIN',
+    }
+    expect(error.type).toBe('UNSUPPORTED_CHAIN')
   })
 })
 

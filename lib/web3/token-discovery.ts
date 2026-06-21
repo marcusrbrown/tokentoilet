@@ -27,7 +27,7 @@ import {createPublicClient, erc20Abi, http} from 'viem'
 import {mainnet, sepolia} from 'viem/chains'
 import {readContracts} from 'wagmi/actions'
 
-import {getAlchemyEndpoint} from './alchemy-endpoints'
+import {getAlchemyEndpoint, isAlchemyConfigured} from './alchemy-endpoints'
 import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances} from './alchemy-token-api'
 import {sanitizeTokenDisplay} from './display-sanitization'
 
@@ -131,7 +131,14 @@ export interface TokenDiscoveryError {
   /** Original error object */
   originalError?: Error
   /** Error type for categorization */
-  type: 'RPC_ERROR' | 'CONTRACT_ERROR' | 'VALIDATION_ERROR' | 'UNKNOWN_ERROR' | 'API_ERROR' | 'AUTH_MISSING'
+  type:
+    | 'RPC_ERROR'
+    | 'CONTRACT_ERROR'
+    | 'VALIDATION_ERROR'
+    | 'UNKNOWN_ERROR'
+    | 'API_ERROR'
+    | 'AUTH_MISSING'
+    | 'UNSUPPORTED_CHAIN'
 }
 
 // ---------------------------------------------------------------------------
@@ -181,24 +188,34 @@ export async function discoverUserTokens(
   let contractsChecked = 0
 
   for (const chainId of mergedConfig.chainIds) {
-    // Check for Alchemy endpoint. getAlchemyEndpoint returns undefined when
-    // the key is absent OR the chain is unmapped. We treat both as AUTH_MISSING
-    // at the discovery level — no hardcoded fallback (R10).
-    const endpoint = getAlchemyEndpoint(chainId)
-    if (endpoint === undefined) {
+    // Distinguish "key absent" (all chains affected) from "chain unmapped"
+    // (only this chain affected) so we can skip unmapped chains without
+    // aborting the entire scan.
+    if (!isAlchemyConfigured()) {
       errors.push({
         chainId,
-        message: `Alchemy API key absent or chain ${chainId} not supported — token discovery unavailable`,
+        message: 'Alchemy API key absent — token discovery unavailable',
         type: 'AUTH_MISSING',
       })
-      // Return immediately: if the key is missing it will be missing for all
-      // chains, so there is no point continuing the loop.
+      // Return immediately: the key is missing for all chains.
       return {
         tokens: [],
         errors,
         chainsScanned: mergedConfig.chainIds.length,
         contractsChecked: 0,
       }
+    }
+
+    const endpoint = getAlchemyEndpoint(chainId)
+    if (endpoint === undefined) {
+      // Key is present but this chain is not in ALCHEMY_HOSTS — skip it and
+      // continue scanning the remaining chains.
+      errors.push({
+        chainId,
+        message: `Chain ${chainId} is not supported by token discovery`,
+        type: 'UNSUPPORTED_CHAIN',
+      })
+      continue
     }
 
     const chainResult = await discoverChainTokens(userAddress, chainId, endpoint, mergedConfig)
