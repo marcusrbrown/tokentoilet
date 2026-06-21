@@ -274,7 +274,8 @@ NEXT_PUBLIC_ENABLE_DEBUG_MODE=true
 ```dotenv
 NEXT_PUBLIC_APP_URL=https://tokentoilet.com
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=production_project_id
-NEXT_PUBLIC_ENABLE_ANALYTICS=true
+# Analytics is opt-in and off by default. Only enable with informed user consent:
+# NEXT_PUBLIC_ENABLE_ANALYTICS=true
 ```
 
 ## Deployment

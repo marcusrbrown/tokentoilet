@@ -56,8 +56,8 @@ By default, the application uses public RPC endpoints. You can override these fo
 
 #### `NEXT_PUBLIC_ENABLE_ANALYTICS`
 - **Type**: Boolean string ("true" or "false")
-- **Default**: "true"
-- **Description**: Enables analytics tracking through WalletConnect
+- **Default**: "false"
+- **Description**: Opt-in Reown AppKit analytics. Off unless explicitly enabled with informed user consent.
 
 #### `NEXT_PUBLIC_ENABLE_TESTNETS`
 - **Type**: Boolean string ("true" or "false")
@@ -127,7 +127,7 @@ Set environment variables in the Vercel dashboard:
 - [ ] `NEXT_PUBLIC_APP_URL` set to production domain
 - [ ] `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` configured
 - [ ] Custom RPC endpoints configured (recommended)
-- [ ] Analytics enabled (`NEXT_PUBLIC_ENABLE_ANALYTICS=true`)
+- [ ] Analytics left off unless opt-in consent is in place (`NEXT_PUBLIC_ENABLE_ANALYTICS` defaults to `false`)
 - [ ] Testnets disabled (`NEXT_PUBLIC_ENABLE_TESTNETS=false`)
 
 ## Troubleshooting
