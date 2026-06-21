@@ -11,6 +11,7 @@ import {
   DEFAULT_CATEGORIZATION_PREFERENCES,
   determineValueClass,
   filterTokens,
+  KNOWN_VALUABLE_TOKENS,
   parseTokenId,
   sortTokens,
   TokenCategory,
@@ -467,5 +468,35 @@ describe('Token Filtering Utilities', () => {
       expect(stats.totalValueUSD).toBe(0)
       expect(Object.values(stats.categoryStats).every(count => count === 0)).toBe(true)
     })
+  })
+})
+
+describe('KNOWN_VALUABLE_TOKENS address correctness', () => {
+  it('should contain the correct canonical mainnet USDC address', () => {
+    const CORRECT_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as Address
+    expect(KNOWN_VALUABLE_TOKENS[1].has(CORRECT_USDC)).toBe(true)
+  })
+
+  it('should NOT contain the fabricated USDC address', () => {
+    const FABRICATED_USDC = '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94' as Address
+    // Verify the old wrong address is gone from all chains
+    expect(KNOWN_VALUABLE_TOKENS[1].has(FABRICATED_USDC)).toBe(false)
+    expect(KNOWN_VALUABLE_TOKENS[137].has(FABRICATED_USDC)).toBe(false)
+    expect(KNOWN_VALUABLE_TOKENS[42161].has(FABRICATED_USDC)).toBe(false)
+  })
+
+  it('should classify the corrected mainnet USDC as VALUABLE (kept off burn candidates)', () => {
+    const CORRECT_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as Address
+    const usdcToken: CategorizedToken = {
+      ...mockCategorizedToken,
+      address: CORRECT_USDC,
+      chainId: 1,
+      symbol: 'USDC',
+      name: 'USD Coin',
+      decimals: 6,
+    }
+
+    const category = autoCategorizeToken(usdcToken, DEFAULT_CATEGORIZATION_PREFERENCES)
+    expect(category).toBe(TokenCategory.VALUABLE)
   })
 })

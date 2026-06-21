@@ -14,7 +14,7 @@ import {
 
 // Mock token addresses for testing
 const MOCK_ADDRESSES = {
-  VERIFIED: '0xa0b86a33e6776498bacedf825f0e7b2f228c4646' as const, // USDT on Ethereum
+  VERIFIED: '0xdac17f958d2ee523a2206206994597c13d831ec7' as const, // USDT on Ethereum
   UNKNOWN: '0x1234567890123456789012345678901234567890' as const,
   INVALID: 'invalid-address' as const,
 }

@@ -158,8 +158,8 @@ export const TOKEN_SECURITY_LISTS = {
   verified: {
     1: [
       // Ethereum mainnet
-      '0xa0b86a33e6776498bacedf825f0e7b2f228c4646', // USDT
-      '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b', // USDC
+      '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
+      '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
       '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
       '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // WBTC
     ],
@@ -167,7 +167,7 @@ export const TOKEN_SECURITY_LISTS = {
       // Polygon
       '0x2791bca1f2de4661ed88a30c99a7a9449aa84174', // USDC
       '0xc2132d05d31c914a87c6611c10748aeb04b58e8f', // USDT
-      '0x7ceb23fd6c8add589036b55727117c635777d282', // WETH
+      '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619', // WETH
     ],
     42161: [
       // Arbitrum
