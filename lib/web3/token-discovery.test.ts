@@ -155,6 +155,31 @@ describe('edge case — zero-balance exclusion', () => {
     expect(result.tokens).toHaveLength(1)
     expect(result.tokens[0]?.address).toBe(TOKEN_A_ADDRESS)
   })
+
+  it('excludes balances below minBalanceThreshold (filtering-contract regression)', async () => {
+    // A caller that raises minBalanceThreshold must not see (or be able to
+    // select) balances below it — the pre-rewrite processBatch path enforced
+    // this and the Alchemy enumeration path must preserve it.
+    mockFetchWalletTokenBalances.mockResolvedValue([
+      {contractAddress: TOKEN_A_ADDRESS, balance: BigInt(100)},
+      {contractAddress: TOKEN_B_ADDRESS, balance: BigInt(5)},
+    ])
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap([
+        {address: TOKEN_A_ADDRESS, name: 'Token A', symbol: 'TKA', decimals: 18},
+        {address: TOKEN_B_ADDRESS, name: 'Token B', symbol: 'TKB', decimals: 18},
+      ]),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      minBalanceThreshold: BigInt(50),
+    })
+
+    // Only the balance at/above the threshold survives.
+    expect(result.tokens).toHaveLength(1)
+    expect(result.tokens[0]?.address).toBe(TOKEN_A_ADDRESS)
+  })
 })
 
 // ---------------------------------------------------------------------------

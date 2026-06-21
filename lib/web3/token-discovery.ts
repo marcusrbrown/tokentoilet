@@ -277,8 +277,14 @@ async function discoverChainTokens(
     }
   }
 
+  // Apply the configured minimum-balance threshold before capping, preserving
+  // the pre-rewrite filtering contract: callers that raise minBalanceThreshold
+  // must not see (or be able to select) balances below it. Default is 0n, so
+  // default callers keep every non-zero balance.
+  const thresholdBalances = balances.filter(b => b.balance >= discoveryConfig.minBalanceThreshold)
+
   // Apply per-chain token cap.
-  const cappedBalances = balances.slice(0, discoveryConfig.maxTokensPerChain)
+  const cappedBalances = thresholdBalances.slice(0, discoveryConfig.maxTokensPerChain)
 
   // Fetch metadata for all enumerated tokens (best-effort, never throws).
   const addresses = cappedBalances.map(b => b.contractAddress)
