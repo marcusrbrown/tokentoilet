@@ -138,7 +138,7 @@ tokentoilet/
 1. **Always use the custom `useWallet` hook** - Never use wagmi hooks directly in components
 2. **Web3 components require `'use client'` directive** - Client-side only
 3. **Comprehensive error handling** - Never throw on disconnect/connection errors
-4. **Network validation** - Support Ethereum, Polygon, Arbitrum with auto-switching
+4. **Network validation** - Sepolia testnet only for v1.0, with prompt to switch when on an unsupported network
 
 ### Example Component
 
@@ -308,7 +308,7 @@ pnpm start
 
 - Verify `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is set correctly
 - Check browser wallet extensions are enabled
-- Ensure supported networks (Ethereum, Polygon, Arbitrum)
+- Ensure the wallet is on the supported network (Sepolia testnet)
 
 #### Build Errors
 
