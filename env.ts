@@ -25,7 +25,6 @@ export const schemas = {
   // @keep-sorted
   client: {
     NEXT_PUBLIC_APP_URL: z.url('Must be a valid URL'),
-    NEXT_PUBLIC_ARBITRUM_RPC_URL: rpcUrlSchema.optional(),
     NEXT_PUBLIC_ENABLE_ANALYTICS: z
       .string()
       .transform(val => val === 'true')
@@ -36,8 +35,6 @@ export const schemas = {
       .transform(val => val === 'true')
       .pipe(z.boolean())
       .default(false),
-    NEXT_PUBLIC_ETHEREUM_RPC_URL: rpcUrlSchema.optional(),
-    NEXT_PUBLIC_POLYGON_RPC_URL: rpcUrlSchema.optional(),
     NEXT_PUBLIC_SEPOLIA_RPC_URL: rpcUrlSchema.optional(),
     NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: walletConnectProjectIdSchema,
   },
@@ -55,10 +52,7 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
 
-    // Optional RPC endpoint overrides
-    NEXT_PUBLIC_ETHEREUM_RPC_URL: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-    NEXT_PUBLIC_POLYGON_RPC_URL: process.env.NEXT_PUBLIC_POLYGON_RPC_URL,
-    NEXT_PUBLIC_ARBITRUM_RPC_URL: process.env.NEXT_PUBLIC_ARBITRUM_RPC_URL,
+    // Optional RPC endpoint override
     NEXT_PUBLIC_SEPOLIA_RPC_URL: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
 
     // Feature flags

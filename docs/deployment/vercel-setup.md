@@ -52,17 +52,11 @@ NEXT_PUBLIC_APP_URL=https://tokentoilet-staging.vercel.app  # Preview
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id_here
 ```
 
-### Optional RPC Overrides
+### Optional RPC Override
 
 ```bash
-# Ethereum Mainnet
-NEXT_PUBLIC_ETHEREUM_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY
-
-# Polygon Mainnet
-NEXT_PUBLIC_POLYGON_RPC_URL=https://polygon-mainnet.g.alchemy.com/v2/YOUR_API_KEY
-
-# Arbitrum One
-NEXT_PUBLIC_ARBITRUM_RPC_URL=https://arb-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+# Sepolia Testnet
+NEXT_PUBLIC_SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
 ```
 
 ### Feature Flags by Environment

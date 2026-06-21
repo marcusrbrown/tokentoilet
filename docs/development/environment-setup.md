@@ -35,22 +35,14 @@ This guide explains how to configure environment variables for the Token Toilet 
 - **How to get**: Visit [WalletConnect Cloud](https://cloud.walletconnect.com)
 - **Validation**: Must be a valid hexadecimal string
 
-### Optional RPC Endpoint Overrides
+### Optional RPC Endpoint Override
 
-By default, the application uses public RPC endpoints. You can override these for better performance:
+By default, the application uses a public Sepolia RPC endpoint. You can override it for better reliability:
 
-#### `NEXT_PUBLIC_ETHEREUM_RPC_URL`
-- **Default**: Public Ethereum RPC
-- **Example**: `https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY`
+#### `NEXT_PUBLIC_SEPOLIA_RPC_URL`
+- **Default**: Public Sepolia RPC
+- **Example**: `https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY`
 - **Providers**: Alchemy, Infura, Ankr, etc.
-
-#### `NEXT_PUBLIC_POLYGON_RPC_URL`
-- **Default**: Public Polygon RPC
-- **Example**: `https://polygon-mainnet.g.alchemy.com/v2/YOUR_API_KEY`
-
-#### `NEXT_PUBLIC_ARBITRUM_RPC_URL`
-- **Default**: Public Arbitrum RPC
-- **Example**: `https://arb-mainnet.g.alchemy.com/v2/YOUR_API_KEY`
 
 ### Optional Feature Flags
 
@@ -84,14 +76,14 @@ SKIP_ENV_VALIDATION=true pnpm build
 
 ### Alchemy Setup
 1. Visit [Alchemy Dashboard](https://dashboard.alchemy.com/)
-2. Create a new app for each network (Ethereum, Polygon, Arbitrum)
-3. Copy the HTTP URLs to your `.env.local`
+2. Create a new app on the Sepolia network
+3. Copy the HTTP URL to your `.env.local` as `NEXT_PUBLIC_SEPOLIA_RPC_URL`
 
 ### Infura Setup
 1. Visit [Infura Dashboard](https://infura.io/dashboard)
 2. Create a new project
-3. Enable Ethereum, Polygon, and Arbitrum networks
-4. Use the provided endpoints
+3. Enable the Sepolia network
+4. Use the provided endpoint
 
 ### Rate Limiting Considerations
 - Public RPCs have rate limits
