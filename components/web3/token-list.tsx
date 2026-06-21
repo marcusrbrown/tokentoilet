@@ -3,8 +3,21 @@
 import type {Address} from 'viem'
 import {useVirtualizer} from '@tanstack/react-virtual'
 import {cva, type VariantProps} from 'class-variance-authority'
-import {AlertCircle, ChevronLeft, ChevronRight, Filter, Loader2, Search, SortAsc, SortDesc, Trash2} from 'lucide-react'
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  KeyRound,
+  Loader2,
+  RefreshCw,
+  Search,
+  SortAsc,
+  SortDesc,
+  Trash2,
+} from 'lucide-react'
 import React, {useCallback, useMemo, useRef, useState} from 'react'
+import {Badge} from '@/components/ui/badge'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
 import {Skeleton} from '@/components/ui/skeleton'
@@ -12,6 +25,7 @@ import {useTokenDiscovery} from '@/hooks/use-token-discovery'
 import {useTokenFiltering} from '@/hooks/use-token-filtering'
 import {cn} from '@/lib/utils'
 import type {CategorizedToken, TokenFilter, TokenSortOptions} from '@/lib/web3/token-filtering'
+import {isSuspectedSpam} from '@/lib/web3/token-filtering'
 
 import {TokenListItem} from './token-list-item'
 
@@ -103,11 +117,23 @@ const DEFAULT_SORT: TokenSortOptions = {field: 'balance', direction: 'desc'}
 const EMPTY_SELECTED_TOKENS: Address[] = []
 
 /**
+ * Spam filter tab values for the segmented control above the token list.
+ */
+type SpamFilter = 'all' | 'non-spam' | 'spam'
+
+/**
  * High-performance token list with virtual scrolling for efficient batch disposal operations.
  *
  * Virtual scrolling is critical for wallets containing 1000+ tokens, common in DeFi power users.
  * Search and filtering capabilities help users quickly identify unwanted tokens for disposal.
  * Batch selection enables efficient multi-token disposal transactions.
+ *
+ * Discovery UX states (R9a):
+ * - loading: skeleton rows + "Scanning your wallet…"
+ * - unavailable (AUTH_MISSING): setup guidance, no retry
+ * - error (API_ERROR / other): "Could not scan wallet" + retry
+ * - empty-success: neutral "No disposable tokens found" copy
+ * - populated: the token list
  */
 export function TokenList({
   config: userConfig = DEFAULT_USER_CONFIG,
@@ -131,6 +157,7 @@ export function TokenList({
   const [sortConfig, setSortConfig] = useState<TokenSortOptions>(sort)
   const [activeFilter] = useState<TokenFilter>(filter)
   const [internalSelectedTokens, setInternalSelectedTokens] = useState<Address[]>(selectedTokens)
+  const [spamFilter, setSpamFilter] = useState<SpamFilter>('all')
 
   const parentRef = useRef<HTMLDivElement>(null)
 
@@ -138,6 +165,8 @@ export function TokenList({
     tokens: discoveredTokens,
     isLoading: isDiscovering,
     error: discoveryError,
+    isSuccess: isDiscoverySuccess,
+    discoveryErrors,
     refetch: refetchTokens,
   } = useTokenDiscovery({
     enabled: true,
@@ -151,16 +180,40 @@ export function TokenList({
     discoveredTokens,
     {
       ...activeFilter,
-      searchQuery: searchQuery.trim() || undefined,
+      searchQuery: searchQuery.trim() === '' ? undefined : searchQuery.trim(),
     },
     sortConfig,
   )
 
-  const totalTokens = categorizedTokens.length
+  // -------------------------------------------------------------------------
+  // Discovery state classification (R9a)
+  // Guard against undefined discoveryErrors (hook may return undefined before
+  // the first successful query resolves in some test/SSR environments).
+  // -------------------------------------------------------------------------
+
+  const safeDiscoveryErrors = discoveryErrors ?? []
+  const hasAuthMissing = safeDiscoveryErrors.some(e => e.type === 'AUTH_MISSING')
+  const hasDiscoveryError = safeDiscoveryErrors.length > 0 && !hasAuthMissing
+
+  // -------------------------------------------------------------------------
+  // Spam filter application (R9b)
+  // -------------------------------------------------------------------------
+
+  const spamFilteredTokens = useMemo(() => {
+    if (spamFilter === 'non-spam') {
+      return categorizedTokens.filter(t => !isSuspectedSpam(t))
+    }
+    if (spamFilter === 'spam') {
+      return categorizedTokens.filter(t => isSuspectedSpam(t))
+    }
+    return categorizedTokens
+  }, [categorizedTokens, spamFilter])
+
+  const totalTokens = spamFilteredTokens.length
   const totalPages = Math.ceil(totalTokens / config.itemsPerPage)
   const startIndex = (currentPage - 1) * config.itemsPerPage
   const endIndex = Math.min(startIndex + config.itemsPerPage, totalTokens)
-  const paginatedTokens = config.enablePagination ? categorizedTokens.slice(startIndex, endIndex) : categorizedTokens
+  const paginatedTokens = config.enablePagination ? spamFilteredTokens.slice(startIndex, endIndex) : spamFilteredTokens
 
   const virtualizer = useVirtualizer({
     count: config.enableVirtualScrolling ? paginatedTokens.length : 0,
@@ -194,11 +247,16 @@ export function TokenList({
     [internalSelectedTokens, onTokenSelectionChange],
   )
 
+  /**
+   * Select all — EXCLUDES suspected-spam tokens (R9b: never auto-select spam).
+   * Operates on the full spam-filtered set (not just the current page) so that
+   * tokens on pages 2+ are also included when pagination is enabled.
+   */
   const handleSelectAll = useCallback(() => {
-    const allAddresses = paginatedTokens.map(token => token.address)
-    setInternalSelectedTokens(allAddresses)
-    onTokenSelectionChange?.(allAddresses)
-  }, [paginatedTokens, onTokenSelectionChange])
+    const nonSpamAddresses = spamFilteredTokens.filter(t => !isSuspectedSpam(t)).map(t => t.address)
+    setInternalSelectedTokens(nonSpamAddresses)
+    onTokenSelectionChange?.(nonSpamAddresses)
+  }, [spamFilteredTokens, onTokenSelectionChange])
 
   const handleDeselectAll = useCallback(() => {
     setInternalSelectedTokens([])
@@ -213,7 +271,11 @@ export function TokenList({
   )
 
   const isLoading = isDiscovering || isFiltering
-  const hasError = discoveryError != null || filteringError != null
+  const hasError = discoveryError !== null || filteringError !== null
+
+  // -------------------------------------------------------------------------
+  // State: loading (R9a — "Scanning your wallet…")
+  // -------------------------------------------------------------------------
 
   if (isLoading && categorizedTokens.length === 0) {
     return (
@@ -221,7 +283,7 @@ export function TokenList({
         <div className="p-6">
           <div className="flex items-center gap-3 mb-6">
             <Loader2 className="h-5 w-5 animate-spin text-violet-600" />
-            <span className="text-gray-700 dark:text-gray-300">Discovering tokens...</span>
+            <span className="text-gray-700 dark:text-gray-300">Scanning your wallet…</span>
           </div>
           <div className="space-y-4">
             {Array.from({length: 5}, (_, index) => `loading-${index}`).map(key => (
@@ -250,22 +312,79 @@ export function TokenList({
     )
   }
 
-  if (hasError) {
+  // -------------------------------------------------------------------------
+  // State: unavailable — AUTH_MISSING (R9a — no retry button)
+  // -------------------------------------------------------------------------
+
+  if (hasAuthMissing) {
+    return (
+      <div className={cn(tokenListVariants({variant, layout}), className)} {...props}>
+        <div className="p-6 text-center">
+          <KeyRound className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Token discovery unavailable</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-2">
+            Configure{' '}
+            <code className="font-mono text-sm bg-gray-100 dark:bg-gray-800 px-1 rounded">
+              NEXT_PUBLIC_ALCHEMY_API_KEY
+            </code>{' '}
+            to enable wallet scanning.
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-500">
+            Add a domain-restricted Alchemy API key to your{' '}
+            <code className="font-mono text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded">.env.local</code> file. See{' '}
+            <code className="font-mono text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded">.env.example</code> for setup
+            guidance.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // -------------------------------------------------------------------------
+  // State: error — API_ERROR or other (R9a — show retry)
+  // -------------------------------------------------------------------------
+
+  if (hasError || hasDiscoveryError) {
     return (
       <div className={cn(tokenListVariants({variant, layout}), className)} {...props}>
         <div className="p-6 text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Failed to Load Tokens</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Could not scan wallet</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {discoveryError?.message ?? filteringError?.message ?? 'An unexpected error occurred'}
+            {discoveryError?.message ?? filteringError?.message ?? 'An error occurred while scanning your wallet.'}
           </p>
           <Button onClick={refetchTokens} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
             Try Again
           </Button>
         </div>
       </div>
     )
   }
+
+  // -------------------------------------------------------------------------
+  // State: empty-success (R9a — neutral copy, NOT an error)
+  // -------------------------------------------------------------------------
+
+  if (isDiscoverySuccess && categorizedTokens.length === 0 && searchQuery.trim() === '') {
+    return (
+      <div className={cn(tokenListVariants({variant, layout}), className)} {...props}>
+        <div className="p-8 text-center">
+          <Trash2 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            No disposable tokens found in this wallet
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Scan completed successfully. No tokens eligible for disposal were detected.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // -------------------------------------------------------------------------
+  // State: empty search result (not a discovery state — search-specific)
+  // -------------------------------------------------------------------------
 
   if (isLoading === false && categorizedTokens.length === 0) {
     return (
@@ -287,6 +406,13 @@ export function TokenList({
       </div>
     )
   }
+
+  // -------------------------------------------------------------------------
+  // State: populated — the token list
+  // -------------------------------------------------------------------------
+
+  const spamCount = categorizedTokens.filter(t => isSuspectedSpam(t)).length
+  const nonSpamCount = categorizedTokens.length - spamCount
 
   return (
     <div className={cn(tokenListVariants({variant, layout}), className)} {...props}>
@@ -315,9 +441,60 @@ export function TokenList({
             </div>
           )}
 
+          {/* Spam segmented filter (R9b) */}
+          <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg w-fit">
+            <button
+              type="button"
+              onClick={() => setSpamFilter('all')}
+              className={cn(
+                'px-3 py-1 text-sm rounded-md transition-colors',
+                spamFilter === 'all'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm font-medium'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100',
+              )}
+            >
+              All
+              {categorizedTokens.length > 0 && (
+                <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">({categorizedTokens.length})</span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSpamFilter('non-spam')}
+              className={cn(
+                'px-3 py-1 text-sm rounded-md transition-colors',
+                spamFilter === 'non-spam'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm font-medium'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100',
+              )}
+            >
+              Non-spam
+              {nonSpamCount > 0 && (
+                <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">({nonSpamCount})</span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSpamFilter('spam')}
+              className={cn(
+                'px-3 py-1 text-sm rounded-md transition-colors',
+                spamFilter === 'spam'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm font-medium'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100',
+              )}
+            >
+              Spam
+              {spamCount > 0 && (
+                <Badge variant="error" size="sm" className="ml-1">
+                  {spamCount}
+                </Badge>
+              )}
+            </button>
+          </div>
+
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {searchQuery && `"${searchQuery}" • `}
+              {searchQuery !== '' && `"${searchQuery}" • `}
               {totalTokens.toLocaleString()} tokens
               {config.enablePagination && totalPages > 1 && (
                 <span>
@@ -406,7 +583,13 @@ export function TokenList({
                     transform: `translateY(${virtualItem.start}px)`,
                   }}
                 >
-                  <div className="px-2 pb-2">
+                  <div
+                    className={cn(
+                      'px-2 pb-2',
+                      // De-emphasize spam rows visually when showing "All" (R9b)
+                      isSuspectedSpam(paginatedTokens[virtualItem.index]) && spamFilter === 'all' && 'opacity-60',
+                    )}
+                  >
                     <TokenListItem
                       token={paginatedTokens[virtualItem.index]}
                       selected={internalSelectedTokens.includes(paginatedTokens[virtualItem.index].address)}
@@ -422,14 +605,21 @@ export function TokenList({
         ) : (
           <div className="p-4 space-y-3 max-h-[600px] overflow-y-auto">
             {paginatedTokens.map(token => (
-              <TokenListItem
+              <div
                 key={`${token.chainId}-${token.address}`}
-                token={token}
-                selected={internalSelectedTokens.includes(token.address)}
-                onClick={onTokenClick}
-                onToggleSelection={config.enableBatchSelection ? handleTokenSelection : undefined}
-                onViewDetails={onViewTokenDetails}
-              />
+                className={cn(
+                  // De-emphasize spam rows visually when showing "All" (R9b)
+                  isSuspectedSpam(token) && spamFilter === 'all' && 'opacity-60',
+                )}
+              >
+                <TokenListItem
+                  token={token}
+                  selected={internalSelectedTokens.includes(token.address)}
+                  onClick={onTokenClick}
+                  onToggleSelection={config.enableBatchSelection ? handleTokenSelection : undefined}
+                  onViewDetails={onViewTokenDetails}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -470,6 +660,12 @@ export function TokenList({
           </div>
         </div>
       )}
+
+      {/* Privacy disclosure (R9d) — inert footnote, not a consent gate */}
+      <p className="px-4 pb-3 text-xs text-gray-400 dark:text-gray-600">
+        Token discovery uses Alchemy to read your wallet&apos;s token balances. Your wallet address is shared with
+        Alchemy for this purpose.
+      </p>
     </div>
   )
 }

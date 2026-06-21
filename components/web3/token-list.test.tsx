@@ -122,6 +122,17 @@ const createMockCategorizedToken = (overrides = {}) => ({
   ...overrides,
 })
 
+const createMockSpamToken = (overrides = {}) =>
+  createMockCategorizedToken({
+    address: '0xDeAdBeEf00000000000000000000000000000001' as Address,
+    symbol: 'SPAM',
+    name: 'Free Claim Airdrop',
+    category: TokenCategory.SPAM,
+    spamScore: 95,
+    isVerified: false,
+    ...overrides,
+  })
+
 describe('TokenList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -189,7 +200,7 @@ describe('TokenList', () => {
 
       render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
 
-      expect(screen.getByText('Discovering tokens...')).toBeInTheDocument()
+      expect(screen.getByText('Scanning your wallet…')).toBeInTheDocument()
       expect(screen.getAllByTestId('skeleton')).toHaveLength(30) // 6 skeleton elements × 5 items
     })
 
@@ -228,12 +239,146 @@ describe('TokenList', () => {
 
       render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
 
-      expect(screen.getByText('Discovering tokens...')).toBeInTheDocument()
+      expect(screen.getByText('Scanning your wallet…')).toBeInTheDocument()
+    })
+  })
+
+  describe('Discovery UX States (R9a)', () => {
+    it('renders AUTH_MISSING unavailable state with setup guidance and NO retry button', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: false,
+        discoveryErrors: [{type: 'AUTH_MISSING', chainId: 11155111, message: 'API key missing'}],
+        chainsScanned: 0,
+        contractsChecked: 0,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByText('Token discovery unavailable')).toBeInTheDocument()
+      expect(screen.getByText(/NEXT_PUBLIC_ALCHEMY_API_KEY/)).toBeInTheDocument()
+      // No retry button — retrying without a key won't help
+      expect(screen.queryByRole('button', {name: /Try Again/i})).not.toBeInTheDocument()
+    })
+
+    it('renders API_ERROR state with "Could not scan wallet" copy and retry button', () => {
+      const mockRefetch = vi.fn()
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: false,
+        discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'Alchemy request failed'}],
+        chainsScanned: 0,
+        contractsChecked: 0,
+        refetch: mockRefetch,
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByText('Could not scan wallet')).toBeInTheDocument()
+      expect(screen.getByRole('button', {name: /Try Again/i})).toBeInTheDocument()
+    })
+
+    it('retry button calls refetch on API_ERROR', async () => {
+      const user = userEvent.setup()
+      const mockRefetch = vi.fn()
+
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: false,
+        discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'Alchemy request failed'}],
+        chainsScanned: 0,
+        contractsChecked: 0,
+        refetch: mockRefetch,
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      await user.click(screen.getByRole('button', {name: /Try Again/i}))
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('renders empty-success state with neutral copy distinct from error and unavailable', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 0,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      // Must use the exact empty-success copy — not error copy, not unavailable copy
+      expect(screen.getByText('No disposable tokens found in this wallet')).toBeInTheDocument()
+      expect(screen.getByText(/Scan completed successfully/)).toBeInTheDocument()
+
+      // Must NOT show error or unavailable copy
+      expect(screen.queryByText('Could not scan wallet')).not.toBeInTheDocument()
+      expect(screen.queryByText('Token discovery unavailable')).not.toBeInTheDocument()
+      // No retry button on empty-success
+      expect(screen.queryByRole('button', {name: /Try Again/i})).not.toBeInTheDocument()
+    })
+
+    it('AUTH_MISSING and API_ERROR states render distinct copy (not conflated)', () => {
+      // AUTH_MISSING
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: false,
+        discoveryErrors: [{type: 'AUTH_MISSING', chainId: 11155111, message: 'key missing'}],
+        chainsScanned: 0,
+        contractsChecked: 0,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      const {unmount} = render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+      expect(screen.getByText('Token discovery unavailable')).toBeInTheDocument()
+      expect(screen.queryByText('Could not scan wallet')).not.toBeInTheDocument()
+      unmount()
+
+      // API_ERROR
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: false,
+        discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'api error'}],
+        chainsScanned: 0,
+        contractsChecked: 0,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+      expect(screen.getByText('Could not scan wallet')).toBeInTheDocument()
+      expect(screen.queryByText('Token discovery unavailable')).not.toBeInTheDocument()
     })
   })
 
   describe('Error States', () => {
-    it('renders error state when token discovery fails', () => {
+    it('renders error state when token discovery fails (hook-level error)', () => {
       const mockRefetch = vi.fn()
       mockUseTokenDiscovery.mockReturnValue({
         tokens: [],
@@ -250,9 +395,9 @@ describe('TokenList', () => {
 
       render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
 
-      expect(screen.getByText('Failed to Load Tokens')).toBeInTheDocument()
+      expect(screen.getByText('Could not scan wallet')).toBeInTheDocument()
       expect(screen.getByText('Network error')).toBeInTheDocument()
-      expect(screen.getByRole('button', {name: 'Try Again'})).toBeInTheDocument()
+      expect(screen.getByRole('button', {name: /Try Again/i})).toBeInTheDocument()
     })
 
     it('handles retry on error', async () => {
@@ -274,7 +419,7 @@ describe('TokenList', () => {
 
       render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
 
-      const retryButton = screen.getByRole('button', {name: 'Try Again'})
+      const retryButton = screen.getByRole('button', {name: /Try Again/i})
       await user.click(retryButton)
 
       expect(mockRefetch).toHaveBeenCalledTimes(1)
@@ -285,8 +430,8 @@ describe('TokenList', () => {
     it('renders empty state when no tokens are found', () => {
       render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
 
-      expect(screen.getByText('No Tokens Found')).toBeInTheDocument()
-      expect(screen.getByText(/Connect your wallet/)).toBeInTheDocument()
+      expect(screen.getByText('No disposable tokens found in this wallet')).toBeInTheDocument()
+      expect(screen.getByText(/Scan completed successfully/)).toBeInTheDocument()
     })
 
     it('renders search-specific empty state', async () => {
@@ -426,6 +571,222 @@ describe('TokenList', () => {
       expect(screen.getByText('TOK1')).toBeInTheDocument()
       // Last tokens should not be in DOM
       expect(screen.queryByText('TOK99')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Spam Badge and Filter (R6, R9b)', () => {
+    it('renders spam badge on suspected-spam tokens', () => {
+      const spamToken = createMockSpamToken()
+      const normalToken = createMockCategorizedToken({
+        address: '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A3' as Address,
+        symbol: 'GOOD',
+        name: 'Good Token',
+        category: TokenCategory.UNKNOWN,
+        spamScore: 5,
+      })
+
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [normalToken, spamToken],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 2,
+        filteredTokens: 2,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 2,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      // Spam badge should appear for the spam token
+      expect(screen.getByText('Suspected Spam')).toBeInTheDocument()
+    })
+
+    it('spam filter segmented control renders All / Non-spam / Spam tabs', () => {
+      const mockTokens = [createMockCategorizedToken()]
+
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: mockTokens,
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      // The spam filter tabs are plain <button> elements (not design-system Buttons)
+      // Use getAllByRole to handle multiple matches and check at least one exists
+      const allButtons = screen.getAllByRole('button')
+      const buttonTexts = allButtons.map(b => b.textContent ?? '')
+      expect(buttonTexts.some(t => t.includes('All'))).toBe(true)
+      expect(buttonTexts.some(t => t.includes('Non-spam'))).toBe(true)
+      expect(buttonTexts.some(t => t.includes('Spam'))).toBe(true)
+    })
+
+    it('spam tokens are NOT auto-selected (default selection is empty)', () => {
+      const onSelectionChange = vi.fn()
+      const spamToken = createMockSpamToken()
+      const normalToken = createMockCategorizedToken({
+        address: '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A3' as Address,
+        symbol: 'GOOD',
+        name: 'Good Token',
+        category: TokenCategory.UNKNOWN,
+        spamScore: 5,
+      })
+
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [normalToken, spamToken],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 2,
+        filteredTokens: 2,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 2,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(
+        <TokenList
+          config={{enableBatchSelection: true, enableVirtualScrolling: false}}
+          onTokenSelectionChange={onSelectionChange}
+        />,
+        {wrapper: createWrapper()},
+      )
+
+      // No tokens should be selected by default
+      expect(onSelectionChange).not.toHaveBeenCalled()
+    })
+
+    it('select-all excludes suspected-spam tokens (R9b)', async () => {
+      const user = userEvent.setup()
+      const onSelectionChange = vi.fn()
+
+      const spamToken = createMockSpamToken({
+        address: '0xDeAdBeEf00000000000000000000000000000001' as Address,
+      })
+      const normalToken = createMockCategorizedToken({
+        address: '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A3' as Address,
+        symbol: 'GOOD',
+        name: 'Good Token',
+        category: TokenCategory.UNKNOWN,
+        spamScore: 5,
+      })
+
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [normalToken, spamToken],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 2,
+        filteredTokens: 2,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 2,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(
+        <TokenList
+          config={{enableBatchSelection: true, enableVirtualScrolling: false}}
+          onTokenSelectionChange={onSelectionChange}
+        />,
+        {wrapper: createWrapper()},
+      )
+
+      const selectAllButton = screen.getByRole('button', {name: 'Select All'})
+      await user.click(selectAllButton)
+
+      // Only the non-spam token should be selected
+      expect(onSelectionChange).toHaveBeenCalledWith([normalToken.address])
+      // Spam token address must NOT be in the selection
+      expect(onSelectionChange).not.toHaveBeenCalledWith(expect.arrayContaining([spamToken.address]))
+    })
+
+    it('high-spamScore token (>70) is also excluded from select-all', async () => {
+      const user = userEvent.setup()
+      const onSelectionChange = vi.fn()
+
+      // spamScore > 70 but category !== SPAM — still suspected spam
+      const highScoreToken = createMockCategorizedToken({
+        address: '0xDeAdBeEf00000000000000000000000000000002' as Address,
+        symbol: 'RISKY',
+        name: 'Risky Token',
+        category: TokenCategory.UNKNOWN,
+        spamScore: 80,
+      })
+      const normalToken = createMockCategorizedToken({
+        address: '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A3' as Address,
+        symbol: 'GOOD',
+        name: 'Good Token',
+        category: TokenCategory.UNKNOWN,
+        spamScore: 5,
+      })
+
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [normalToken, highScoreToken],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 2,
+        filteredTokens: 2,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 2,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(
+        <TokenList
+          config={{enableBatchSelection: true, enableVirtualScrolling: false}}
+          onTokenSelectionChange={onSelectionChange}
+        />,
+        {wrapper: createWrapper()},
+      )
+
+      await user.click(screen.getByRole('button', {name: 'Select All'}))
+
+      expect(onSelectionChange).toHaveBeenCalledWith([normalToken.address])
+      expect(onSelectionChange).not.toHaveBeenCalledWith(expect.arrayContaining([highScoreToken.address]))
     })
   })
 
@@ -626,7 +987,7 @@ describe('TokenList', () => {
       expect(screen.getByRole('button', {name: 'Select All'})).toBeInTheDocument()
     })
 
-    it('handles select all functionality', async () => {
+    it('handles select all functionality (non-spam tokens only)', async () => {
       const user = userEvent.setup()
       const onSelectionChange = vi.fn()
       const mockTokens = [
@@ -673,6 +1034,88 @@ describe('TokenList', () => {
         '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A2',
         '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A3',
       ])
+    })
+  })
+
+  describe('Select All — cross-page coverage (AF4)', () => {
+    it('selects all non-spam tokens across ALL pages, not just the current page', async () => {
+      const user = userEvent.setup()
+      const onSelectionChange = vi.fn()
+
+      // Create 60 non-spam tokens (more than the default 50 per page)
+      const page1Tokens = Array.from({length: 50}, (_, i) =>
+        createMockCategorizedToken({
+          address: `0x${'1'.repeat(39)}${i.toString(16)}` as Address,
+          symbol: `P1T${i}`,
+          name: `Page1 Token ${i}`,
+          category: TokenCategory.UNKNOWN,
+          spamScore: 5,
+        }),
+      )
+      const page2Tokens = Array.from({length: 10}, (_, i) =>
+        createMockCategorizedToken({
+          address: `0x${'2'.repeat(39)}${i.toString(16)}` as Address,
+          symbol: `P2T${i}`,
+          name: `Page2 Token ${i}`,
+          category: TokenCategory.UNKNOWN,
+          spamScore: 5,
+        }),
+      )
+      const spamToken = createMockSpamToken({
+        address: '0xDeAdBeEf00000000000000000000000000000099' as Address,
+      })
+
+      const allTokens = [...page1Tokens, ...page2Tokens, spamToken]
+
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: allTokens,
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: allTokens.length,
+        filteredTokens: allTokens.length,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: allTokens.length,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(
+        <TokenList
+          config={{
+            enableBatchSelection: true,
+            enableVirtualScrolling: false,
+            enablePagination: true,
+            itemsPerPage: 50,
+          }}
+          onTokenSelectionChange={onSelectionChange}
+        />,
+        {wrapper: createWrapper()},
+      )
+
+      // We should be on page 1 with 50 tokens visible
+      expect(screen.getByText(/Page 1/)).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', {name: 'Select All'}))
+
+      // Must have been called with all 60 non-spam tokens (page1 + page2), NOT just 50
+      expect(onSelectionChange).toHaveBeenCalledTimes(1)
+      const selectedAddresses = onSelectionChange.mock.calls[0][0] as Address[]
+      expect(selectedAddresses).toHaveLength(60) // 50 + 10, not just 50
+
+      // Spam token must not be included
+      expect(selectedAddresses).not.toContain(spamToken.address)
+
+      // All page2 tokens must be included even though they're not visible
+      for (const t of page2Tokens) {
+        expect(selectedAddresses).toContain(t.address)
+      }
     })
   })
 
@@ -765,6 +1208,36 @@ describe('TokenList', () => {
         expect(screen.getByText('2 of 10')).toBeInTheDocument()
         expect(screen.getByText('Showing 11-20 of 100 tokens')).toBeInTheDocument()
       })
+    })
+  })
+
+  describe('Privacy Disclosure (R9d)', () => {
+    it('renders Alchemy privacy disclosure in the populated state', () => {
+      const mockTokens = [createMockCategorizedToken()]
+
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: mockTokens,
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByText(/Token discovery uses Alchemy to read your wallet's token balances/)).toBeInTheDocument()
+      expect(screen.getByText(/Your wallet address is shared with Alchemy for this purpose/)).toBeInTheDocument()
     })
   })
 

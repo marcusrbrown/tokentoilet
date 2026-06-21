@@ -302,7 +302,7 @@ describe('Token Discovery Workflow E2E Tests', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('Failed to Load Tokens')).toBeInTheDocument()
+        expect(screen.getByText('Could not scan wallet')).toBeInTheDocument()
         expect(screen.getByText('RPC rate limit exceeded')).toBeInTheDocument()
       },
       {timeout: TEST_TIMEOUT},
@@ -328,20 +328,40 @@ describe('Token Discovery Workflow E2E Tests', () => {
       tokens: [],
       isLoading: false,
       error: null,
+      isFetching: false,
+      isSuccess: true,
+      discoveryErrors: [],
+      chainsScanned: 1,
+      contractsChecked: 0,
       refetch: vi.fn(),
+      refresh: vi.fn(),
     })
 
     mockUseTokenFiltering.mockReturnValue({
       tokens: [],
       isLoading: false,
       error: null,
+      isFetching: false,
+      isSuccess: true,
+      totalTokens: 0,
+      filteredTokens: 0,
+      errors: [],
+      stats: {
+        categoryStats: {} as Record<string, number>,
+        valueStats: {} as Record<string, number>,
+        totalValueUSD: 0,
+        totalTokens: 0,
+      },
+      refetch: vi.fn(),
+      refresh: vi.fn(),
     })
 
     renderWithProviders(<TokenList />)
 
     await waitFor(
       () => {
-        expect(screen.getByText('No Tokens Found')).toBeInTheDocument()
+        // Empty-success state: scan completed, no disposable tokens found
+        expect(screen.getByText('No disposable tokens found in this wallet')).toBeInTheDocument()
       },
       {timeout: TEST_TIMEOUT},
     )
@@ -363,7 +383,7 @@ describe('Token Discovery Workflow E2E Tests', () => {
 
     await waitFor(
       () => {
-        expect(screen.queryByText(/discovering tokens/i)).not.toBeInTheDocument()
+        expect(screen.queryByText(/scanning your wallet/i)).not.toBeInTheDocument()
       },
       {timeout: TEST_TIMEOUT},
     )

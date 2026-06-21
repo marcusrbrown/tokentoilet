@@ -50,3 +50,5 @@ legacy.md
 # Storybook static build output
 /storybook-static
 
+# Systematic skill scratch artifacts (ce:review, deepen-plan, etc.)
+.context/

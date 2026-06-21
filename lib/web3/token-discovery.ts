@@ -1,7 +1,62 @@
+/**
+ * Token discovery via Alchemy's Token API (browser-direct, viem transport).
+ *
+ * ## SSR boundary
+ * The Alchemy `client.request()` path is client-only. This module must never
+ * be imported in server components, route handlers, or any SSR context.
+ * Discovery is gated behind the `useTokenDiscovery` hook lifecycle, which
+ * runs only on the client.
+ *
+ * ## `config` argument
+ * `discoverUserTokens` retains the `config: Config` (wagmi) first argument for
+ * signature stability — the `useTokenDiscovery` hook passes `useConfig()` and
+ * changing the public signature would require updating all consumers. The
+ * rewrite builds its own per-chain Alchemy `createPublicClient` and does NOT
+ * use `config` for enumeration. `config` is kept available for future use
+ * (e.g. a Sepolia wagmi-transport fallback path) and to avoid a breaking
+ * change to the hook contract. Unit 7 must include a real-path integration
+ * test to confirm the client-construction path is exercised.
+ */
+
+import type {Address} from 'viem'
 import type {Config} from 'wagmi'
+
 import type {SupportedChainId} from '../../hooks/use-wallet'
-import {erc20Abi, type Address} from 'viem'
+
+import {createPublicClient, erc20Abi, http} from 'viem'
+import {mainnet, sepolia} from 'viem/chains'
 import {readContracts} from 'wagmi/actions'
+
+import {getAlchemyEndpoint} from './alchemy-endpoints'
+import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances} from './alchemy-token-api'
+import {sanitizeTokenDisplay} from './display-sanitization'
+
+// ---------------------------------------------------------------------------
+// Chain id → viem chain object map
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps supported chain IDs to their viem chain objects.
+ * Extend this when adding new supported chains.
+ */
+const CHAIN_MAP: Readonly<
+  Record<
+    number,
+    {
+      id: number
+      name: string
+      nativeCurrency: {decimals: number; name: string; symbol: string}
+      rpcUrls: {default: {http: readonly string[]}}
+    }
+  >
+> = {
+  [mainnet.id]: mainnet,
+  [sepolia.id]: sepolia,
+}
+
+// ---------------------------------------------------------------------------
+// Public types
+// ---------------------------------------------------------------------------
 
 /**
  * Token information structure for discovered tokens
@@ -9,9 +64,9 @@ import {readContracts} from 'wagmi/actions'
 export interface DiscoveredToken {
   /** Token contract address */
   address: Address
-  /** Token symbol (e.g., "USDC", "DAI") */
+  /** Token symbol (e.g., "USDC", "DAI") — sanitized at the discovery boundary */
   symbol: string
-  /** Token name (e.g., "USD Coin", "Dai Stablecoin") */
+  /** Token name (e.g., "USD Coin", "Dai Stablecoin") — sanitized at the discovery boundary */
   name: string
   /** Number of decimal places */
   decimals: number
@@ -49,12 +104,22 @@ export interface TokenDiscoveryResult {
   errors: TokenDiscoveryError[]
   /** Total number of chains scanned */
   chainsScanned: number
-  /** Total number of token contracts checked */
+  /**
+   * Total number of tokens enumerated.
+   * Field name preserved for contract stability; meaning changed from
+   * "contracts polled" to "tokens enumerated" by the Alchemy path.
+   */
   contractsChecked: number
 }
 
 /**
  * Error information for failed token discovery operations
+ *
+ * Type union is additive — existing `'RPC_ERROR' | 'CONTRACT_ERROR' |
+ * 'VALIDATION_ERROR' | 'UNKNOWN_ERROR'` assertions remain valid.
+ * New types:
+ * - `'AUTH_MISSING'`: Alchemy API key absent → discovery unavailable.
+ * - `'API_ERROR'`: Per-chain Alchemy scan failed → retryable.
  */
 export interface TokenDiscoveryError {
   /** Chain ID where error occurred */
@@ -66,8 +131,12 @@ export interface TokenDiscoveryError {
   /** Original error object */
   originalError?: Error
   /** Error type for categorization */
-  type: 'RPC_ERROR' | 'CONTRACT_ERROR' | 'VALIDATION_ERROR' | 'UNKNOWN_ERROR'
+  type: 'RPC_ERROR' | 'CONTRACT_ERROR' | 'VALIDATION_ERROR' | 'UNKNOWN_ERROR' | 'API_ERROR' | 'AUTH_MISSING'
 }
+
+// ---------------------------------------------------------------------------
+// Default configuration
+// ---------------------------------------------------------------------------
 
 /**
  * Default configuration for token discovery
@@ -79,59 +148,188 @@ export const DEFAULT_TOKEN_DISCOVERY_CONFIG: Required<Omit<TokenDiscoveryConfig,
   batchSize: 20,
 }
 
-/**
- * Common ERC-20 token addresses for each supported chain
- * These are well-known tokens that users commonly hold
- */
-export const COMMON_TOKEN_ADDRESSES: Record<SupportedChainId, Address[]> = {
-  // Sepolia
-  11155111: [
-    '0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8', // USDC
-    '0xfff9976782d46cc05630d1f6ebab18b2324d6b14', // WETH
-  ],
-  // Ethereum Mainnet
-  1: [
-    '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94', // USDC
-    '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
-    '0xdAC17F958D2ee523a2206206994597C13D831ec7', // USDT
-    '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // WBTC
-    '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
-    '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0', // MATIC
-    '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', // SHIB
-    '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', // UNI
-    '0x514910771AF9Ca656af840dff83E8264EcF986CA', // LINK
-    '0x6982508145454Ce325dDbE47a25d4ec3d2311933', // PEPE
-  ],
-  // Polygon
-  137: [
-    '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC
-    '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', // DAI
-    '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', // USDT
-    '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6', // WBTC
-    '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', // WETH
-    '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270', // WMATIC
-    '0xb33EaAd8d922B1083446DC23f610c2567fB5180f', // UNI
-    '0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39', // LINK
-    '0x831753DD7087CaC61aB5644b308642cc1c33Dc13', // QUICK
-    '0xD6DF932A45C0f255f85145f286eA0b292B21C90B', // AAVE
-  ],
-  // Arbitrum One
-  42161: [
-    '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8', // USDC.e
-    '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // USDC
-    '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1', // DAI
-    '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', // USDT
-    '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f', // WBTC
-    '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // WETH
-    '0xfa7F8980b0f1E64A2062791cc3b0871572f1F7f0', // UNI
-    '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4', // LINK
-    '0x11cDb42B0EB46D95f990BeDD4695A6e3fA034978', // CRV
-    '0x912CE59144191C1204E64559FE8253a0e49E6548', // ARB
-  ],
-}
+// ---------------------------------------------------------------------------
+// discoverUserTokens (entry point)
+// ---------------------------------------------------------------------------
 
 /**
- * Fetch token metadata for a specific token on a specific chain
+ * Discover tokens for a specific user across multiple chains via Alchemy.
+ *
+ * For each chain in `discoveryConfig.chainIds`:
+ * 1. Resolve the Alchemy endpoint. If absent (key missing) → push a single
+ *    `AUTH_MISSING` error and return empty tokens immediately.
+ * 2. Build a per-chain viem public client pointed at the Alchemy endpoint.
+ * 3. Enumerate all non-zero ERC-20 balances via `fetchWalletTokenBalances`.
+ *    On failure → push `API_ERROR` (explicit, not silent empty).
+ * 4. Fetch metadata for all enumerated tokens via `fetchAlchemyTokenMetadataBatch`.
+ * 5. Map each balance+metadata pair to a `DiscoveredToken`, applying
+ *    `sanitizeTokenDisplay()` to name and symbol at this boundary (R7).
+ *
+ * @param _config - wagmi Config (retained for signature stability; not used
+ *   for enumeration — the rewrite builds its own Alchemy clients).
+ * @param userAddress - Wallet address to enumerate.
+ * @param discoveryConfig - Discovery configuration (chains, thresholds, etc.).
+ */
+export async function discoverUserTokens(
+  _config: Config,
+  userAddress: Address,
+  discoveryConfig: TokenDiscoveryConfig,
+): Promise<TokenDiscoveryResult> {
+  const mergedConfig = {...DEFAULT_TOKEN_DISCOVERY_CONFIG, ...discoveryConfig}
+  const tokens: DiscoveredToken[] = []
+  const errors: TokenDiscoveryError[] = []
+  let contractsChecked = 0
+
+  for (const chainId of mergedConfig.chainIds) {
+    // Check for Alchemy endpoint. getAlchemyEndpoint returns undefined when
+    // the key is absent OR the chain is unmapped. We treat both as AUTH_MISSING
+    // at the discovery level — no hardcoded fallback (R10).
+    const endpoint = getAlchemyEndpoint(chainId)
+    if (endpoint === undefined) {
+      errors.push({
+        chainId,
+        message: `Alchemy API key absent or chain ${chainId} not supported — token discovery unavailable`,
+        type: 'AUTH_MISSING',
+      })
+      // Return immediately: if the key is missing it will be missing for all
+      // chains, so there is no point continuing the loop.
+      return {
+        tokens: [],
+        errors,
+        chainsScanned: mergedConfig.chainIds.length,
+        contractsChecked: 0,
+      }
+    }
+
+    const chainResult = await discoverChainTokens(userAddress, chainId, endpoint, mergedConfig)
+    tokens.push(...chainResult.tokens)
+    errors.push(...chainResult.errors)
+    contractsChecked += chainResult.contractsChecked
+  }
+
+  return {
+    tokens,
+    errors,
+    chainsScanned: mergedConfig.chainIds.length,
+    contractsChecked,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// discoverChainTokens (per-chain enumeration)
+// ---------------------------------------------------------------------------
+
+/**
+ * Enumerate tokens on a single chain for the given user address.
+ *
+ * Builds a viem public client from the Alchemy endpoint, calls
+ * `fetchWalletTokenBalances` (throws on RPC failure → mapped to API_ERROR),
+ * then `fetchAlchemyTokenMetadataBatch` (best-effort, never throws).
+ *
+ * Sanitizes name and symbol via `sanitizeTokenDisplay` when constructing each
+ * `DiscoveredToken` (R7 — discovery-boundary sanitization).
+ */
+async function discoverChainTokens(
+  userAddress: Address,
+  chainId: SupportedChainId,
+  alchemyEndpoint: string,
+  discoveryConfig: Required<Omit<TokenDiscoveryConfig, 'chainIds'>>,
+): Promise<{tokens: DiscoveredToken[]; errors: TokenDiscoveryError[]; contractsChecked: number}> {
+  const chain = CHAIN_MAP[chainId]
+  if (chain === undefined) {
+    return {
+      tokens: [],
+      errors: [
+        {
+          chainId,
+          message: `Chain ${chainId} is not in the supported chain map`,
+          type: 'VALIDATION_ERROR',
+        },
+      ],
+      contractsChecked: 0,
+    }
+  }
+
+  // Build a per-chain viem public client pointed at the Alchemy endpoint.
+  // This is what makes the discovery mainnet-ready while staying chain-gated.
+  const client = createPublicClient({
+    chain,
+    transport: http(alchemyEndpoint),
+  })
+
+  let balances: Awaited<ReturnType<typeof fetchWalletTokenBalances>>
+  try {
+    balances = await fetchWalletTokenBalances(client, userAddress)
+  } catch (error) {
+    // Per-chain scan failure → explicit API_ERROR, not silent empty (R11).
+    console.error(`[token-discovery] fetchWalletTokenBalances failed for chain ${chainId}:`, error)
+    return {
+      tokens: [],
+      errors: [
+        {
+          chainId,
+          message: `Could not scan wallet on chain ${chainId}`,
+          originalError: error instanceof Error ? error : new Error(String(error)),
+          type: 'API_ERROR',
+        },
+      ],
+      contractsChecked: 0,
+    }
+  }
+
+  // Apply the configured minimum-balance threshold before capping, preserving
+  // the pre-rewrite filtering contract: callers that raise minBalanceThreshold
+  // must not see (or be able to select) balances below it. Default is 0n, so
+  // default callers keep every non-zero balance.
+  const thresholdBalances = balances.filter(b => b.balance >= discoveryConfig.minBalanceThreshold)
+
+  // Apply per-chain token cap.
+  const cappedBalances = thresholdBalances.slice(0, discoveryConfig.maxTokensPerChain)
+
+  // Fetch metadata for all enumerated tokens (best-effort, never throws).
+  const addresses = cappedBalances.map(b => b.contractAddress)
+  const metadataMap = await fetchAlchemyTokenMetadataBatch(client, addresses)
+
+  // Map balance + metadata → DiscoveredToken, applying sanitization at this
+  // boundary so all downstream render sites (list, disposal, approval) receive
+  // already-sanitized name/symbol values (R7).
+  const tokens: DiscoveredToken[] = []
+  for (const entry of cappedBalances) {
+    const meta = metadataMap.get(entry.contractAddress)
+    const rawName = meta?.name ?? ''
+    const rawSymbol = meta?.symbol ?? 'UNKNOWN'
+    const decimals = meta?.decimals ?? 18
+
+    tokens.push({
+      address: entry.contractAddress,
+      name: sanitizeTokenDisplay(rawName),
+      symbol: sanitizeTokenDisplay(rawSymbol),
+      decimals,
+      balance: entry.balance,
+      chainId,
+      formattedBalance: formatTokenBalance(entry.balance, decimals),
+    })
+  }
+
+  return {
+    tokens,
+    errors: [],
+    contractsChecked: cappedBalances.length,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// fetchTokenMetadata (on-chain ERC-20 — kept intact for token-metadata.ts)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch token metadata for a specific token on a specific chain via on-chain
+ * ERC-20 `readContracts` calls.
+ *
+ * IMPORTANT: Do NOT change this function's signature. `lib/web3/token-metadata.ts`
+ * imports this as `fetchBasicMetadata` (line 6) and calls it inside
+ * `fetchOnChainMetadata` (line ~314). Changing the signature would break
+ * `fetchEnhancedTokenMetadata`.
  */
 export async function fetchTokenMetadata(
   config: Config,
@@ -174,38 +372,9 @@ export async function fetchTokenMetadata(
   }
 }
 
-/**
- * Fetch token balance for a specific user address
- */
-export async function fetchTokenBalance(
-  config: Config,
-  tokenAddress: Address,
-  userAddress: Address,
-  chainId: SupportedChainId,
-): Promise<bigint | null> {
-  try {
-    const result = await readContracts(config, {
-      allowFailure: false,
-      contracts: [
-        {
-          address: tokenAddress,
-          abi: erc20Abi,
-          functionName: 'balanceOf',
-          args: [userAddress],
-          chainId,
-        },
-      ],
-    })
-
-    return result[0]
-  } catch (error) {
-    console.error(
-      `Failed to fetch balance for token ${tokenAddress} and user ${userAddress} on chain ${chainId}:`,
-      error,
-    )
-    return null
-  }
-}
+// ---------------------------------------------------------------------------
+// formatTokenBalance
+// ---------------------------------------------------------------------------
 
 /**
  * Format token balance for display
@@ -215,7 +384,7 @@ export function formatTokenBalance(balance: bigint, decimals: number, maxDisplay
 
   try {
     // Convert to decimal string
-    const divisor = BigInt(10 ** decimals)
+    const divisor = BigInt(10) ** BigInt(decimals)
     const whole = balance / divisor
     const remainder = balance % divisor
 
@@ -240,250 +409,9 @@ export function formatTokenBalance(balance: bigint, decimals: number, maxDisplay
   }
 }
 
-/**
- * Discover tokens for a specific user across multiple chains
- */
-export async function discoverUserTokens(
-  config: Config,
-  userAddress: Address,
-  discoveryConfig: TokenDiscoveryConfig,
-): Promise<TokenDiscoveryResult> {
-  const mergedConfig = {...DEFAULT_TOKEN_DISCOVERY_CONFIG, ...discoveryConfig}
-  const tokens: DiscoveredToken[] = []
-  const errors: TokenDiscoveryError[] = []
-  let contractsChecked = 0
-
-  // Process each chain
-  for (const chainId of mergedConfig.chainIds) {
-    try {
-      const chainTokens = await discoverChainTokens(config, userAddress, chainId, mergedConfig)
-      tokens.push(...chainTokens.tokens)
-      errors.push(...chainTokens.errors)
-      contractsChecked += chainTokens.contractsChecked
-    } catch (error) {
-      errors.push({
-        chainId,
-        message: `Failed to scan chain ${chainId}`,
-        originalError: error instanceof Error ? error : new Error(String(error)),
-        type: 'RPC_ERROR',
-      })
-    }
-  }
-
-  return {
-    tokens,
-    errors,
-    chainsScanned: mergedConfig.chainIds.length,
-    contractsChecked,
-  }
-}
-
-/**
- * Discover tokens on a specific chain for a user
- */
-async function discoverChainTokens(
-  config: Config,
-  userAddress: Address,
-  chainId: SupportedChainId,
-  discoveryConfig: Required<Omit<TokenDiscoveryConfig, 'chainIds'>>,
-): Promise<{tokens: DiscoveredToken[]; errors: TokenDiscoveryError[]; contractsChecked: number}> {
-  const tokens: DiscoveredToken[] = []
-  const errors: TokenDiscoveryError[] = []
-  const tokenAddresses = COMMON_TOKEN_ADDRESSES[chainId]
-  let contractsChecked = 0
-
-  if (tokenAddresses === undefined) {
-    return {
-      tokens,
-      errors: [
-        {
-          chainId,
-          message: `No token discovery addresses configured for chain ${chainId}`,
-          type: 'VALIDATION_ERROR',
-        },
-      ],
-      contractsChecked,
-    }
-  }
-
-  // Limit the number of tokens to check based on configuration
-  const tokensToCheck = tokenAddresses.slice(0, discoveryConfig.maxTokensPerChain)
-
-  if (discoveryConfig.enableBatching) {
-    // Process tokens in batches for better performance
-    for (let i = 0; i < tokensToCheck.length; i += discoveryConfig.batchSize) {
-      const batch = tokensToCheck.slice(i, i + discoveryConfig.batchSize)
-      const batchResults = await processBatch(config, userAddress, chainId, batch, discoveryConfig)
-      tokens.push(...batchResults.tokens)
-      errors.push(...batchResults.errors)
-      contractsChecked += batch.length
-    }
-  } else {
-    // Process tokens individually
-    for (const tokenAddress of tokensToCheck) {
-      try {
-        const token = await processToken(config, userAddress, chainId, tokenAddress, discoveryConfig)
-        if (token) {
-          tokens.push(token)
-        }
-        contractsChecked++
-      } catch (error) {
-        errors.push({
-          chainId,
-          tokenAddress,
-          message: `Failed to process token ${tokenAddress}`,
-          originalError: error instanceof Error ? error : new Error(String(error)),
-          type: 'CONTRACT_ERROR',
-        })
-        contractsChecked++
-      }
-    }
-  }
-
-  return {tokens, errors, contractsChecked}
-}
-
-/**
- * Process a batch of tokens for efficiency
- */
-async function processBatch(
-  config: Config,
-  userAddress: Address,
-  chainId: SupportedChainId,
-  tokenAddresses: Address[],
-  discoveryConfig: Required<Omit<TokenDiscoveryConfig, 'chainIds'>>,
-): Promise<{tokens: DiscoveredToken[]; errors: TokenDiscoveryError[]}> {
-  const tokens: DiscoveredToken[] = []
-  const errors: TokenDiscoveryError[] = []
-
-  try {
-    // Create batch contract calls for metadata and balances
-    const metadataContracts = tokenAddresses.flatMap(address => [
-      {address, abi: erc20Abi, functionName: 'name' as const, chainId},
-      {address, abi: erc20Abi, functionName: 'symbol' as const, chainId},
-      {address, abi: erc20Abi, functionName: 'decimals' as const, chainId},
-    ])
-
-    const balanceContracts = tokenAddresses.map(address => ({
-      address,
-      abi: erc20Abi,
-      functionName: 'balanceOf' as const,
-      args: [userAddress],
-      chainId,
-    }))
-
-    // Execute batch calls
-    const [metadataResults, balanceResults] = await Promise.all([
-      readContracts(config, {allowFailure: true, contracts: metadataContracts}),
-      readContracts(config, {allowFailure: true, contracts: balanceContracts}),
-    ])
-
-    // Process results
-    for (const [i, tokenAddress] of tokenAddresses.entries()) {
-      const metadataIndex = i * 3
-      const balanceIndex = i
-
-      try {
-        const nameResult = metadataResults[metadataIndex]
-        const symbolResult = metadataResults[metadataIndex + 1]
-        const decimalsResult = metadataResults[metadataIndex + 2]
-        const balanceResult = balanceResults[balanceIndex]
-
-        // Check if all results are successful
-        if (
-          nameResult.status === 'success' &&
-          symbolResult.status === 'success' &&
-          decimalsResult.status === 'success' &&
-          balanceResult.status === 'success'
-        ) {
-          const balance = balanceResult.result
-          const decimals = decimalsResult.result as number
-
-          // Apply minimum balance threshold
-          if (balance >= discoveryConfig.minBalanceThreshold) {
-            tokens.push({
-              address: tokenAddress,
-              name: nameResult.result as string,
-              symbol: symbolResult.result as string,
-              decimals,
-              balance,
-              chainId,
-              formattedBalance: formatTokenBalance(balance, decimals),
-            })
-          }
-        } else {
-          // Log which specific call failed
-          const failedCalls = []
-          if (nameResult.status === 'failure') failedCalls.push('name')
-          if (symbolResult.status === 'failure') failedCalls.push('symbol')
-          if (decimalsResult.status === 'failure') failedCalls.push('decimals')
-          if (balanceResult.status === 'failure') failedCalls.push('balance')
-
-          errors.push({
-            chainId,
-            tokenAddress,
-            message: `Failed to fetch ${failedCalls.join(', ')} for token ${tokenAddress}`,
-            type: 'CONTRACT_ERROR',
-          })
-        }
-      } catch (error) {
-        errors.push({
-          chainId,
-          tokenAddress,
-          message: `Error processing token ${tokenAddress} in batch`,
-          originalError: error instanceof Error ? error : new Error(String(error)),
-          type: 'CONTRACT_ERROR',
-        })
-      }
-    }
-  } catch (error) {
-    // If batch operation fails entirely, fall back to individual processing
-    errors.push({
-      chainId,
-      message: 'Batch processing failed, consider reducing batch size',
-      originalError: error instanceof Error ? error : new Error(String(error)),
-      type: 'RPC_ERROR',
-    })
-  }
-
-  return {tokens, errors}
-}
-
-/**
- * Process a single token
- */
-async function processToken(
-  config: Config,
-  userAddress: Address,
-  chainId: SupportedChainId,
-  tokenAddress: Address,
-  discoveryConfig: Required<Omit<TokenDiscoveryConfig, 'chainIds'>>,
-): Promise<DiscoveredToken | null> {
-  // Fetch token metadata and balance
-  const [metadata, balance] = await Promise.all([
-    fetchTokenMetadata(config, tokenAddress, chainId),
-    fetchTokenBalance(config, tokenAddress, userAddress, chainId),
-  ])
-
-  if (!metadata || balance === null) {
-    return null
-  }
-
-  // Apply minimum balance threshold
-  if (balance < discoveryConfig.minBalanceThreshold) {
-    return null
-  }
-
-  return {
-    address: tokenAddress,
-    name: metadata.name,
-    symbol: metadata.symbol,
-    decimals: metadata.decimals,
-    balance,
-    chainId,
-    formattedBalance: formatTokenBalance(balance, metadata.decimals),
-  }
-}
+// ---------------------------------------------------------------------------
+// filterTokens / sortTokens (kept intact)
+// ---------------------------------------------------------------------------
 
 /**
  * Filter discovered tokens based on criteria
@@ -508,15 +436,15 @@ export function filterTokens(
     }
 
     // Chain filter
-    if (filters.chains && !filters.chains.includes(token.chainId)) {
+    if (filters.chains !== undefined && !filters.chains.includes(token.chainId)) {
       return false
     }
 
     // Symbol filters
-    if (filters.symbols && !filters.symbols.includes(token.symbol)) {
+    if (filters.symbols !== undefined && !filters.symbols.includes(token.symbol)) {
       return false
     }
-    if (filters.excludeSymbols && filters.excludeSymbols.includes(token.symbol)) {
+    if (filters.excludeSymbols !== undefined && filters.excludeSymbols.includes(token.symbol)) {
       return false
     }
 

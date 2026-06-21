@@ -31,8 +31,9 @@ import {Skeleton} from '@/components/ui/skeleton'
 import {useTokenMetadata} from '@/hooks/use-token-metadata'
 import {formatDate, formatNumber} from '@/lib/token-utils'
 import {cn, formatAddress} from '@/lib/utils'
+import {isSafeLogoUrl} from '@/lib/web3/display-sanitization'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
-import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
+import {isSuspectedSpam, TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 // Strict type definitions for component variants
@@ -175,7 +176,7 @@ function MetadataRow({label, value, copyable = false, className}: MetadataRowPro
 function getRiskLevelFromToken(token: CategorizedToken): RiskLevel {
   // Prioritize spam classification over risk score because user safety is paramount
   // High spam scores indicate suspicious behavior patterns that override other risk factors
-  if (token.category === 'spam' || token.spamScore > 70) {
+  if (isSuspectedSpam(token)) {
     return 'spam'
   }
   switch (token.riskScore) {
@@ -370,9 +371,17 @@ export function TokenDetail({
       )}
 
       <div className="flex items-start gap-4">
-        {/* Token Logo or Placeholder */}
+        {/* Token Logo or Placeholder (R7 render boundary)
+            Remote logo is loaded ONLY when:
+            1. isSafeLogoUrl() passes (https: scheme + CSS-sink-safe characters)
+            2. The token is verified AND not suspected spam
+            Otherwise the symbol-initials / icon fallback is shown. */}
         <div className="h-16 w-16 rounded-full bg-gradient-to-br from-violet-100 to-blue-100 dark:from-violet-800 dark:to-blue-800 flex items-center justify-center flex-shrink-0">
-          {metadata?.logoURI != null && metadata.logoURI.trim().length > 0 ? (
+          {metadata?.logoURI !== undefined &&
+          metadata.logoURI.trim().length > 0 &&
+          isSafeLogoUrl(metadata.logoURI) &&
+          token.isVerified === true &&
+          !isSuspectedSpam(token) ? (
             <div
               style={{
                 backgroundImage: `url(${metadata.logoURI})`,

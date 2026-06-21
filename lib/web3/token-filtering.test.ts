@@ -11,6 +11,8 @@ import {
   DEFAULT_CATEGORIZATION_PREFERENCES,
   determineValueClass,
   filterTokens,
+  isSuspectedSpam,
+  KNOWN_VALUABLE_TOKENS,
   parseTokenId,
   sortTokens,
   TokenCategory,
@@ -467,5 +469,142 @@ describe('Token Filtering Utilities', () => {
       expect(stats.totalValueUSD).toBe(0)
       expect(Object.values(stats.categoryStats).every(count => count === 0)).toBe(true)
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// AF3: isConfusableTokenName wired into spam scoring
+// ---------------------------------------------------------------------------
+
+describe('calculateSpamScore — confusable/mixed-script name signal (AF3)', () => {
+  it('gives a higher spam score to a token with a mixed-script (confusable) name', () => {
+    // Cyrillic 'С' (U+0421) mixed with Latin — classic homoglyph phishing
+    const confusableName = 'USD\u0421' // "USD" + Cyrillic С (looks like "USDC")
+    const confusableScore = calculateSpamScore({
+      name: confusableName,
+      symbol: 'USDC',
+      decimals: 18,
+      balance: BigInt('1000000000000000000'),
+      isVerified: false,
+      riskScore: TokenRiskScore.UNKNOWN,
+    })
+
+    const normalScore = calculateSpamScore({
+      name: 'USDC',
+      symbol: 'USDC',
+      decimals: 18,
+      balance: BigInt('1000000000000000000'),
+      isVerified: false,
+      riskScore: TokenRiskScore.UNKNOWN,
+    })
+
+    expect(confusableScore).toBeGreaterThan(normalScore)
+  })
+
+  it('gives a higher spam score to a token with a mixed-script symbol', () => {
+    // Greek Alpha (U+0391) mixed with Latin — looks like "A" but is Greek
+    const confusableSymbol = 'USD\u0391' // "USD" + Greek Alpha
+    const confusableScore = calculateSpamScore({
+      name: 'USD Coin',
+      symbol: confusableSymbol,
+      decimals: 18,
+      balance: BigInt('1000000000000000000'),
+      isVerified: false,
+      riskScore: TokenRiskScore.UNKNOWN,
+    })
+
+    const normalScore = calculateSpamScore({
+      name: 'USD Coin',
+      symbol: 'USDA',
+      decimals: 18,
+      balance: BigInt('1000000000000000000'),
+      isVerified: false,
+      riskScore: TokenRiskScore.UNKNOWN,
+    })
+
+    expect(confusableScore).toBeGreaterThan(normalScore)
+  })
+
+  it('does not penalise a plain ASCII name', () => {
+    const score = calculateSpamScore({
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 18,
+      balance: BigInt('1000000000000000000'),
+      isVerified: true,
+      riskScore: TokenRiskScore.VERIFIED,
+    })
+    // Verified, plain ASCII, no spam patterns → score should be 0
+    expect(score).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// AF5: shared isSuspectedSpam predicate
+// ---------------------------------------------------------------------------
+
+describe('isSuspectedSpam — shared predicate (AF5)', () => {
+  const baseToken: CategorizedToken = {
+    ...mockCategorizedToken,
+    category: TokenCategory.UNKNOWN,
+    spamScore: 0,
+  }
+
+  it('returns false for a clean token (score 0, category UNKNOWN)', () => {
+    expect(isSuspectedSpam({...baseToken, spamScore: 0, category: TokenCategory.UNKNOWN})).toBe(false)
+  })
+
+  it('returns false for spamScore exactly 70 (boundary — not > 70)', () => {
+    expect(isSuspectedSpam({...baseToken, spamScore: 70, category: TokenCategory.UNKNOWN})).toBe(false)
+  })
+
+  it('returns true for spamScore 71 (just above threshold)', () => {
+    expect(isSuspectedSpam({...baseToken, spamScore: 71, category: TokenCategory.UNKNOWN})).toBe(true)
+  })
+
+  it('returns true for spamScore 100', () => {
+    expect(isSuspectedSpam({...baseToken, spamScore: 100, category: TokenCategory.UNKNOWN})).toBe(true)
+  })
+
+  it('returns true when category is SPAM regardless of spamScore', () => {
+    expect(isSuspectedSpam({...baseToken, spamScore: 0, category: TokenCategory.SPAM})).toBe(true)
+  })
+
+  it('returns true when category is SPAM AND spamScore > 70', () => {
+    expect(isSuspectedSpam({...baseToken, spamScore: 95, category: TokenCategory.SPAM})).toBe(true)
+  })
+
+  it('returns false for a VALUABLE token with low spam score', () => {
+    expect(isSuspectedSpam({...baseToken, spamScore: 5, category: TokenCategory.VALUABLE})).toBe(false)
+  })
+})
+
+describe('KNOWN_VALUABLE_TOKENS address correctness', () => {
+  it('should contain the correct canonical mainnet USDC address', () => {
+    const CORRECT_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as Address
+    expect(KNOWN_VALUABLE_TOKENS[1].has(CORRECT_USDC)).toBe(true)
+  })
+
+  it('should NOT contain the fabricated USDC address', () => {
+    const FABRICATED_USDC = '0xA0b86a33E6441E5d8CE6a65f7AEF4eDe18f23e94' as Address
+    // Verify the old wrong address is gone from all chains
+    expect(KNOWN_VALUABLE_TOKENS[1].has(FABRICATED_USDC)).toBe(false)
+    expect(KNOWN_VALUABLE_TOKENS[137].has(FABRICATED_USDC)).toBe(false)
+    expect(KNOWN_VALUABLE_TOKENS[42161].has(FABRICATED_USDC)).toBe(false)
+  })
+
+  it('should classify the corrected mainnet USDC as VALUABLE (kept off burn candidates)', () => {
+    const CORRECT_USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as Address
+    const usdcToken: CategorizedToken = {
+      ...mockCategorizedToken,
+      address: CORRECT_USDC,
+      chainId: 1,
+      symbol: 'USDC',
+      name: 'USD Coin',
+      decimals: 6,
+    }
+
+    const category = autoCategorizeToken(usdcToken, DEFAULT_CATEGORIZATION_PREFERENCES)
+    expect(category).toBe(TokenCategory.VALUABLE)
   })
 })
