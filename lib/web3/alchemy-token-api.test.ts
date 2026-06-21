@@ -14,9 +14,10 @@
  */
 
 import type {Address} from 'viem'
+import {HttpRequestError, InvalidRequestRpcError, RpcError} from 'viem'
 import {describe, expect, it, vi} from 'vitest'
 
-import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances} from './alchemy-token-api'
+import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances, isAlchemyAuthError} from './alchemy-token-api'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -347,6 +348,95 @@ describe('fetchAlchemyTokenMetadataBatch', () => {
 
       expect(result.size).toBe(0)
       expect(client.request).not.toHaveBeenCalled()
+    })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// isAlchemyAuthError
+// ---------------------------------------------------------------------------
+
+describe('isAlchemyAuthError', () => {
+  describe('HttpRequestError path', () => {
+    it('returns true for status 401', () => {
+      const error = new HttpRequestError({
+        status: 401,
+        url: 'https://eth-mainnet.g.alchemy.com/v2/bad-key',
+        details: 'Unauthorized',
+      })
+      expect(isAlchemyAuthError(error)).toBe(true)
+    })
+
+    it('returns true for status 403', () => {
+      const error = new HttpRequestError({
+        status: 403,
+        url: 'https://eth-mainnet.g.alchemy.com/v2/bad-key',
+        details: 'Forbidden',
+      })
+      expect(isAlchemyAuthError(error)).toBe(true)
+    })
+
+    it('returns false for status 500 (server error, not auth)', () => {
+      const error = new HttpRequestError({
+        status: 500,
+        url: 'https://eth-mainnet.g.alchemy.com/v2/key',
+        details: 'Internal Server Error',
+      })
+      expect(isAlchemyAuthError(error)).toBe(false)
+    })
+  })
+
+  describe('InvalidRequestRpcError path', () => {
+    it('returns true for InvalidRequestRpcError (code -32600, viem JSON-RPC auth path)', () => {
+      // viem surfaces Alchemy JSON-RPC auth failures as InvalidRequestRpcError
+      // when the response body has { error: { code: -32600, message: "..." } }.
+      const error = new InvalidRequestRpcError(new Error('Must be authenticated!'))
+      expect(isAlchemyAuthError(error)).toBe(true)
+    })
+  })
+
+  describe('RpcError path', () => {
+    it('returns true for a generic RpcError with code -32600', () => {
+      const error = new RpcError(new Error('Invalid access key'), {
+        code: -32600,
+        shortMessage: 'Invalid access key',
+      })
+      expect(isAlchemyAuthError(error)).toBe(true)
+    })
+
+    it('returns true for a RpcError with a different code but an Alchemy auth message (message fallback)', () => {
+      // Alchemy may use a non-standard code but still include a recognizable message.
+      const error = new RpcError(new Error('Origin not on whitelist.'), {
+        code: -32001,
+        shortMessage: 'Origin not on whitelist.',
+      })
+      expect(isAlchemyAuthError(error)).toBe(true)
+    })
+
+    it('returns false for a RpcError with a non-auth code and non-auth message', () => {
+      const error = new RpcError(new Error('rate limit exceeded'), {
+        code: -32005,
+        shortMessage: 'rate limit exceeded',
+      })
+      expect(isAlchemyAuthError(error)).toBe(false)
+    })
+  })
+
+  describe('non-RPC error paths', () => {
+    it('returns false for a plain Error with a non-auth message', () => {
+      expect(isAlchemyAuthError(new Error('network down'))).toBe(false)
+    })
+
+    it('returns false for a string (non-Error value)', () => {
+      expect(isAlchemyAuthError('Unauthorized')).toBe(false)
+    })
+
+    it('returns false for null', () => {
+      expect(isAlchemyAuthError(null)).toBe(false)
+    })
+
+    it('returns false for undefined', () => {
+      expect(isAlchemyAuthError(undefined)).toBe(false)
     })
   })
 })
