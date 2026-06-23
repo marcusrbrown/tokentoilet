@@ -1,6 +1,7 @@
 import type {Hash, TransactionReceipt} from 'viem'
 import type {SupportedChainId} from '../../hooks/use-wallet'
 
+import {isDevelopment} from 'std-env'
 import {waitForTransactionReceipt} from 'viem/actions'
 
 import {wagmiConfig} from './config'
@@ -61,7 +62,7 @@ export const defaultQueueConfig: TransactionQueueConfig = {
   confirmationTimeout: 300000, // 5 minutes
   maxQueueSize: 100,
   enablePersistence: true,
-  debug: process.env.NODE_ENV === 'development',
+  debug: isDevelopment,
 }
 
 // Transaction queue event types

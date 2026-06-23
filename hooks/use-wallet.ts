@@ -2,6 +2,7 @@
 
 import {useAppKit} from '@reown/appkit/react'
 import {useCallback, useState} from 'react'
+import {isDevelopment} from 'std-env'
 import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
 import {DEFAULT_SUPPORTED_NETWORK_V1, SUPPORTED_CHAIN_IDS_V1, SUPPORTED_NETWORK_INFO_V1} from '@/lib/web3/chains'
 import {classifyWalletError, getWalletErrorRecovery} from '@/lib/web3/wallet-error-detector'
@@ -60,7 +61,7 @@ export function useWallet() {
 
   // Integration with wallet persistence
   const persistence = useWalletPersistence({
-    debug: process.env.NODE_ENV === 'development',
+    debug: isDevelopment,
   })
 
   // Network validation functions
