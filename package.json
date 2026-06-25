@@ -54,7 +54,7 @@
   "devDependencies": {
     "@bfra.me/eslint-config": "0.51.1",
     "@bfra.me/prettier-config": "0.16.9",
-    "@eslint-react/eslint-plugin": "5.9.0",
+    "@eslint-react/eslint-plugin": "5.9.1",
     "@next/bundle-analyzer": "16.2.9",
     "@next/eslint-plugin-next": "16.2.9",
     "@storybook/addon-essentials": "9.0.0-alpha.12",
@@ -86,7 +86,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.3",
     "jsdom": "29.1.1",
-    "lint-staged": "17.0.7",
+    "lint-staged": "17.0.8",
     "postcss": "8.5.15",
     "prettier": "3.8.4",
     "simple-git-hooks": "2.13.1",
@@ -95,7 +95,7 @@
     "tailwindcss": "4.3.1",
     "tsx": "4.22.4",
     "typescript": "6.0.3",
-    "viem": "2.52.2",
+    "viem": "2.53.1",
     "vite": "8.0.16",
     "vitest": "4.1.9",
     "vitest-axe": "0.1.0"
