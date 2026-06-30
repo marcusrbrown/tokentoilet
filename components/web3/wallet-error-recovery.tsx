@@ -29,13 +29,7 @@ const WALLET_BADGE_COLORS: Record<string, string> = {
 }
 
 type ActionType =
-  | 'retry'
-  | 'install'
-  | 'unlock'
-  | 'refresh'
-  | 'manual_switch'
-  | 'contact_support'
-  | 'try_different_wallet'
+  'retry' | 'install' | 'unlock' | 'refresh' | 'manual_switch' | 'contact_support' | 'try_different_wallet'
 
 export function WalletErrorRecovery({error, onRetry, onDismiss, className}: WalletErrorRecoveryProps) {
   const recovery = getWalletErrorRecovery(error)

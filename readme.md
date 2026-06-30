@@ -177,4 +177,5 @@ MIT License - see the [LICENSE](LICENSE) file for details
 ## Connect With Us
 
 - Website: [tokentoilet.com](https://tokentoilet.com)
+
 <!-- - Discord: [Join our community](https://discord.gg/tokentoilet) -->
