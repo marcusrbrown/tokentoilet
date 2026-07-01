@@ -10,6 +10,7 @@ import type {
 import type {SupportedChainId} from './use-wallet'
 
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import {isDevelopment} from 'std-env'
 import {getTransactionQueue} from '../lib/web3/transaction-queue'
 
 // Hook return type
@@ -59,7 +60,7 @@ export interface UseTransactionQueueOptions extends Partial<TransactionQueueConf
 // Default hook options
 const defaultOptions: UseTransactionQueueOptions = {
   autoReconnect: true,
-  debug: process.env.NODE_ENV === 'development',
+  debug: isDevelopment,
 }
 
 const readTransactions = (queue: ReturnType<typeof getTransactionQueue>) => {

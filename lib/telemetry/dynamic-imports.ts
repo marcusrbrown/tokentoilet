@@ -2,6 +2,8 @@
  * Telemetry utilities for tracking dynamic import performance and errors
  */
 
+import {isDevelopment, isProduction} from 'std-env'
+
 export interface DynamicImportMetrics {
   componentName: string
   loadTimeMs: number
@@ -18,8 +20,8 @@ interface TelemetryConfig {
 }
 
 const defaultConfig: TelemetryConfig = {
-  enabled: typeof window !== 'undefined' && process.env.NODE_ENV === 'production',
-  debug: process.env.NODE_ENV === 'development',
+  enabled: typeof window !== 'undefined' && isProduction,
+  debug: isDevelopment,
   sendToAnalytics: typeof window !== 'undefined' && 'gtag' in window,
 }
 
