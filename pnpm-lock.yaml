@@ -160,8 +160,8 @@ importers:
         specifier: 4.1.10
         version: 4.1.10(vitest@4.1.10)
       autoprefixer:
-        specifier: 10.5.3
-        version: 10.5.3(postcss@8.5.19)
+        specifier: 10.5.4
+        version: 10.5.4(postcss@8.5.19)
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -3545,8 +3545,8 @@ packages:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
     engines: {node: '>=8.0.0'}
 
-  autoprefixer@10.5.3:
-    resolution: {integrity: sha512-bJRzflk8GgE4JX+iZNEwz9f9p460NCHnU7bd+CZ9vIjIlZuTkt6F3WSl2oNO8StZBFx17nLEsiQ6H2wcZiY7nA==}
+  autoprefixer@10.5.4:
+    resolution: {integrity: sha512-MaU0U/za7N3r6brxD4YB/l4NSrFzLPlANv6wEuQVaIPlD3L4W9rFcQPbL/EilY9BHhHvhfcz3gInDLrEtWT4EA==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
@@ -11689,7 +11689,7 @@ snapshots:
 
   atomic-sleep@1.0.0: {}
 
-  autoprefixer@10.5.3(postcss@8.5.19):
+  autoprefixer@10.5.4(postcss@8.5.19):
     dependencies:
       browserslist: 4.28.6
       caniuse-lite: 1.0.30001806
