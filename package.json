@@ -74,8 +74,8 @@
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
-    "@vitest/coverage-v8": "4.1.10",
-    "@vitest/ui": "4.1.10",
+    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/ui": "4.1.11",
     "autoprefixer": "10.5.4",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
@@ -97,7 +97,7 @@
     "typescript": "6.0.3",
     "viem": "2.55.18",
     "vite": "8.2.1",
-    "vitest": "4.1.10",
+    "vitest": "4.1.11",
     "vitest-axe": "0.1.0"
   },
   "packageManager": "pnpm@11.22.0"
