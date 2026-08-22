@@ -95,7 +95,7 @@
     "tailwindcss": "4.3.3",
     "tsx": "4.23.12",
     "typescript": "6.0.3",
-    "viem": "2.55.18",
+    "viem": "2.55.19",
     "vite": "8.2.1",
     "vitest": "4.1.11",
     "vitest-axe": "0.1.0"
