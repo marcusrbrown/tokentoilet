@@ -13,6 +13,9 @@ allowBuilds:
   unrs-resolver: true
   utf-8-validate: false
 
+minimumReleaseAgeExclude:
+  - '@bfra.me/prettier-config@0.16.10'
+
 # Kept for pnpm v10 compatibility; pnpm v11 uses allowBuilds above
 onlyBuiltDependencies:
   - '@reown/appkit'
