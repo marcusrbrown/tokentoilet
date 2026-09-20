@@ -1,6 +1,7 @@
 import type {Page} from '@playwright/test'
 import type {Address} from 'viem'
 import {expect, test} from '@playwright/test'
+
 import {installNetworkStubs} from './fixtures/network-stubs'
 import {
   CONSTRUCTION_TOKEN_ALPHA,
@@ -20,6 +21,7 @@ import {
   continueToConfirm,
   deselectToken,
   selectToken,
+  selectTokenLabel,
 } from './helpers/interaction'
 
 // Stated literally, not imported from the app: importing BURN_ADDRESS would
@@ -155,5 +157,30 @@ test.describe('selection limits', () => {
 
     const requests = await getRecordedRequests(page)
     expect(requests.some(r => r.method === 'eth_sendTransaction')).toBe(false)
+  })
+})
+
+test.describe('pointer hit-testing', () => {
+  test('the selection control is reachable by real pointer hit testing, not just dispatched events', async ({page}) => {
+    await installSyntheticWallet(page)
+    await installNetworkStubs(page, {tokens: [DISPOSABLE_TOKEN]})
+    await page.goto('/flush')
+
+    const selectButton = page.getByRole('button', {name: selectTokenLabel(DISPOSABLE_TOKEN)})
+    await expect(selectButton).toBeVisible()
+
+    // `dispatchEvent('click')` (used everywhere else in this suite, because a
+    // real `.click()` hangs against this app) bypasses the browser's hit-testing
+    // pipeline entirely — it can prove a handler fires but never that a user's
+    // pointer can actually reach the control through whatever else is painted
+    // at that coordinate. `elementFromPoint` performs real hit testing and is
+    // the only way to catch a sibling overlay silently stealing the click.
+    const resolvesToSelectButton = await selectButton.evaluate(el => {
+      const rect = el.getBoundingClientRect()
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+      return hit?.closest('button') === el
+    })
+
+    expect(resolvesToSelectButton).toBe(true)
   })
 })
