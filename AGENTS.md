@@ -2,15 +2,19 @@
 
 ## Commands
 ```bash
-pnpm bootstrap        # Install dependencies (preferred over pnpm install)
-pnpm dev              # Dev server
-pnpm build            # Production build
-pnpm lint             # ESLint check
-pnpm fix              # Auto-fix lint issues
-pnpm test             # Run all tests
+pnpm bootstrap               # Install dependencies (preferred over pnpm install)
+pnpm dev                     # Dev server
+pnpm build                   # Production build
+pnpm build-storybook         # Build Storybook static site
+pnpm lint                    # ESLint check
+pnpm fix                     # Auto-fix lint issues
+pnpm test                    # Run all tests
 pnpm test -- path/to/file.test.ts  # Run single test file
-pnpm type-check       # TypeScript check
-pnpm validate         # Full validation: lint + types + test + build
+pnpm test:coverage           # Run tests with coverage
+pnpm type-check              # TypeScript check
+pnpm validate:design-system  # Validate design system tokens/components
+pnpm validate:web3           # Validate web3 integration
+pnpm validate                # Full validation: lint + types + test + design-system + storybook build
 ```
 
 ## Code Style
