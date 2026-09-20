@@ -533,7 +533,18 @@ describe('TokenList', () => {
       expect(row).not.toHaveAttribute('role', 'button')
       expect(row).not.toHaveAttribute('tabindex')
       expect(row).not.toHaveAttribute('aria-label')
-      expect(within(row as HTMLElement).getAllByRole('button')).toHaveLength(2)
+      expect(row).toHaveClass('cursor-pointer')
+      expect(within(row as HTMLElement).getAllByRole('button')).toHaveLength(3)
+
+      const rowButton = screen.getByRole('button', {name: 'View TEST token, contract 0xA0b8...a7A2'})
+      await user.click(rowButton)
+      expect(onTokenClick).toHaveBeenCalledWith(token)
+
+      rowButton.focus()
+      await user.keyboard('{Enter}')
+      rowButton.focus()
+      await user.keyboard(' ')
+      expect(onTokenClick).toHaveBeenCalledTimes(3)
 
       await user.click(selectionButton)
 
@@ -600,6 +611,9 @@ describe('TokenList', () => {
         'aria-pressed',
         'true',
       )
+
+      const row = document.querySelector('[data-token-address="0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A2"]')
+      expect(row).not.toHaveClass('cursor-pointer')
     })
   })
 

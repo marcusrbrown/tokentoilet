@@ -297,16 +297,6 @@ export function TokenListItem({
     onClick?.(token)
   }, [onClick, token])
 
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault()
-        handleClick()
-      }
-    },
-    [handleClick],
-  )
-
   const handleToggleSelection = useCallback(
     (event: React.MouseEvent) => {
       event.stopPropagation()
@@ -323,8 +313,7 @@ export function TokenListItem({
     [onViewDetails, token],
   )
 
-  const hasNestedInteractiveControls = Boolean(onToggleSelection || onViewDetails)
-  const isRowInteractive = Boolean(onClick && !hasNestedInteractiveControls)
+  const isRowInteractive = Boolean(onClick)
 
   // Skeleton loading prevents layout shift during token discovery
   if (loading) {
@@ -357,19 +346,22 @@ export function TokenListItem({
           variant: selected ? 'selected' : variant,
           category: token.category,
         }),
-        'cursor-pointer',
+        isRowInteractive && 'cursor-pointer',
         className,
       )}
-      onClick={isRowInteractive ? handleClick : undefined}
-      onKeyDown={isRowInteractive ? handleKeyDown : undefined}
-      role={isRowInteractive ? 'button' : undefined}
-      tabIndex={isRowInteractive ? 0 : undefined}
-      aria-label={
-        isRowInteractive ? `View ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}` : undefined
-      }
       data-token-address={token.address}
       {...props}
     >
+      {isRowInteractive && (
+        <Button
+          type="button"
+          variant="ghost"
+          className="absolute inset-0 z-0 h-full w-full rounded-lg p-0 opacity-0 focus:opacity-100"
+          onClick={handleClick}
+          aria-label={`View ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}`}
+        />
+      )}
+
       {/* Selection checkbox for batch disposal operations */}
       {onToggleSelection && (
         <div className="absolute top-2 right-2">
