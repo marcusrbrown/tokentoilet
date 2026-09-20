@@ -192,7 +192,7 @@ const displayAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
 
 ## Development Workflow
 
-**Package Manager**: pnpm@11.7.0 (enforced via packageManager field)
+**Package Manager**: pnpm@11.27.0 (enforced via packageManager field)
 
 **Local Development**:
 ```bash
