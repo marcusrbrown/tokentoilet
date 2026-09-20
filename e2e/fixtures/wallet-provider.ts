@@ -22,6 +22,8 @@ export interface RecordedRequest {
 
 export interface WalletProviderOptions {
   readonly delays?: Readonly<Record<string, number>>
+  /** Contract addresses whose `eth_sendTransaction` is rejected, as by a declined wallet signature. */
+  readonly rejectSendTransactionTo?: readonly Address[]
 }
 
 export type BalanceGuardResult = {readonly status: 'zero'} | {readonly status: 'unverifiable'; readonly reason: string}
@@ -47,6 +49,7 @@ interface BrowserWalletConfig {
   readonly address: string
   readonly chainIdHex: string
   readonly delays: Record<string, number>
+  readonly rejectSendTransactionTo: string[]
   readonly uuid: string
   readonly icon: string
   readonly rdns: string
@@ -142,8 +145,19 @@ function browserInit(config: BrowserWalletConfig): void {
         return [config.address]
       case 'eth_chainId':
         return config.chainIdHex
-      case 'eth_sendTransaction':
+      case 'eth_sendTransaction': {
+        const params = args.params as {to?: string}[] | undefined
+        const target = params?.[0]?.to
+        const shouldReject =
+          typeof target === 'string' &&
+          config.rejectSendTransactionTo.some(address => address.toLowerCase() === target.toLowerCase())
+        if (shouldReject) {
+          const error = new Error('User rejected the transaction') as Error & {code: number}
+          error.code = 4001
+          throw error
+        }
         return randomHash()
+      }
       default: {
         const error = new Error(`Unsupported RPC method: ${args.method}`) as Error & {code: number}
         error.code = 4200
@@ -200,6 +214,7 @@ export async function installSyntheticWallet(
     address,
     chainIdHex: SEPOLIA_CHAIN_ID_HEX,
     delays: {...options.delays},
+    rejectSendTransactionTo: [...(options.rejectSendTransactionTo ?? [])],
     uuid: randomUUID(),
     icon: WALLET_ICON_DATA_URI,
     rdns: WALLET_RDNS,

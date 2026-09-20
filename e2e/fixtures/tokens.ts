@@ -25,17 +25,21 @@ export interface TokenFixture {
 }
 
 /**
- * 6-decimal token (not 18). Exercises the decimal-assumption check Unit 7
- * reconciles the displayed amount against the signed raw value with.
+ * 6-decimal token (not 18) for the displayed-versus-signed reconciliation
+ * check. 6 isn't in `quickSecurityCheck`'s suspicious-decimal list, so the
+ * name carries a spam-name trigger (`scamNames` pattern) instead — the same
+ * reachability constraint documented on `DISPOSABLE_TOKEN` below applies:
+ * without a real trigger this token would never appear in the disposal flow's
+ * selectable set.
  */
 export const SIX_DECIMAL_TOKEN: TokenFixture = {
   address: fixtureAddress('600d6dec'),
   symbol: 'USDF',
-  name: 'USD Fixture',
+  name: 'Scam USD Fixture',
   decimals: 6,
   balance: 2_500_000n, // 2.5 USDF
   estimatedValueUsd: 2.5,
-  scenario: 'six-decimal reconciliation (Unit 7)',
+  scenario: 'six-decimal reconciliation (Unit 10)',
 }
 
 /**

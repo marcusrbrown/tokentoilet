@@ -9,6 +9,16 @@ export interface NetworkStubOptions {
   readonly tokens?: readonly TokenFixture[]
   readonly discoveryFailure?: DiscoveryFailureMode
   readonly receiptStatus?: ReceiptStatus
+  /** Contract addresses whose simulated transfer (`eth_call`) reverts. */
+  readonly simulateFailures?: readonly Address[]
+  /**
+   * Per-JSON-RPC-method response delay, in milliseconds. Requests made
+   * through the wagmi public client (e.g. `eth_call` for simulation) never
+   * reach the injected wallet provider, so its delay option has no effect on
+   * them — this is the network-layer equivalent for holding transient UI
+   * states open long enough to assert.
+   */
+  readonly delays?: Readonly<Record<string, number>>
 }
 
 export interface NetworkStubHandle {
@@ -141,6 +151,8 @@ export async function installNetworkStubs(page: Page, options: NetworkStubOption
   const tokens = options.tokens ?? []
   let discoveryFailure = options.discoveryFailure
   let receiptStatus: ReceiptStatus = options.receiptStatus ?? 'success'
+  const simulateFailures = options.simulateFailures ?? []
+  const delays = options.delays ?? {}
 
   await page.route('**/*', async route => {
     let body: JsonRpcRequestBody | undefined
@@ -175,6 +187,11 @@ export async function installNetworkStubs(page: Page, options: NetworkStubOption
   })
 
   async function dispatch(route: Route, body: JsonRpcRequestBody): Promise<void> {
+    const delay = delays[body.method]
+    if (typeof delay === 'number' && delay > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+
     switch (body.method) {
       case 'alchemy_getTokenBalances': {
         if (discoveryFailure) {
@@ -194,8 +211,16 @@ export async function installNetworkStubs(page: Page, options: NetworkStubOption
         return
       }
       case 'eth_call': {
-        const callParams = body.params[0] as {data?: string} | undefined
+        const callParams = body.params[0] as {data?: string; to?: string} | undefined
         if (typeof callParams?.data === 'string' && callParams.data.startsWith(ERC20_TRANSFER_SELECTOR)) {
+          const target = callParams.to
+          if (
+            typeof target === 'string' &&
+            simulateFailures.some(address => address.toLowerCase() === target.toLowerCase())
+          ) {
+            await fulfillJson(route, 200, jsonRpcErrorBody(body.id, -32000, 'execution reverted: transfer rejected'))
+            return
+          }
           await fulfillJson(route, 200, jsonRpcResult(body.id, ERC20_TRANSFER_SUCCESS_RESULT))
           return
         }
