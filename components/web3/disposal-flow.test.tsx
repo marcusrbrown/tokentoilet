@@ -210,7 +210,7 @@ describe('DisposalFlow', () => {
     expect(screen.queryByText(/value unknown/i)).not.toBeInTheDocument()
   })
 
-  it('blocks disposal until the irreversible acknowledgement is checked', async () => {
+  it('blocks disposal until both the acknowledgement and typed confirmation are provided', async () => {
     render(<DisposalFlow />)
     await userEvent.click(screen.getByTestId('mock-select-token-1'))
     await userEvent.click(screen.getByRole('button', {name: /continue/i}))
@@ -219,6 +219,9 @@ describe('DisposalFlow', () => {
     expect(screen.getByRole('button', {name: /confirm burn/i})).toBeDisabled()
 
     await userEvent.click(screen.getByRole('checkbox', {name: /acknowledge/i}))
+    expect(screen.getByRole('button', {name: /confirm burn/i})).toBeDisabled()
+
+    await userEvent.type(screen.getByRole('textbox', {name: /type burn/i}), 'BURN')
     expect(screen.getByRole('button', {name: /confirm burn/i})).toBeEnabled()
 
     await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
@@ -415,7 +418,7 @@ describe('DisposalFlow', () => {
       expect(screen.getByText(/waiting for wallet confirmation/i)).toBeInTheDocument()
     })
 
-    it('requires typed confirmation for unknown-value tokens and keeps proceed disabled until it matches', async () => {
+    it('requires typed confirmation before allowing burn, and keeps proceed disabled until it matches exactly', async () => {
       vi.mocked(useUnwantedTokens).mockReturnValue({
         tokens: [{...mockTokens[0], estimatedValueUSD: undefined, valueClass: 'unknown'}],
         isLoading: false,

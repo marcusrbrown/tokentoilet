@@ -10,7 +10,7 @@ import {useTokenDiscovery} from '@/hooks/use-token-discovery'
 import {BURN_ADDRESS, useTokenDisposal} from '@/hooks/use-token-disposal'
 import {useUnwantedTokens} from '@/hooks/use-token-filtering'
 import {DEFAULT_SUPPORTED_NETWORK_V1} from '@/lib/web3/chains'
-import {TokenValueClass, type CategorizedToken} from '@/lib/web3/token-filtering'
+import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import {TokenList} from './token-list'
 import {TransactionQueue} from './transaction-queue'
 
@@ -21,17 +21,6 @@ interface DisposalResult {
   name: string
   symbol: string
   error?: string
-}
-
-const TYPED_CONFIRMATION_THRESHOLD_USD = 10
-
-function requiresTypedConfirmation(token: CategorizedToken): boolean {
-  return (
-    token.estimatedValueUSD === undefined ||
-    token.estimatedValueUSD >= TYPED_CONFIRMATION_THRESHOLD_USD ||
-    token.valueClass === TokenValueClass.MEDIUM_VALUE ||
-    token.valueClass === TokenValueClass.HIGH_VALUE
-  )
 }
 
 function BurnConfirmation({
@@ -46,9 +35,8 @@ function BurnConfirmation({
   const [acknowledged, setAcknowledged] = useState(false)
   const [typedConfirmation, setTypedConfirmation] = useState('')
   const [isCopied, setIsCopied] = useState(false)
-  const requiresTyped = tokens.some(requiresTypedConfirmation)
   const expectedConfirmation = tokens.length === 1 ? 'BURN' : `BURN ${tokens.length} TOKENS`
-  const isConfirmationValid = !requiresTyped || typedConfirmation === expectedConfirmation
+  const isConfirmationValid = typedConfirmation === expectedConfirmation
   const canConfirm = acknowledged && isConfirmationValid
 
   const copyBurnAddress = () => {
@@ -175,17 +163,15 @@ function BurnConfirmation({
         </label>
       </div>
 
-      {requiresTyped && (
-        <Input
-          label={`Type ${expectedConfirmation} to continue`}
-          value={typedConfirmation}
-          onChange={event => setTypedConfirmation(event.target.value)}
-          placeholder={expectedConfirmation}
-          autoComplete="off"
-          spellCheck={false}
-          helperText={`Required because at least one token has an unknown value or an estimated value of $${TYPED_CONFIRMATION_THRESHOLD_USD} or more.`}
-        />
-      )}
+      <Input
+        label={`Type ${expectedConfirmation} to continue`}
+        value={typedConfirmation}
+        onChange={event => setTypedConfirmation(event.target.value)}
+        placeholder={expectedConfirmation}
+        autoComplete="off"
+        spellCheck={false}
+        helperText="Typed confirmation is required to burn tokens."
+      />
 
       <div className="flex justify-end gap-3 pt-1">
         <Button variant="outline" onClick={onCancel}>
