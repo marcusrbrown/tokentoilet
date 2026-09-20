@@ -178,6 +178,24 @@ Playwright test
   assertions read: recorded requests (decoded with viem) + rendered DOM
 ```
 
+## Delivery
+
+One branch, one pull request, covering every unit below plus the requirements and plan documents. `feat/e2e-burn-path-coverage`.
+
+Unit 4 modifies shipped components while the rest is test infrastructure. That is not grounds for a separate pull request here: Unit 5 cannot select tokens deterministically without it, so splitting them would create a cross-PR dependency and force a rebase between two open reviews.
+
+Order of work, driven by dependencies rather than preference:
+
+1. Unit 1 — nothing else runs without the harness.
+2. Unit 2 — Unit 3's scenarios need a connected wallet to observe.
+3. Unit 3 and Unit 4 — independent of each other once Unit 2 lands.
+4. Unit 5, then Units 6 and 7.
+5. Unit 8 last, so CI gates a suite that already passes locally.
+
+Running two Playwright suites concurrently against the same port either collides or silently reuses the wrong dev server. Units execute in sequence in one worktree unless a unit explicitly needs otherwise.
+
+---
+
 ## Implementation Units
 
 - [ ] **Unit 1: Playwright harness scaffold**
