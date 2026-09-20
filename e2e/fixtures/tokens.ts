@@ -105,3 +105,85 @@ export const ALL_TOKEN_FIXTURES: readonly TokenFixture[] = [
   LOW_VALUE_TOKEN,
   DISPOSABLE_TOKEN,
 ]
+
+/**
+ * Decimal counts `quickSecurityCheck` (`lib/web3/token-validation.ts`) treats
+ * as suspicious. Any token using one of these reliably lands in the SPAM
+ * category through real app logic (see `DISPOSABLE_TOKEN` above) and is
+ * therefore selectable in the disposal flow without fabricated app state.
+ */
+const SUSPICIOUS_DECIMALS = [2, 1, 0] as const
+
+/**
+ * Three burnable tokens with distinct balances, used to prove the app
+ * submits one correctly-decoded transfer per selected token, in discovery
+ * order, regardless of the order they were selected in.
+ */
+export const CONSTRUCTION_TOKEN_ALPHA: TokenFixture = {
+  address: fixtureAddress('a1000001'),
+  symbol: 'ALPHA',
+  name: 'Construction Fixture Alpha',
+  decimals: SUSPICIOUS_DECIMALS[0],
+  balance: 12_345n,
+  estimatedValueUsd: undefined,
+  scenario: 'burn construction — sequential ordering (Unit 8)',
+}
+
+export const CONSTRUCTION_TOKEN_BETA: TokenFixture = {
+  address: fixtureAddress('b2000002'),
+  symbol: 'BETA',
+  name: 'Construction Fixture Beta',
+  decimals: SUSPICIOUS_DECIMALS[1],
+  balance: 987_654n,
+  estimatedValueUsd: undefined,
+  scenario: 'burn construction — sequential ordering (Unit 8)',
+}
+
+export const CONSTRUCTION_TOKEN_GAMMA: TokenFixture = {
+  address: fixtureAddress('c3000003'),
+  symbol: 'GAMMA',
+  name: 'Construction Fixture Gamma',
+  decimals: SUSPICIOUS_DECIMALS[2],
+  balance: 42n,
+  estimatedValueUsd: undefined,
+  scenario: 'burn construction — sequential ordering (Unit 8)',
+}
+
+export const CONSTRUCTION_TOKEN_FIXTURES: readonly TokenFixture[] = [
+  CONSTRUCTION_TOKEN_ALPHA,
+  CONSTRUCTION_TOKEN_BETA,
+  CONSTRUCTION_TOKEN_GAMMA,
+]
+
+/**
+ * Spoofed-metadata token that is also reliably selectable (suspicious
+ * decimals), unlike `SPOOFED_USDC_TOKEN` above which is not surfaced by the
+ * disposal flow's category filter. Proves selecting-by-contract burns the
+ * spoofed contract itself, not any token the symbol impersonates.
+ */
+export const SPOOFED_BURNABLE_TOKEN: TokenFixture = {
+  address: fixtureAddress('face1234'),
+  symbol: 'USDC',
+  name: 'USD Coin',
+  decimals: 2,
+  balance: 25_000n,
+  estimatedValueUsd: undefined,
+  scenario: 'spoofed metadata, selectable for burn (Unit 8)',
+}
+
+/**
+ * Generates `count` distinct, reliably-selectable tokens for boundary tests
+ * (e.g. the batch selection cap) where the individual balances and symbols
+ * don't matter, only that each is independently addressable and disposable.
+ */
+export function createBatchFixtures(count: number): TokenFixture[] {
+  return Array.from({length: count}, (_, index) => ({
+    address: fixtureAddress(`bacf${index.toString(16).padStart(4, '0')}`),
+    symbol: `CAP${index}`,
+    name: `Batch Cap Fixture ${index}`,
+    decimals: SUSPICIOUS_DECIMALS[index % SUSPICIOUS_DECIMALS.length],
+    balance: BigInt(1000 + index),
+    estimatedValueUsd: undefined,
+    scenario: 'batch selection cap boundary (Unit 8)',
+  }))
+}

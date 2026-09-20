@@ -1,5 +1,6 @@
-import type {Locator, Page} from '@playwright/test'
+import type {Page} from '@playwright/test'
 import {expect, test} from '@playwright/test'
+import {acknowledgeAndTypeConfirmation, confirmBurn, continueToConfirm, selectToken} from '../helpers/interaction'
 import {installNetworkStubs} from './network-stubs'
 import {
   ALL_TOKEN_FIXTURES,
@@ -12,32 +13,16 @@ import {
 } from './tokens'
 import {installSyntheticWallet} from './wallet-provider'
 
-function contractLabel(token: TokenFixture): string {
-  return `${token.address.slice(0, 6)}...${token.address.slice(-4)}`
-}
-
-async function dispatchFill(locator: Locator, value: string): Promise<void> {
-  await locator.evaluate((element, nextValue) => {
-    const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
-    descriptor?.set?.call(element, nextValue)
-    element.dispatchEvent(new Event('input', {bubbles: true}))
-  }, value)
-}
-
 async function selectAndConfirmBurn(page: Page, token: TokenFixture): Promise<void> {
-  const selectLabel = `Select ${token.symbol} token, contract ${contractLabel(token)}`
-  // Design-system buttons transition on hover/active (e.g. `active:scale-95`),
-  // which can leave a simulated mouse click waiting indefinitely for the
-  // bounding box to settle. dispatchEvent fires the click directly without
-  // simulating hover/movement, avoiding that instability.
-  await page.getByRole('button', {name: selectLabel}).dispatchEvent('click')
-  await page.getByRole('button', {name: 'Continue'}).dispatchEvent('click')
-
-  await page
-    .getByLabel('I acknowledge that these tokens will be permanently burned and cannot be recovered.')
-    .dispatchEvent('click')
-  await dispatchFill(page.getByLabel('Type BURN to continue'), 'BURN')
-  await page.getByRole('button', {name: 'Confirm Burn'}).dispatchEvent('click')
+  // Playwright's real `.click()` hangs against this app's rendered page:
+  // reproduced at blank coordinates with no element present while JS stayed
+  // responsive, i.e. Chromium's input-ACK pipeline against this page, not a
+  // CSS transition on the element. dispatchEvent fires the click directly,
+  // bypassing that pipeline.
+  await selectToken(page, token)
+  await continueToConfirm(page)
+  await acknowledgeAndTypeConfirmation(page, 1)
+  await confirmBurn(page)
 }
 
 test.describe('network stubs — token discovery', () => {
