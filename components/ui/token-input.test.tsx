@@ -54,6 +54,12 @@ const mockTokens: TokenData[] = [
   },
 ]
 
+// Test component that uses the TokenInput in uncontrolled mode
+function UncontrolledTokenInput() {
+  const [value, setValue] = React.useState('')
+  return <TokenInput value={value} onAmountChange={setValue} />
+}
+
 describe('TokenInput', () => {
   describe('Basic Rendering', () => {
     it('renders with default props', () => {
@@ -170,13 +176,7 @@ describe('TokenInput', () => {
     it('handles uncontrolled input', async () => {
       const user = userEvent.setup()
 
-      // Test component that uses the TokenInput in uncontrolled mode
-      function TestComponent() {
-        const [value, setValue] = React.useState('')
-        return <TokenInput value={value} onAmountChange={setValue} />
-      }
-
-      render(<TestComponent />)
+      render(<UncontrolledTokenInput />)
 
       const input = screen.getByRole('textbox')
 

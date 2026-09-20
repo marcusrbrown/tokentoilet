@@ -25,8 +25,9 @@ Object.assign(navigator, {
 })
 
 // Mock window.open
+const mockWindowOpen = vi.fn()
 Object.assign(window, {
-  open: vi.fn(),
+  open: mockWindowOpen,
 })
 
 // Test address with proper typing
@@ -230,7 +231,10 @@ describe('WalletDashboard', () => {
       const explorerButton = screen.getByRole('button', {name: /explorer/i})
       fireEvent.click(explorerButton)
 
-      expect(window.open).toHaveBeenCalledWith(`https://etherscan.io/address/${connectedWalletState.address}`, '_blank')
+      expect(mockWindowOpen).toHaveBeenCalledWith(
+        `https://etherscan.io/address/${connectedWalletState.address}`,
+        '_blank',
+      )
     })
   })
 
@@ -377,7 +381,7 @@ describe('Explorer Links', () => {
     const explorerButton = screen.getByRole('button', {name: /explorer/i})
     fireEvent.click(explorerButton)
 
-    expect(window.open).toHaveBeenCalledWith(
+    expect(mockWindowOpen).toHaveBeenCalledWith(
       `https://polygonscan.com/address/${connectedWalletState.address}`,
       '_blank',
     )
@@ -396,7 +400,7 @@ describe('Explorer Links', () => {
     const explorerButton = screen.getByRole('button', {name: /explorer/i})
     fireEvent.click(explorerButton)
 
-    expect(window.open).toHaveBeenCalledWith(`https://arbiscan.io/address/${arbitrumWalletState.address}`, '_blank')
+    expect(mockWindowOpen).toHaveBeenCalledWith(`https://arbiscan.io/address/${arbitrumWalletState.address}`, '_blank')
   })
 })
 
