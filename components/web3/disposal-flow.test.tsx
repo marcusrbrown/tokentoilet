@@ -76,15 +76,6 @@ vi.mock('./token-list', () => ({
       >
         Select 11 Tokens
       </button>
-      <button
-        type="button"
-        data-testid="mock-select-tokens-1-2-3"
-        onClick={() => {
-          onTokenSelectionChange(['0x1', '0x2', '0x3'])
-        }}
-      >
-        Select Token 1, 2 & 3
-      </button>
       <div data-testid="selected-count">{selectedTokens.length}</div>
     </div>
   ),
@@ -120,18 +111,6 @@ const mockTokens = [
     valueClass: 'low_value',
     category: 'spam',
   },
-  {
-    address: '0x3',
-    chainId: 1,
-    symbol: 'TKN3',
-    name: 'Token 3',
-    decimals: 18,
-    balance: BigInt('3000'),
-    formattedBalance: '3000',
-    estimatedValueUSD: 0.5,
-    valueClass: 'low_value',
-    category: 'unwanted',
-  },
 ]
 
 describe('DisposalFlow', () => {
@@ -162,7 +141,6 @@ describe('DisposalFlow', () => {
       isSimulating: false,
       canDispose: true,
       isSimulationEnabled: true,
-      isGlobalFailure: false,
       error: null,
       txHash: undefined,
     })
@@ -254,7 +232,6 @@ describe('DisposalFlow', () => {
         isSimulating: false,
         canDispose: true,
         isSimulationEnabled: true,
-        isGlobalFailure: false,
         error: null,
         txHash: undefined,
       } as unknown as ReturnType<typeof useTokenDisposal>
@@ -280,7 +257,6 @@ describe('DisposalFlow', () => {
         isSimulating: true,
         canDispose: false,
         isSimulationEnabled: true,
-        isGlobalFailure: false,
         error: null,
         txHash: undefined,
       })
@@ -304,7 +280,6 @@ describe('DisposalFlow', () => {
         isSimulating: false,
         canDispose: false,
         isSimulationEnabled: true,
-        isGlobalFailure: false,
         error: simulationError,
         txHash: undefined,
       })
@@ -322,56 +297,6 @@ describe('DisposalFlow', () => {
       expect(mockDispose).not.toHaveBeenCalled()
     })
 
-    it('halts the batch on a mid-batch disconnect instead of cascading per-token failures', async () => {
-      // Given three selected tokens, and the wallet disconnects after the first succeeds
-      const disconnectMessage = 'Wallet connection required to dispose tokens'
-      const attemptedTokens: string[] = []
-
-      vi.mocked(useTokenDisposal).mockImplementation(token => {
-        attemptedTokens.push(token.symbol)
-
-        if (token.address === '0x1') {
-          return {
-            dispose: vi.fn(),
-            isPending: false,
-            isSuccess: true,
-            isSimulating: false,
-            canDispose: false,
-            isSimulationEnabled: true,
-            isGlobalFailure: false,
-            error: null,
-            txHash: '0xabc',
-          } as unknown as ReturnType<typeof useTokenDisposal>
-        }
-
-        // Second token: the wallet has disconnected by the time this one runs.
-        return {
-          dispose: vi.fn(),
-          isPending: false,
-          isSuccess: false,
-          isSimulating: false,
-          canDispose: false,
-          isSimulationEnabled: false,
-          isGlobalFailure: true,
-          error: new Error(disconnectMessage),
-          txHash: undefined,
-        }
-      })
-
-      render(<DisposalFlow />)
-      await userEvent.click(screen.getByTestId('mock-select-tokens-1-2-3'))
-      await userEvent.click(screen.getByRole('button', {name: /continue/i}))
-      await proceedThroughConfirmation(3)
-
-      // Then the batch halts on the results screen with one clear cause,
-      // rather than showing every remaining token as an independent failure.
-      expect(await screen.findByText(/results/i)).toBeInTheDocument()
-      expect(screen.getByText(new RegExp(disconnectMessage, 'i'))).toBeInTheDocument()
-
-      // And the third token is never attempted.
-      expect(attemptedTokens).toEqual(['TKN1', 'TKN2'])
-    })
-
     it('triggers dispose once when simulation succeeds (canDispose=true)', async () => {
       // Given simulation succeeded
       vi.mocked(useTokenDisposal).mockReturnValue({
@@ -381,7 +306,6 @@ describe('DisposalFlow', () => {
         isSimulating: false,
         canDispose: true,
         isSimulationEnabled: true,
-        isGlobalFailure: false,
         error: null,
         txHash: undefined,
       })
@@ -404,7 +328,6 @@ describe('DisposalFlow', () => {
         isSimulating: false,
         canDispose: false,
         isSimulationEnabled: true,
-        isGlobalFailure: false,
         error: null,
         txHash: undefined,
       })

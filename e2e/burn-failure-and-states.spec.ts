@@ -124,9 +124,7 @@ test.describe('displayed versus signed', () => {
 })
 
 test.describe('mid-batch disconnect', () => {
-  test('halts the batch: remaining tokens are neither attempted nor marked failed after a mid-batch disconnect', async ({
-    page,
-  }) => {
+  test('a mid-batch disconnect stops further submissions and returns to the connect prompt', async ({page}) => {
     const wallet = await installSyntheticWallet(page)
     await installNetworkStubs(page, {tokens: CONSTRUCTION_TOKEN_FIXTURES, delays: {eth_call: 1000}})
     await page.goto('/flush')
@@ -141,12 +139,10 @@ test.describe('mid-batch disconnect', () => {
     await expect(page.getByRole('heading', {name: 'Disposing 2 of 3...'})).toBeVisible({timeout: 15_000})
     await disconnectWallet(page, wallet.address)
 
-    // The flush page unmounts DisposalFlow entirely once disconnected (see
-    // app/flush/page.tsx), returning to the pre-connect prompt rather than
-    // cascading through the remaining tokens as independent failures. The
-    // halt-banner rendering itself is covered directly in
-    // components/web3/disposal-flow.test.tsx, which mounts DisposalFlow
-    // without the page-level connect guard.
+    // app/flush/page.tsx unmounts DisposalFlow entirely once disconnected,
+    // returning to the pre-connect prompt. This asserts that page-level
+    // guard: no further tokens are submitted once the flow is gone. It does
+    // not verify any in-flow halt or results state.
     await expect(page.getByRole('heading', {name: 'Connect your wallet'})).toBeVisible({timeout: 15_000})
 
     const requests = await getRecordedRequests(page)
