@@ -369,7 +369,7 @@ describe('useTokenPrices', () => {
     expect(result.current.getTokenPrice(mockToken.address)).toBeNull()
   })
 
-  it('handles unsupported chain gracefully', async () => {
+  it('returns no prices and no error for an unsupported chain, without a network call', async () => {
     mockUseWallet.mockReturnValue({
       chainId: 999,
       isConnected: true,
@@ -408,16 +408,30 @@ describe('useTokenPrices', () => {
       },
     })
 
-    mockFetch.mockRejectedValueOnce(new TokenPriceFetchError('Unsupported chain ID: 999'))
-
     const wrapper = createWrapper()
     const {result} = renderHook(() => useTokenPrices(mockTokens), {wrapper})
 
     await waitFor(() => {
-      expect(result.current.error).toBeDefined()
+      expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(result.current.error).toBeDefined()
+    expect(result.current.error).toBeNull()
+    expect(Object.keys(result.current.prices)).toHaveLength(0)
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('surfaces a genuine fetch failure as an error rather than swallowing it', async () => {
+    mockFetch.mockRejectedValue(new Error('Network error'))
+
+    const wrapper = createWrapper()
+    const {result} = renderHook(() => useTokenPrices(mockTokens), {wrapper})
+
+    await waitFor(
+      () => {
+        expect(result.current.error).toBeInstanceOf(TokenPriceFetchError)
+      },
+      {timeout: 5000},
+    )
   })
 
   it.skip('refetch function works correctly', async () => {

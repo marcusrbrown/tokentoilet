@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Coins,
   DollarSign,
-  ExternalLink,
   Heart,
   Shield,
   Star,
@@ -110,12 +109,8 @@ export interface TokenListItemProps extends VariantProps<typeof tokenListItemVar
   selected?: boolean
   /** Loading state for async operations */
   loading?: boolean
-  /** Click handler for token selection */
-  onClick?: (token: CategorizedToken) => void
   /** Handler for toggling selection */
   onToggleSelection?: (token: CategorizedToken, selected: boolean) => void
-  /** Handler for viewing token details */
-  onViewDetails?: (token: CategorizedToken) => void
   /** Additional CSS classes */
   className?: string
 }
@@ -147,6 +142,10 @@ function getTokenVariant(token: CategorizedToken): 'default' | 'warning' | 'erro
     return 'success'
   }
   return 'default'
+}
+
+function getTokenAddressLabel(address: CategorizedToken['address']): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
 /**
@@ -279,9 +278,7 @@ export function TokenListItem({
   token,
   selected = false,
   loading = false,
-  onClick,
   onToggleSelection,
-  onViewDetails,
   className,
   variant: _variant,
   category: _category,
@@ -289,9 +286,6 @@ export function TokenListItem({
 }: TokenListItemProps): React.ReactElement {
   // Use token risk/value analysis to determine visual variant
   const variant = getTokenVariant(token)
-  const handleClick = useCallback(() => {
-    onClick?.(token)
-  }, [onClick, token])
 
   const handleToggleSelection = useCallback(
     (event: React.MouseEvent) => {
@@ -299,14 +293,6 @@ export function TokenListItem({
       onToggleSelection?.(token, !selected)
     },
     [onToggleSelection, token, selected],
-  )
-
-  const handleViewDetails = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation()
-      onViewDetails?.(token)
-    },
-    [onViewDetails, token],
   )
 
   // Skeleton loading prevents layout shift during token discovery
@@ -340,10 +326,9 @@ export function TokenListItem({
           variant: selected ? 'selected' : variant,
           category: token.category,
         }),
-        'cursor-pointer',
         className,
       )}
-      onClick={handleClick}
+      data-token-address={token.address}
       {...props}
     >
       {/* Selection checkbox for batch disposal operations */}
@@ -357,10 +342,15 @@ export function TokenListItem({
               selected && 'opacity-100',
             )}
             onClick={handleToggleSelection}
+            aria-label={`${selected ? 'Deselect' : 'Select'} ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}`}
+            aria-pressed={selected}
           >
             <CheckCircle2
               className={cn('h-4 w-4', selected ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400')}
             />
+            <span className="sr-only">
+              {selected ? 'Deselect' : 'Select'} {token.symbol} token, contract {getTokenAddressLabel(token.address)}
+            </span>
           </Button>
         </div>
       )}
@@ -410,15 +400,6 @@ export function TokenListItem({
             </div>
           </div>
           <TokenValueDisplay token={token} />
-
-          {/* Progressive disclosure: actions appear on hover to reduce visual clutter */}
-          <div className="flex items-center justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {onViewDetails && (
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={handleViewDetails}>
-                <ExternalLink className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
         </div>
       </div>
 

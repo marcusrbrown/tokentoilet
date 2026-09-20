@@ -428,6 +428,114 @@ describe('TokenList', () => {
     })
   })
 
+  describe('Token selection affordances', () => {
+    it('exposes independently addressable selection controls for same-symbol tokens', () => {
+      const firstAddress = '0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A2' as Address
+      const secondAddress = '0xB0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7B3' as Address
+      const tokens = [
+        createMockCategorizedToken({address: firstAddress}),
+        createMockCategorizedToken({address: secondAddress}),
+      ]
+
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens,
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: tokens.length,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens,
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: tokens.length,
+        filteredTokens: tokens.length,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: tokens.length,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByRole('button', {name: 'Select TEST token, contract 0xA0b8...a7A2'})).toBeInTheDocument()
+      expect(screen.getByRole('button', {name: 'Select TEST token, contract 0xB0b8...a7B3'})).toBeInTheDocument()
+      expect(document.querySelector(`[data-token-address="${firstAddress}"]`)).toBeInTheDocument()
+      expect(document.querySelector(`[data-token-address="${secondAddress}"]`)).toBeInTheDocument()
+    })
+
+    it('activates the selection control with Enter and Space', async () => {
+      const user = userEvent.setup()
+      const token = createMockCategorizedToken()
+
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [token],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [token],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      const selectionButton = screen.getByRole('button', {name: 'Select TEST token, contract 0xA0b8...a7A2'})
+      await user.click(selectionButton)
+      expect(screen.getByRole('button', {name: 'Deselect TEST token, contract 0xA0b8...a7A2'})).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+
+      screen.getByRole('button', {name: 'Deselect TEST token, contract 0xA0b8...a7A2'}).focus()
+      await user.keyboard('{Enter}')
+      expect(screen.getByRole('button', {name: 'Select TEST token, contract 0xA0b8...a7A2'})).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      )
+
+      screen.getByRole('button', {name: 'Select TEST token, contract 0xA0b8...a7A2'}).focus()
+      await user.keyboard(' ')
+      expect(screen.getByRole('button', {name: 'Deselect TEST token, contract 0xA0b8...a7A2'})).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+    })
+  })
+
   describe('Error States', () => {
     it('renders error state when token discovery fails (hook-level error)', () => {
       const mockRefetch = vi.fn()

@@ -136,7 +136,9 @@ async function fetchTokenPrices(
 
   const platform = CHAIN_TO_PLATFORM[chainId]
   if (!platform) {
-    throw new TokenPriceFetchError(`Unsupported chain ID: ${chainId}`)
+    // A chain without a price platform is an expected condition (e.g. Sepolia),
+    // not a fetch failure - return no prices rather than throwing.
+    return {}
   }
 
   // Build API URL with optional parameters
