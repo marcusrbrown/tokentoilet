@@ -35,8 +35,8 @@ Requirement IDs refer to the origin document.
 - On-chain settlement. No local chain, no real receipts, no post-burn balance verification.
 - Real wallet software, WalletConnect relay behavior, live Sepolia transactions from CI.
 - Cross-browser coverage, sharding, visual regression.
-- **Value-dependent confirmation branches.** `hooks/use-token-filtering.ts:304` is the only production call site of `categorizeToken` and passes `undefined` for metadata, so `priceUSD` and therefore `estimatedValueUSD` are always undefined and `TokenValueClass` is always `UNKNOWN`. Every token demands typed confirmation, the confirm step's per-token value always reads "Value unknown", and the threshold logic in `requiresTypedConfirmation` is dead code that unit tests reach only by passing metadata directly. The behavior fails safe. The suite does not cover branches production cannot reach; the inert pricing path is tracked separately.
-- **Mid-batch wallet disconnect behavior is asserted only at the sentinel level.** Research found that a disconnect mid-batch cascades: each remaining token fails instantly and auto-advances. Tests assert only what survives a fix — no double-burn, no transaction after disconnect — so the defect is not ratified as a specification. The cascade itself is filed separately.
+- **Value-dependent confirmation branches**, which Unit 6 removes rather than tests. `hooks/use-token-filtering.ts:304` is the only production call site of `categorizeToken` and passes `undefined` for metadata, so `priceUSD` and therefore `estimatedValueUSD` are always undefined and `TokenValueClass` is always `UNKNOWN`. Every token demands typed confirmation, the confirm step's per-token value always reads "Value unknown", and the threshold logic in `requiresTypedConfirmation` is dead code that unit tests reach only by passing metadata directly. The behavior fails safe. The suite does not cover branches production cannot reach; the inert pricing path is tracked separately.
+- Mid-batch disconnect is no longer a scope boundary. Unit 5 fixes the cascade, so Unit 10 asserts the corrected behavior directly instead of hedging with sentinels.
 
 ### Deferred to Separate Tasks
 
@@ -140,6 +140,7 @@ A throwaway spike (branch deleted; findings retained) proved against the running
 - **The burn address is stated literally in tests, not imported.** Importing `BURN_ADDRESS` from the application would move both sides of the assertion together, so a mutated constant would still pass. The expected recipient is written out in the test as an independent statement of intent.
 - **Test affordances added to shipped components.** Token rows are clickable `div`s with icon-only controls. Stable hooks are added to the components rather than relying on text or position matching, which would make the suite brittle against copy changes.
 - **Disconnect behavior left unasserted.** Asserting the current cascade would cement a defect. Recorded in Scope Boundaries.
+- **Gate assertions use DOM state plus a no-side-effect check, never a click.** Playwright's real `.click()` hangs against this app's rendered page — reproduced at blank coordinates with no element present, while JS stayed responsive, so it is Chromium's input-ACK path and not app CSS. `dispatchEvent('click')` was verified safe: a native `disabled` button suppresses the event entirely and records zero transactions. Gate tests therefore assert `toBeDisabled()` **and** that no `eth_sendTransaction` was recorded. The second assertion is what catches a regression where someone swaps the native `disabled` attribute for `aria-disabled` without gating the handler.
 - **Exclude the suite from Vitest.** `test.exclude` gains the Playwright directory so `pnpm test` does not collect browser specs. One config line.
 - **The harness is fenced off from the application build.** Directory placement is not a boundary. Nothing under `e2e/` may be reachable from application code, and CI enforces that rather than trusting convention.
 
@@ -190,8 +191,9 @@ Order of work, driven by dependencies rather than preference:
 1. Unit 1 — nothing else runs without the harness.
 2. Unit 2 — Unit 3's scenarios need a connected wallet to observe.
 3. Unit 3 and Unit 4 — independent of each other once Unit 2 lands.
-4. Unit 5, then Units 6 and 7.
-5. Unit 8 last, so CI gates a suite that already passes locally.
+4. Units 5–7 — product fixes, independent of each other, before the assertions that cover them.
+5. Unit 8, then Units 9 and 10.
+6. Unit 11 last, so CI gates a suite that already passes locally.
 
 Running two Playwright suites concurrently against the same port either collides or silently reuses the wrong dev server. Units execute in sequence in one worktree unless a unit explicitly needs otherwise.
 
@@ -332,13 +334,88 @@ Running two Playwright suites concurrently against the same port either collides
 
 ---
 
-- [ ] **Unit 5: Burn transaction construction assertions**
+Units 5–7 are product fixes for defects this work uncovered. They land before the assertions that depend on them so the tests encode corrected behavior rather than current behavior.
+
+- [ ] **Unit 5: Halt the batch on global failure**
+
+**Goal:** A wallet disconnect mid-batch stops the run instead of failing every remaining token.
+
+**Dependencies:** None
+
+**Files:**
+- Modify: `components/web3/disposal-flow.tsx`
+- Modify: `hooks/use-token-disposal.ts`
+- Test: co-located tests for both
+
+**Approach:**
+- `disposal-flow.tsx` advances the batch on any terminal error. That is correct for a token-specific revert — the existing comment explains a reverting token must not deadlock the flow — but wrong for a disconnect, which is global and gets counted as N independent failures.
+- Distinguish global failure (disconnected wallet, unsupported network) from per-token failure. Global failure halts and surfaces one clear state; per-token failure keeps advancing as today.
+- Do not change per-token failure behavior. That path is already correct and regression-tested.
+
+**Execution note:** Add a failing test reproducing the cascade first.
+
+**Test scenarios:**
+- Happy path: per-token simulation failure still advances the batch.
+- Edge case: disconnect mid-batch halts; remaining tokens are neither attempted nor marked failed.
+- Edge case: the halted state names the cause rather than showing N connection errors.
+
+**Verification:** A disconnect during a three-token batch produces one halt, not two failures.
+
+---
+
+- [ ] **Unit 6: Remove the unreachable value threshold**
+
+**Goal:** `requiresTypedConfirmation` states what it actually does.
+
+**Dependencies:** None
+
+**Files:**
+- Modify: `components/web3/disposal-flow.tsx`
+- Modify: `components/web3/disposal-flow.test.tsx`
+
+**Approach:**
+- `estimatedValueUSD` is never populated, so the `>= $10` / `MEDIUM_VALUE` / `HIGH_VALUE` branches never execute. Their unit tests pass only because they inject metadata the app never supplies.
+- Delete the dead branches. Typed confirmation is required for every token; say so directly.
+- Remove the tests that exercised the unreachable branches rather than rewriting them — they assert behavior production cannot reach.
+- No behavior change. This makes existing behavior legible.
+
+**Test scenarios:**
+- Happy path: typed confirmation is required for every token.
+- Test expectation: no new behavior — deletion only. Existing gate tests must still pass unchanged.
+
+**Verification:** Gate behavior is identical before and after; the surviving tests exercise only reachable code.
+
+---
+
+- [ ] **Unit 7: Stop price lookups throwing on unsupported chains**
+
+**Goal:** No repeating background failure on every disposal page load.
+
+**Dependencies:** None
+
+**Files:**
+- Modify: `hooks/use-token-price.ts`
+- Modify: co-located test
+
+**Approach:**
+- `CHAIN_TO_PLATFORM` covers chains 1, 137, and 42161 — leftovers from the pre-rebaseline multi-chain scope. Sepolia is absent, so `fetchTokenPrices` throws `Unsupported chain ID: 11155111` on every call and react-query retries it continuously.
+- Return an absent price for unsupported chains instead of throwing. A chain without a price platform is an expected condition, not an error.
+- Keep the existing mainnet entries. A future mainnet decision wants them.
+
+**Test scenarios:**
+- Happy path: a supported chain still resolves prices.
+- Edge case: an unsupported chain returns no price and raises no error.
+- Error path: a genuine fetch failure still surfaces as an error.
+
+**Verification:** Loading the disposal flow on Sepolia produces no repeating console error.
+
+- [ ] **Unit 8: Burn transaction construction assertions**
 
 **Goal:** Prove the transaction the app builds is the transaction intended, and that selection limits hold. This is the unit the suite exists for.
 
 **Requirements:** R6, R7, R8, R12
 
-**Dependencies:** Units 2, 3, 4
+**Dependencies:** Units 2, 3, 4, and the product fixes in 5-7
 
 **Files:**
 - Create: `e2e/burn-construction.spec.ts`
@@ -365,13 +442,13 @@ Running two Playwright suites concurrently against the same port either collides
 
 ---
 
-- [ ] **Unit 6: Confirmation gate assertions**
+- [ ] **Unit 9: Confirmation gate assertions**
 
 **Goal:** Prove each confirmation gate independently blocks, including the path that requires no typed confirmation.
 
 **Requirements:** R9, R11, R14, R15
 
-**Dependencies:** Units 2, 3, 4
+**Dependencies:** Units 2, 3, 4, and the product fixes in 5-7
 
 **Files:**
 - Create: `e2e/burn-gates.spec.ts`
@@ -384,7 +461,7 @@ Running two Playwright suites concurrently against the same port either collides
 - Assert escape paths: cancelling returns to selection and clears gate state; the results reset returns to a usable selection state.
 - Assert accessibility: warning region exposed to assistive technology, acknowledgement and typed input have accessible names.
 
-Selection-limit behavior (zero selected, batch cap) belongs to Unit 5, which already owns selection semantics.
+Selection-limit behavior (zero selected, batch cap) belongs to Unit 8, which already owns selection semantics.
 
 **Test scenarios:**
 - Happy path: all gates satisfied enables confirm.
@@ -398,13 +475,13 @@ Selection-limit behavior (zero selected, batch cap) belongs to Unit 5, which alr
 
 ---
 
-- [ ] **Unit 7: Failure path, in-progress states, and displayed-versus-signed agreement**
+- [ ] **Unit 10: Failure path, in-progress states, and displayed-versus-signed agreement**
 
 **Goal:** Prove a mid-batch failure does not abort the batch, that transient states are visible, and that the wallet is asked to sign what the user saw.
 
 **Requirements:** R10, R13, R16
 
-**Dependencies:** Units 2, 3, 5
+**Dependencies:** Units 2, 3, 5, 8
 
 **Files:**
 - Create: `e2e/burn-failure-and-states.spec.ts`
@@ -415,7 +492,7 @@ Selection-limit behavior (zero selected, batch cap) belongs to Unit 5, which alr
 - For displayed-versus-signed: read the rendered formatted amount, look up decimals from the token fixture, and assert the recorded raw value matches. Also assert the displayed contract and destination match the recorded transaction.
 - Run this against the **6-decimal** fixture token specifically. Against an 18-decimal token the check is near-circular, since the fixture supplies the decimals on both sides. With 6 decimals, an app that assumes 18 anywhere in the display path fails.
 - Be precise about what this proves: the app did not corrupt the amount between display and signature, and it did not confuse one token's balance for another's. It does **not** independently verify the app's decimal handling against an external source.
-- Cover mid-batch disconnect with **sentinel assertions only** — claims that hold whether or not the cascade defect is fixed: no token produces two transactions, and no transaction is emitted after the disconnect. Do not assert how many tokens fail, in what order, or what the results screen reports; those encode the current cascade.
+- Assert the corrected disconnect behavior from Unit 5: the batch halts, remaining tokens are neither attempted nor marked failed, and one clear cause is surfaced.
 
 **Test scenarios:**
 - Happy path: the second of three tokens fails; the first and third still produce transactions.
@@ -423,19 +500,19 @@ Selection-limit behavior (zero selected, batch cap) belongs to Unit 5, which alr
 - Happy path: with delay configured, per-token simulating and awaiting-approval states are observable.
 - Happy path: displayed amount, reconciled through fixture decimals, equals the signed raw value.
 - Edge case: a token whose failure is a rejected signature rather than a failed simulation is still recorded as failed.
-- Edge case: after a mid-batch disconnect, no token has produced two transactions and no further transaction is emitted. Nothing is asserted about failure counts or ordering.
+- Edge case: a mid-batch disconnect halts the batch — no further transactions, remaining tokens untouched, one cause shown rather than a list of connection errors.
 
-**Verification:** Failure is contained to the failing token; no token is skipped or burned twice. The disconnect sentinels pass against current behavior and would still pass against a fixed pause-on-disconnect implementation.
+**Verification:** Per-token failure is contained to that token; a global failure halts the batch. No token is skipped or burned twice.
 
 ---
 
-- [ ] **Unit 8: CI integration**
+- [ ] **Unit 11: CI integration**
 
 **Goal:** The suite gates pull requests without inflating cost.
 
 **Requirements:** R17, R18
 
-**Dependencies:** Units 1–7
+**Dependencies:** Units 1-10
 
 **Files:**
 - Modify: `.github/workflows/ci.yaml`
