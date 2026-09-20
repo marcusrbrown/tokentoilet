@@ -323,6 +323,9 @@ export function TokenListItem({
     [onViewDetails, token],
   )
 
+  const hasNestedInteractiveControls = Boolean(onToggleSelection || onViewDetails)
+  const isRowInteractive = Boolean(onClick && !hasNestedInteractiveControls)
+
   // Skeleton loading prevents layout shift during token discovery
   if (loading) {
     return (
@@ -357,11 +360,13 @@ export function TokenListItem({
         'cursor-pointer',
         className,
       )}
-      onClick={handleClick}
-      onKeyDown={onClick ? handleKeyDown : undefined}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      aria-label={onClick ? `View ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}` : undefined}
+      onClick={isRowInteractive ? handleClick : undefined}
+      onKeyDown={isRowInteractive ? handleKeyDown : undefined}
+      role={isRowInteractive ? 'button' : undefined}
+      tabIndex={isRowInteractive ? 0 : undefined}
+      aria-label={
+        isRowInteractive ? `View ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}` : undefined
+      }
       data-token-address={token.address}
       {...props}
     >

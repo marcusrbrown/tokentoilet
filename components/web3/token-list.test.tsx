@@ -1,6 +1,6 @@
 import type {Address} from 'viem'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
-import {render, screen, waitFor} from '@testing-library/react'
+import {render, screen, waitFor, within} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
@@ -476,7 +476,7 @@ describe('TokenList', () => {
       expect(document.querySelector(`[data-token-address="${secondAddress}"]`)).toBeInTheDocument()
     })
 
-    it('announces selection state and names icon-only details controls', async () => {
+    it('keeps child actions as the only interactive controls', async () => {
       const user = userEvent.setup()
       const token = createMockCategorizedToken()
       const onViewTokenDetails = vi.fn()
@@ -524,13 +524,78 @@ describe('TokenList', () => {
 
       const selectionButton = screen.getByRole('button', {name: 'Select TEST token, contract 0xA0b8...a7A2'})
       expect(selectionButton).toHaveAttribute('aria-pressed', 'false')
-      expect(screen.getByRole('button', {name: 'View TEST token, contract 0xA0b8...a7A2'})).toBeInTheDocument()
       expect(
         screen.getByRole('button', {name: 'View details for TEST token, contract 0xA0b8...a7A2'}),
       ).toBeInTheDocument()
 
+      const row = document.querySelector('[data-token-address="0xA0b86a33E6aA3D1C81e4f059a5E4b54B94e8a7A2"]')
+      expect(row).toBeInTheDocument()
+      expect(row).not.toHaveAttribute('role', 'button')
+      expect(row).not.toHaveAttribute('tabindex')
+      expect(row).not.toHaveAttribute('aria-label')
+      expect(within(row as HTMLElement).getAllByRole('button')).toHaveLength(2)
+
       await user.click(selectionButton)
 
+      expect(screen.getByRole('button', {name: 'Deselect TEST token, contract 0xA0b8...a7A2'})).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+    })
+
+    it('activates the selection control with Enter and Space', async () => {
+      const user = userEvent.setup()
+      const token = createMockCategorizedToken()
+
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [token],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [token],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      const selectionButton = screen.getByRole('button', {name: 'Select TEST token, contract 0xA0b8...a7A2'})
+      await user.click(selectionButton)
+      expect(screen.getByRole('button', {name: 'Deselect TEST token, contract 0xA0b8...a7A2'})).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+
+      screen.getByRole('button', {name: 'Deselect TEST token, contract 0xA0b8...a7A2'}).focus()
+      await user.keyboard('{Enter}')
+      expect(screen.getByRole('button', {name: 'Select TEST token, contract 0xA0b8...a7A2'})).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      )
+
+      screen.getByRole('button', {name: 'Select TEST token, contract 0xA0b8...a7A2'}).focus()
+      await user.keyboard(' ')
       expect(screen.getByRole('button', {name: 'Deselect TEST token, contract 0xA0b8...a7A2'})).toHaveAttribute(
         'aria-pressed',
         'true',
