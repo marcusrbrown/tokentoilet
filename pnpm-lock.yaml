@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@coinbase/cdp-sdk': 1.56.0
+  '@coinbase/cdp-sdk': 1.51.2
   '@isaacs/brace-expansion@<=5.0.0': '>=5.0.1'
   '@metamask/sdk-communication-layer@>=0.16.0 <=0.33.0': '>=0.33.1'
   '@metamask/sdk@>=0.16.0 <=0.33.0': '>=0.33.1'
@@ -899,22 +899,8 @@ packages:
   '@cacheable/utils@2.5.0':
     resolution: {integrity: sha512-buipgOVDkkPXNR5+xBpDw7Zk2n1EvU7qBJCNUcL7rhQ//kfpOXPAvQ511Os0vpLYJ1pZnvudNytkQt2hst3wqA==}
 
-  '@coinbase/cdp-sdk@1.56.0':
-    resolution: {integrity: sha512-Fwq77OUHRfSihdi/IB3sp2eVplv9UQjiXoZfpU0mYmxD42CRbVINQT9PVrBbn6fxqS9Vlc4XdaB166IPBVfXkA==}
-    peerDependencies:
-      '@x402/core': ^2.25.0
-      '@x402/evm': ^2.25.0
-      '@x402/extensions': ^2.25.0
-      '@x402/svm': ^2.25.0
-    peerDependenciesMeta:
-      '@x402/core':
-        optional: true
-      '@x402/evm':
-        optional: true
-      '@x402/extensions':
-        optional: true
-      '@x402/svm':
-        optional: true
+  '@coinbase/cdp-sdk@1.51.2':
+    resolution: {integrity: sha512-o4IEwXbyAjfhPQWoFBuqnV1JQGLk4NlUVMzH/ur4voPSjYZvlYFVuOoE/eEcsoPFN28xaWTBvqebwncQL8h8fQ==}
 
   '@coinbase/wallet-sdk@4.3.6':
     resolution: {integrity: sha512-4q8BNG1ViL4mSAAvPAtpwlOs1gpC+67eQtgIwNvT3xyeyFFd+guwkc8bcX5rTmQhXpqnhzC4f0obACbP9CqMSA==}
@@ -8379,7 +8365,7 @@ snapshots:
 
   '@base-org/account@2.4.0(@types/react@19.3.0)(debug@4.4.3(supports-color@8.1.1))(react@19.3.0)(supports-color@8.1.1)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.3.0))(zod@4.6.5)':
     dependencies:
-      '@coinbase/cdp-sdk': 1.56.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
+      '@coinbase/cdp-sdk': 1.51.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       '@noble/hashes': 1.4.0
       clsx: 1.2.1
       eventemitter3: 5.0.1
@@ -8390,10 +8376,6 @@ snapshots:
       zustand: 5.0.3(@types/react@19.3.0)(react@19.3.0)(use-sync-external-store@1.4.0(react@19.3.0))
     transitivePeerDependencies:
       - '@types/react'
-      - '@x402/core'
-      - '@x402/evm'
-      - '@x402/extensions'
-      - '@x402/svm'
       - bufferutil
       - debug
       - fastestsmallesttextencoderdecoder
@@ -8481,7 +8463,7 @@ snapshots:
       hashery: 1.5.1
       keyv: 5.6.0
 
-  '@coinbase/cdp-sdk@1.56.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)':
+  '@coinbase/cdp-sdk@1.51.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)':
     dependencies:
       '@solana-program/system': 0.10.0(@solana/kit@5.5.1(typescript@6.0.3))
       '@solana-program/token': 0.9.0(@solana/kit@5.5.1(typescript@6.0.3))
@@ -9318,10 +9300,6 @@ snapshots:
       - '@vercel/functions'
       - '@vercel/kv'
       - '@walletconnect/ethereum-provider'
-      - '@x402/core'
-      - '@x402/evm'
-      - '@x402/extensions'
-      - '@x402/svm'
       - accounts
       - aws4fetch
       - bufferutil
@@ -9421,10 +9399,6 @@ snapshots:
       - '@vercel/blob'
       - '@vercel/functions'
       - '@vercel/kv'
-      - '@x402/core'
-      - '@x402/evm'
-      - '@x402/extensions'
-      - '@x402/svm'
       - aws4fetch
       - bufferutil
       - db0
@@ -9471,10 +9445,6 @@ snapshots:
       - '@vercel/blob'
       - '@vercel/functions'
       - '@vercel/kv'
-      - '@x402/core'
-      - '@x402/evm'
-      - '@x402/extensions'
-      - '@x402/svm'
       - aws4fetch
       - bufferutil
       - db0
@@ -9561,10 +9531,6 @@ snapshots:
       - '@vercel/blob'
       - '@vercel/functions'
       - '@vercel/kv'
-      - '@x402/core'
-      - '@x402/evm'
-      - '@x402/extensions'
-      - '@x402/svm'
       - aws4fetch
       - bufferutil
       - db0
@@ -9626,10 +9592,6 @@ snapshots:
       - '@vercel/blob'
       - '@vercel/functions'
       - '@vercel/kv'
-      - '@x402/core'
-      - '@x402/evm'
-      - '@x402/extensions'
-      - '@x402/svm'
       - aws4fetch
       - bufferutil
       - db0
