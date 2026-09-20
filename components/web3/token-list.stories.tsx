@@ -68,7 +68,6 @@ interface MockTokenListProps {
   layout?: 'list' | 'grid'
   searchQuery?: string
   selectedTokens?: Address[]
-  onTokenClick?: (token: CategorizedToken) => void
   className?: string
 }
 
@@ -78,7 +77,6 @@ const MockTokenList = ({
   layout = 'list',
   searchQuery = '',
   selectedTokens = EMPTY_SELECTED,
-  onTokenClick,
   className = '',
 }: MockTokenListProps) => {
   const [search, setSearch] = React.useState(searchQuery)
@@ -150,9 +148,6 @@ const MockTokenList = ({
                       : 'border-gray-200 dark:border-gray-700'
                   }`}
                   onClick={() => {
-                    if (onTokenClick != null) {
-                      onTokenClick(token)
-                    }
                     setSelected(prev =>
                       prev.includes(token.address) ? prev.filter(a => a !== token.address) : [...prev, token.address],
                     )
@@ -215,10 +210,6 @@ const meta: Meta<typeof MockTokenList> = {
     searchQuery: {
       control: {type: 'text'},
       description: 'Initial search query',
-    },
-    onTokenClick: {
-      action: 'token-clicked',
-      description: 'Callback when a token is clicked',
     },
   },
   decorators: [story => <div className="max-w-4xl mx-auto p-6">{story()}</div>],

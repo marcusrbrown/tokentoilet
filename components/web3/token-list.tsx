@@ -90,10 +90,6 @@ export interface TokenListProps extends VariantProps<typeof tokenListVariants> {
   selectedTokens?: Address[]
   /** Callback when tokens are selected/deselected */
   onTokenSelectionChange?: (tokens: Address[]) => void
-  /** Callback when a token is clicked */
-  onTokenClick?: (token: CategorizedToken) => void
-  /** Callback when token details should be viewed */
-  onViewTokenDetails?: (token: CategorizedToken) => void
   /** Additional CSS classes */
   className?: string
 }
@@ -142,8 +138,6 @@ export function TokenList({
   searchQuery: initialSearchQuery = '',
   selectedTokens = EMPTY_SELECTED_TOKENS,
   onTokenSelectionChange,
-  onTokenClick,
-  onViewTokenDetails,
   className,
   variant = 'default',
   layout = 'list',
@@ -608,9 +602,7 @@ export function TokenList({
                     <TokenListItem
                       token={paginatedTokens[virtualItem.index]}
                       selected={internalSelectedTokens.includes(paginatedTokens[virtualItem.index].address)}
-                      onClick={onTokenClick}
                       onToggleSelection={config.enableBatchSelection ? handleTokenSelection : undefined}
-                      onViewDetails={onViewTokenDetails}
                     />
                   </div>
                 </div>
@@ -630,9 +622,7 @@ export function TokenList({
                 <TokenListItem
                   token={token}
                   selected={internalSelectedTokens.includes(token.address)}
-                  onClick={onTokenClick}
                   onToggleSelection={config.enableBatchSelection ? handleTokenSelection : undefined}
-                  onViewDetails={onViewTokenDetails}
                 />
               </div>
             ))}

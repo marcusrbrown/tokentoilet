@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Coins,
   DollarSign,
-  ExternalLink,
   Heart,
   Shield,
   Star,
@@ -110,12 +109,8 @@ export interface TokenListItemProps extends VariantProps<typeof tokenListItemVar
   selected?: boolean
   /** Loading state for async operations */
   loading?: boolean
-  /** Click handler for token selection */
-  onClick?: (token: CategorizedToken) => void
   /** Handler for toggling selection */
   onToggleSelection?: (token: CategorizedToken, selected: boolean) => void
-  /** Handler for viewing token details */
-  onViewDetails?: (token: CategorizedToken) => void
   /** Additional CSS classes */
   className?: string
 }
@@ -283,9 +278,7 @@ export function TokenListItem({
   token,
   selected = false,
   loading = false,
-  onClick,
   onToggleSelection,
-  onViewDetails,
   className,
   variant: _variant,
   category: _category,
@@ -293,9 +286,6 @@ export function TokenListItem({
 }: TokenListItemProps): React.ReactElement {
   // Use token risk/value analysis to determine visual variant
   const variant = getTokenVariant(token)
-  const handleClick = useCallback(() => {
-    onClick?.(token)
-  }, [onClick, token])
 
   const handleToggleSelection = useCallback(
     (event: React.MouseEvent) => {
@@ -304,16 +294,6 @@ export function TokenListItem({
     },
     [onToggleSelection, token, selected],
   )
-
-  const handleViewDetails = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation()
-      onViewDetails?.(token)
-    },
-    [onViewDetails, token],
-  )
-
-  const isRowInteractive = Boolean(onClick)
 
   // Skeleton loading prevents layout shift during token discovery
   if (loading) {
@@ -346,22 +326,11 @@ export function TokenListItem({
           variant: selected ? 'selected' : variant,
           category: token.category,
         }),
-        isRowInteractive && 'cursor-pointer',
         className,
       )}
       data-token-address={token.address}
       {...props}
     >
-      {isRowInteractive && (
-        <Button
-          type="button"
-          variant="ghost"
-          className="absolute inset-0 z-0 h-full w-full rounded-lg p-0 opacity-0 focus:opacity-100"
-          onClick={handleClick}
-          aria-label={`View ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}`}
-        />
-      )}
-
       {/* Selection checkbox for batch disposal operations */}
       {onToggleSelection && (
         <div className="absolute top-2 right-2">
@@ -431,21 +400,6 @@ export function TokenListItem({
             </div>
           </div>
           <TokenValueDisplay token={token} />
-
-          {/* Progressive disclosure: actions appear on hover to reduce visual clutter */}
-          <div className="flex items-center justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {onViewDetails && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={handleViewDetails}
-                aria-label={`View details for ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}`}
-              >
-                <ExternalLink className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
         </div>
       </div>
 
