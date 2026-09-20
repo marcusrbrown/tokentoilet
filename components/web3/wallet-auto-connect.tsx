@@ -1,7 +1,6 @@
 'use client'
 
 import type {ReactNode} from 'react'
-import {useAppKit} from '@reown/appkit/react'
 import {useEffect, useRef} from 'react'
 import {useWallet} from '@/hooks/use-wallet'
 import {useWalletPersistence} from '@/hooks/use-wallet-persistence'
@@ -23,8 +22,7 @@ export function WalletAutoConnect({
   reconnectDelay = 1000,
   debug = false,
 }: WalletAutoConnectProps) {
-  const {open} = useAppKit()
-  const {address, isConnected, chainId} = useWallet()
+  const {address, isConnected, chainId, connect} = useWallet()
   const hasAttemptedReconnectRef = useRef(false)
 
   const {
@@ -69,7 +67,7 @@ export function WalletAutoConnect({
       const timeoutId = setTimeout(() => {
         const attemptReconnect = async () => {
           try {
-            await open()
+            await connect()
           } catch (error) {
             console.error('Auto-reconnect failed:', error)
             // Clear invalid connection data if auto-reconnect fails
@@ -95,7 +93,7 @@ export function WalletAutoConnect({
     shouldRestore,
     lastWalletId,
     preferredChain,
-    open,
+    connect,
     clearStoredData,
     reconnectDelay,
     debug,
