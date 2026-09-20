@@ -17,6 +17,7 @@ branches:
         contexts:
           - Build
           - Build Storybook
+          - E2E Tests
           - Lint
           - Renovate / Renovate
           - Security Audit
