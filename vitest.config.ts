@@ -1,6 +1,6 @@
 import path from 'node:path'
 import {isCI} from 'std-env'
-import {defineConfig} from 'vitest/config'
+import {defaultExclude, defineConfig} from 'vitest/config'
 
 const modulePath = path.dirname(new URL(import.meta.url).pathname)
 
@@ -9,6 +9,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
+    // Preserve Vitest's defaults and additionally keep the Playwright suite out of collection
+    exclude: [...defaultExclude, 'e2e/**'],
     // Use threads pool to avoid EPIPE errors in CI
     // Threads pool is more stable than forks for worker communication
     pool: 'threads',
