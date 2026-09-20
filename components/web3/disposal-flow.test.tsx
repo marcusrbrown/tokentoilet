@@ -6,9 +6,23 @@ import {useTokenDisposal} from '@/hooks/use-token-disposal'
 import {useUnwantedTokens} from '@/hooks/use-token-filtering'
 import {DisposalFlow} from './disposal-flow'
 
+const BURN_ADDRESS = '0x000000000000000000000000000000000000dEaD'
+
+async function proceedThroughConfirmation(tokenCount = 1) {
+  await userEvent.click(screen.getByRole('checkbox', {name: /acknowledge/i}))
+
+  const confirmationInput = screen.queryByRole('textbox', {name: /type burn/i})
+  if (confirmationInput != null) {
+    await userEvent.type(confirmationInput, tokenCount === 1 ? 'BURN' : `BURN ${tokenCount} TOKENS`)
+  }
+
+  await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+}
+
 // Mock the hooks
 vi.mock('@/hooks/use-token-disposal', () => ({
   useTokenDisposal: vi.fn(),
+  BURN_ADDRESS: '0x000000000000000000000000000000000000dEaD',
 }))
 
 vi.mock('@/hooks/use-token-filtering', () => ({
@@ -81,6 +95,8 @@ const mockTokens = [
     decimals: 18,
     balance: BigInt('1000'),
     formattedBalance: '1000',
+    estimatedValueUSD: 0.5,
+    valueClass: 'low_value',
     category: 'unwanted',
   },
   {
@@ -91,6 +107,8 @@ const mockTokens = [
     decimals: 18,
     balance: BigInt('2000'),
     formattedBalance: '2000',
+    estimatedValueUSD: 0.5,
+    valueClass: 'low_value',
     category: 'spam',
   },
 ]
@@ -165,14 +183,21 @@ describe('DisposalFlow', () => {
     expect(screen.getByText(/confirm disposal/i)).toBeInTheDocument()
     expect(screen.getByRole('button', {name: /confirm burn/i})).toBeInTheDocument()
     expect(screen.getByText('Token 1')).toBeInTheDocument()
+    expect(screen.getByText(/permanently transfer these tokens/i)).toBeInTheDocument()
+    expect(screen.getByText(BURN_ADDRESS)).toBeInTheDocument()
+    expect(screen.queryByText(/value unknown/i)).not.toBeInTheDocument()
   })
 
-  it('blocks disposal until explicit Confirm Burn click', async () => {
+  it('blocks disposal until the irreversible acknowledgement is checked', async () => {
     render(<DisposalFlow />)
     await userEvent.click(screen.getByTestId('mock-select-token-1'))
     await userEvent.click(screen.getByRole('button', {name: /continue/i}))
 
     expect(mockDispose).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', {name: /confirm burn/i})).toBeDisabled()
+
+    await userEvent.click(screen.getByRole('checkbox', {name: /acknowledge/i}))
+    expect(screen.getByRole('button', {name: /confirm burn/i})).toBeEnabled()
 
     await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
 
@@ -185,7 +210,7 @@ describe('DisposalFlow', () => {
     await userEvent.click(screen.getByTestId('mock-select-tokens-1-and-2'))
     await userEvent.click(screen.getByRole('button', {name: /continue/i}))
 
-    await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+    await proceedThroughConfirmation(2)
 
     expect(screen.getByText(/disposing 1 of 2/i)).toBeInTheDocument()
     expect(mockDispose).toHaveBeenCalledTimes(1)
@@ -212,7 +237,7 @@ describe('DisposalFlow', () => {
     render(<DisposalFlow />)
     await userEvent.click(screen.getByTestId('mock-select-tokens-1-and-2'))
     await userEvent.click(screen.getByRole('button', {name: /continue/i}))
-    await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+    await proceedThroughConfirmation(2)
 
     // when: first token disposal starts
     // then: dispose is called with first token
@@ -236,7 +261,7 @@ describe('DisposalFlow', () => {
       render(<DisposalFlow />)
       await userEvent.click(screen.getByTestId('mock-select-token-1'))
       await userEvent.click(screen.getByRole('button', {name: /continue/i}))
-      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+      await proceedThroughConfirmation()
 
       // Then the simulating status is shown
       expect(screen.getByText(/checking transfer safety/i)).toBeInTheDocument()
@@ -259,7 +284,7 @@ describe('DisposalFlow', () => {
       render(<DisposalFlow />)
       await userEvent.click(screen.getByTestId('mock-select-token-1'))
       await userEvent.click(screen.getByRole('button', {name: /continue/i}))
-      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+      await proceedThroughConfirmation()
 
       // Then the flow does NOT deadlock: it reports completion and advances to
       // the results screen showing the token as failed ("Failed checks will be skipped").
@@ -285,7 +310,7 @@ describe('DisposalFlow', () => {
       render(<DisposalFlow />)
       await userEvent.click(screen.getByTestId('mock-select-token-1'))
       await userEvent.click(screen.getByRole('button', {name: /continue/i}))
-      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+      await proceedThroughConfirmation()
 
       // Then dispose is called exactly once
       expect(mockDispose).toHaveBeenCalledTimes(1)
@@ -307,17 +332,45 @@ describe('DisposalFlow', () => {
       render(<DisposalFlow />)
       await userEvent.click(screen.getByTestId('mock-select-token-1'))
       await userEvent.click(screen.getByRole('button', {name: /continue/i}))
-      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+      await proceedThroughConfirmation()
 
       // Then the writing status is shown
       expect(screen.getByText(/waiting for wallet confirmation/i)).toBeInTheDocument()
+    })
+
+    it('requires typed confirmation for unknown-value tokens and keeps proceed disabled until it matches', async () => {
+      vi.mocked(useUnwantedTokens).mockReturnValue({
+        tokens: [{...mockTokens[0], estimatedValueUSD: undefined, valueClass: 'unknown'}],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      } as unknown as ReturnType<typeof useUnwantedTokens>)
+
+      render(<DisposalFlow />)
+      await userEvent.click(screen.getByTestId('mock-select-token-1'))
+      await userEvent.click(screen.getByRole('button', {name: /continue/i}))
+      await userEvent.click(screen.getByRole('checkbox', {name: /acknowledge/i}))
+
+      const confirmButton = screen.getByRole('button', {name: /confirm burn/i})
+      const confirmationInput = screen.getByRole('textbox', {name: /type burn/i})
+      expect(screen.getByText(/value unknown/i)).toBeInTheDocument()
+      expect(confirmButton).toBeDisabled()
+
+      await userEvent.type(confirmationInput, 'BURN')
+      expect(confirmButton).toBeEnabled()
     })
 
     it('shows updated dispose-step helper copy about preflight checks', async () => {
       render(<DisposalFlow />)
       await userEvent.click(screen.getByTestId('mock-select-token-1'))
       await userEvent.click(screen.getByRole('button', {name: /continue/i}))
-      await userEvent.click(screen.getByRole('button', {name: /confirm burn/i}))
+      await proceedThroughConfirmation()
 
       // Then the updated copy is shown
       expect(screen.getByText(/each token is checked before your wallet is prompted/i)).toBeInTheDocument()
