@@ -336,9 +336,27 @@ Running two Playwright suites concurrently against the same port either collides
 
 Units 5–7 are product fixes for defects this work uncovered. They land before the assertions that depend on them so the tests encode corrected behavior rather than current behavior.
 
-- [ ] **Unit 5: Halt the batch on global failure**
+- [x] **Unit 5: Halt the batch on global failure — WITHDRAWN**
 
-**Goal:** A wallet disconnect mid-batch stops the run instead of failing every remaining token.
+**Outcome:** Implemented, then reverted. The premise was wrong.
+
+The flow analysis identified the cascade by reading `DisposalExecutor` in isolation, and this plan repeated that without checking the page composition. Both global-failure conditions are already guarded a level up, and both guards unmount `DisposalFlow` entirely: `app/flush/page.tsx:35` swaps in a connect prompt when `isConnected` goes false, and `components/web3/network-guard.tsx:16` swaps in a switch-network prompt on an unsupported chain.
+
+`dispose()` runs in an effect, not during render, and React does not give a removed subtree a farewell effect pass. The guards therefore prevent the cascade rather than concealing it. It was never user-reachable.
+
+The regression test written for this unit mounted `DisposalFlow` without either guard and counted hook invocations rather than wallet requests, so it demonstrated that an isolated component followed a new branch — not that a production defect existed.
+
+The pre-existing connection and network checks inside `dispose()` are unrelated to this unit and remain in place.
+
+**What is actually wrong, and deferred:** replacing an in-flight irreversible operation with a generic connect prompt erases the user's record of what happened. A user who has signed two of five burns sees no account of the other three. The correct fix is a page-owned batch session that snapshots the confirmed token list, preserves per-token status across confirmed / submitted / failed / unresolved / not-started, stops issuing further requests on interruption, keeps the summary visible alongside reconnect controls, and never auto-resumes. That is a feature with its own state model and deserves its own requirements document rather than a late addition here.
+
+Two related honesty defects surfaced alongside it and are also deferred: `selectedTokens.length - results.length` cannot establish "not attempted", because an executor may have issued a wallet request without reporting a result; and the results screen reads "Flushed" when `isSuccess` only means the transaction was submitted, not confirmed on-chain.
+
+---
+
+<!-- original unit text retained below for provenance -->
+
+**Original goal:** A wallet disconnect mid-batch stops the run instead of failing every remaining token.
 
 **Dependencies:** None
 
