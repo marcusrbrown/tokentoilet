@@ -1,5 +1,6 @@
 import type {Locator, Page} from '@playwright/test'
 import type {Address} from 'viem'
+import {expect} from '@playwright/test'
 
 /**
  * Playwright's real `.click()` hangs against this app's rendered page,
@@ -10,6 +11,20 @@ import type {Address} from 'viem'
  */
 export async function dispatchClick(locator: Locator): Promise<void> {
   await locator.dispatchEvent('click')
+}
+
+/**
+ * Same dispatch as `dispatchClick`, but waits for the control to actually be
+ * enabled first. A native `disabled` button silently swallows a dispatched
+ * click, so a control whose enabled state is derived from React state that
+ * hasn't flushed yet can eat the click with no error and no side effect. Use
+ * this for controls gated by state we just set (e.g. a Continue/Confirm
+ * button after filling a form) — never for asserting that a gate blocks,
+ * which must dispatch at a genuinely disabled control.
+ */
+export async function dispatchClickWhenEnabled(locator: Locator): Promise<void> {
+  await expect(locator).toBeEnabled()
+  await dispatchClick(locator)
 }
 
 export async function dispatchFill(locator: Locator, value: string): Promise<void> {
@@ -46,7 +61,7 @@ export async function deselectToken(
 }
 
 export async function continueToConfirm(page: Page): Promise<void> {
-  await dispatchClick(page.getByRole('button', {name: 'Continue'}))
+  await dispatchClickWhenEnabled(page.getByRole('button', {name: 'Continue'}))
 }
 
 export function burnPhrase(tokenCount: number): string {
@@ -62,7 +77,7 @@ export async function acknowledgeAndTypeConfirmation(page: Page, tokenCount: num
 }
 
 export async function confirmBurn(page: Page): Promise<void> {
-  await dispatchClick(page.getByRole('button', {name: 'Confirm Burn'}))
+  await dispatchClickWhenEnabled(page.getByRole('button', {name: 'Confirm Burn'}))
 }
 
 /** Clicks the header wallet button, which disconnects when already connected. */
