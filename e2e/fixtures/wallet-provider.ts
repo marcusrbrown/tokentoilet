@@ -261,14 +261,3 @@ export async function timeProviderRequest(page: Page, method: string, params?: u
     {method, params},
   )
 }
-
-export async function setRequestDelay(page: Page, method: string, milliseconds: number): Promise<void> {
-  await page.evaluate(
-    ({method, milliseconds}: {method: string; milliseconds: number}) => {
-      const w = window as E2EWalletWindow
-      w.__e2eWalletDelays = w.__e2eWalletDelays ?? {}
-      w.__e2eWalletDelays[method] = milliseconds
-    },
-    {method, milliseconds},
-  )
-}
