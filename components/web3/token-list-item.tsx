@@ -149,6 +149,10 @@ function getTokenVariant(token: CategorizedToken): 'default' | 'warning' | 'erro
   return 'default'
 }
 
+function getTokenAddressLabel(address: CategorizedToken['address']): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
+
 /**
  * Enhanced token value display component with real-time price integration
  *
@@ -293,6 +297,16 @@ export function TokenListItem({
     onClick?.(token)
   }, [onClick, token])
 
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        handleClick()
+      }
+    },
+    [handleClick],
+  )
+
   const handleToggleSelection = useCallback(
     (event: React.MouseEvent) => {
       event.stopPropagation()
@@ -344,6 +358,11 @@ export function TokenListItem({
         className,
       )}
       onClick={handleClick}
+      onKeyDown={onClick ? handleKeyDown : undefined}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={onClick ? `View ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}` : undefined}
+      data-token-address={token.address}
       {...props}
     >
       {/* Selection checkbox for batch disposal operations */}
@@ -357,10 +376,15 @@ export function TokenListItem({
               selected && 'opacity-100',
             )}
             onClick={handleToggleSelection}
+            aria-label={`${selected ? 'Deselect' : 'Select'} ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}`}
+            aria-pressed={selected}
           >
             <CheckCircle2
               className={cn('h-4 w-4', selected ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400')}
             />
+            <span className="sr-only">
+              {selected ? 'Deselect' : 'Select'} {token.symbol} token, contract {getTokenAddressLabel(token.address)}
+            </span>
           </Button>
         </div>
       )}
@@ -414,7 +438,13 @@ export function TokenListItem({
           {/* Progressive disclosure: actions appear on hover to reduce visual clutter */}
           <div className="flex items-center justify-end gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {onViewDetails && (
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={handleViewDetails}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={handleViewDetails}
+                aria-label={`View details for ${token.symbol} token, contract ${getTokenAddressLabel(token.address)}`}
+              >
                 <ExternalLink className="h-3 w-3" />
               </Button>
             )}
