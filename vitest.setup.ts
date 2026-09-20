@@ -122,7 +122,7 @@ HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
 })) as unknown as typeof HTMLCanvasElement.prototype.getContext
 
 // Mock window.getComputedStyle for axe-core color contrast checking
-const originalGetComputedStyle = window.getComputedStyle
+const originalGetComputedStyle = window.getComputedStyle.bind(window)
 window.getComputedStyle = vi.fn((element: Element, pseudoElt?: string | null) => {
   // For pseudo-elements, return a basic mock
   if (pseudoElt != null && pseudoElt.trim().length > 0) {
