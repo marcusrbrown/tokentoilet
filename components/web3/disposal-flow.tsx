@@ -1,15 +1,16 @@
 'use client'
 
 import type {Address} from 'viem'
-import {AlertCircle, CheckCircle, Clock} from 'lucide-react'
+import {AlertCircle, Check, CheckCircle, Clock, Copy} from 'lucide-react'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {Button} from '@/components/ui/button'
 import {Card} from '@/components/ui/card'
+import {Input} from '@/components/ui/input'
 import {useTokenDiscovery} from '@/hooks/use-token-discovery'
-import {useTokenDisposal} from '@/hooks/use-token-disposal'
+import {BURN_ADDRESS, useTokenDisposal} from '@/hooks/use-token-disposal'
 import {useUnwantedTokens} from '@/hooks/use-token-filtering'
 import {DEFAULT_SUPPORTED_NETWORK_V1} from '@/lib/web3/chains'
-import type {CategorizedToken} from '@/lib/web3/token-filtering'
+import {TokenValueClass, type CategorizedToken} from '@/lib/web3/token-filtering'
 import {TokenList} from './token-list'
 import {TransactionQueue} from './transaction-queue'
 
@@ -20,6 +21,182 @@ interface DisposalResult {
   name: string
   symbol: string
   error?: string
+}
+
+const TYPED_CONFIRMATION_THRESHOLD_USD = 10
+
+function requiresTypedConfirmation(token: CategorizedToken): boolean {
+  return (
+    token.estimatedValueUSD === undefined ||
+    token.estimatedValueUSD >= TYPED_CONFIRMATION_THRESHOLD_USD ||
+    token.valueClass === TokenValueClass.MEDIUM_VALUE ||
+    token.valueClass === TokenValueClass.HIGH_VALUE
+  )
+}
+
+function BurnConfirmation({
+  tokens,
+  onCancel,
+  onConfirm,
+}: {
+  tokens: CategorizedToken[]
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  const [acknowledged, setAcknowledged] = useState(false)
+  const [typedConfirmation, setTypedConfirmation] = useState('')
+  const [isCopied, setIsCopied] = useState(false)
+  const requiresTyped = tokens.some(requiresTypedConfirmation)
+  const expectedConfirmation = tokens.length === 1 ? 'BURN' : `BURN ${tokens.length} TOKENS`
+  const isConfirmationValid = !requiresTyped || typedConfirmation === expectedConfirmation
+  const canConfirm = acknowledged && isConfirmationValid
+
+  const copyBurnAddress = () => {
+    // Unavailable outside secure contexts; the address stays selectable either way.
+    if (navigator.clipboard === undefined) {
+      console.error('Failed to copy burn address: clipboard unavailable')
+      return
+    }
+
+    navigator.clipboard
+      .writeText(BURN_ADDRESS)
+      .then(() => {
+        setIsCopied(true)
+        setTimeout(() => setIsCopied(false), 2000)
+      })
+      .catch(error => {
+        console.error('Failed to copy burn address:', error)
+      })
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-xl font-bold">Confirm Disposal</h2>
+        <p className="mt-1 text-sm text-foreground/70">Review the destination and every token before continuing.</p>
+      </div>
+
+      <section
+        aria-labelledby="irreversible-burn-warning"
+        role="alert"
+        className="rounded-xl border border-error/30 bg-error/10 p-5"
+      >
+        <div className="flex gap-3">
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-error" aria-hidden="true" />
+          <div className="space-y-2">
+            <h3 id="irreversible-burn-warning" className="font-semibold text-foreground">
+              This action is permanent
+            </h3>
+            <p className="text-sm leading-6 text-foreground/80">
+              You are about to permanently transfer these tokens to a burn address. This cannot be undone. Token Toilet
+              cannot recover burned tokens.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <Card variant="solid" className="space-y-4 p-5">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-foreground/60">Destination burn address</p>
+          <div className="mt-2 flex items-start gap-3 rounded-lg border border-border bg-background p-3">
+            <code className="min-w-0 flex-1 break-all text-xs leading-5 text-foreground">{BURN_ADDRESS}</code>
+            <Button
+              variant="outline"
+              size="sm"
+              aria-label={isCopied ? 'Burn address copied' : 'Copy burn address'}
+              onClick={copyBurnAddress}
+              leftIcon={isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            >
+              {isCopied ? 'Copied' : 'Copy'}
+            </Button>
+          </div>
+        </div>
+        <p className="text-sm leading-6 text-foreground/70">
+          Each token is a separate irreversible transaction. Your wallet will ask for approval once per token.
+        </p>
+      </Card>
+
+      <section aria-labelledby="tokens-to-burn-heading" className="space-y-3">
+        <div>
+          <h3 id="tokens-to-burn-heading" className="font-semibold">
+            Tokens to burn
+          </h3>
+          <p className="text-sm text-foreground/70">
+            Check the contract address, balance, and estimated value for each token.
+          </p>
+        </div>
+        <div className="space-y-3">
+          {tokens.map(token => (
+            <Card key={token.address} variant="web3" className="space-y-3 p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-semibold">{token.name}</p>
+                  <p className="text-sm text-foreground/65">{token.symbol}</p>
+                </div>
+                <p className="text-right font-mono text-sm">
+                  {token.formattedBalance} {token.symbol}
+                </p>
+              </div>
+              <dl className="grid gap-2 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-foreground/60">Estimated value</dt>
+                  <dd className="font-medium">
+                    {token.estimatedValueUSD === undefined ? 'Value unknown' : `$${token.estimatedValueUSD.toFixed(2)}`}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-foreground/60">Chain</dt>
+                  <dd className="font-medium">
+                    {token.chainId === DEFAULT_SUPPORTED_NETWORK_V1.id
+                      ? DEFAULT_SUPPORTED_NETWORK_V1.name
+                      : `Chain ${token.chainId}`}
+                  </dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className="text-foreground/60">Contract address</dt>
+                  <dd className="mt-1 break-all font-mono text-xs text-foreground/80">{token.address}</dd>
+                </div>
+              </dl>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <div className="rounded-lg border border-border bg-background p-4">
+        <label className="flex cursor-pointer items-start gap-3 text-sm leading-6" htmlFor="acknowledge-burn">
+          <input
+            id="acknowledge-burn"
+            type="checkbox"
+            checked={acknowledged}
+            onChange={event => setAcknowledged(event.target.checked)}
+            className="mt-1 h-4 w-4 shrink-0 accent-violet-600 focus:ring-2 focus:ring-violet-600 focus:ring-offset-2"
+          />
+          <span>I acknowledge that these tokens will be permanently burned and cannot be recovered.</span>
+        </label>
+      </div>
+
+      {requiresTyped && (
+        <Input
+          label={`Type ${expectedConfirmation} to continue`}
+          value={typedConfirmation}
+          onChange={event => setTypedConfirmation(event.target.value)}
+          placeholder={expectedConfirmation}
+          autoComplete="off"
+          spellCheck={false}
+          helperText={`Required because at least one token has an unknown value or an estimated value of $${TYPED_CONFIRMATION_THRESHOLD_USD} or more.`}
+        />
+      )}
+
+      <div className="flex justify-end gap-3 pt-1">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button variant="destructive" disabled={!canConfirm} onClick={onConfirm}>
+          Confirm Burn
+        </Button>
+      </div>
+    </div>
+  )
 }
 
 /**
@@ -157,32 +334,7 @@ export function DisposalFlow() {
   }
 
   if (step === 'confirm') {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold">Confirm Disposal</h2>
-        <Card variant="web3" className="p-4">
-          <h3 className="font-semibold mb-4">Tokens to be burned:</h3>
-          <ul className="space-y-3">
-            {selectedTokens.map(token => (
-              <li key={token.address} className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <span className="font-medium">{token.name}</span>
-                <span className="text-gray-600">
-                  {token.formattedBalance} {token.symbol}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-        <div className="flex gap-3 justify-end mt-6">
-          <Button variant="outline" onClick={() => setStep('select')}>
-            Cancel
-          </Button>
-          <Button variant="destructive" onClick={startDisposal}>
-            Confirm Burn
-          </Button>
-        </div>
-      </div>
-    )
+    return <BurnConfirmation tokens={selectedTokens} onCancel={() => setStep('select')} onConfirm={startDisposal} />
   }
 
   if (step === 'dispose') {
