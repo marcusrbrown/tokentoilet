@@ -11,9 +11,11 @@ pnpm fix                     # Auto-fix lint issues
 pnpm test                    # Run all tests
 pnpm test -- path/to/file.test.ts  # Run single test file
 pnpm test:coverage           # Run tests with coverage
+pnpm test:e2e                # Run Playwright e2e tests
 pnpm type-check              # TypeScript check
 pnpm validate:design-system  # Validate design system tokens/components
 pnpm validate:web3           # Validate web3 integration
+pnpm validate:e2e-boundary   # Validate e2e suite does not leak into app code
 pnpm validate                # Full validation: lint + types + test + design-system + storybook build
 ```
 
