@@ -16,6 +16,9 @@ export interface UseTokenDisposalReturn {
   isSimulating: boolean
   canDispose: boolean
   isSimulationEnabled: boolean
+  // True when the current error stems from wallet disconnect or an unsupported
+  // network - conditions that affect every token, not just this one.
+  isGlobalFailure: boolean
   error: Error | null
   txHash: `0x${string}` | undefined
 }
@@ -37,6 +40,8 @@ export function useTokenDisposal(token: CategorizedToken): UseTokenDisposalRetur
     }
     return null
   }, [token.address, token.balance, token.symbol])
+
+  const isGlobalFailure = typeof userAddress !== 'string' || !isConnected || networkError !== null
 
   const isSimulationEnabled =
     localError == null &&
@@ -135,6 +140,7 @@ export function useTokenDisposal(token: CategorizedToken): UseTokenDisposalRetur
     isSimulating,
     canDispose,
     isSimulationEnabled,
+    isGlobalFailure,
     error: effectiveError,
     txHash: data,
   }

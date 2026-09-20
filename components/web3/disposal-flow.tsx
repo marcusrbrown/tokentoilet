@@ -208,11 +208,14 @@ function BurnConfirmation({
 function DisposalExecutor({
   token,
   onComplete,
+  onGlobalFailure,
 }: {
   token: CategorizedToken
   onComplete: (result: DisposalResult) => void
+  onGlobalFailure: (message: string) => void
 }) {
-  const {dispose, isPending, isSuccess, isSimulating, canDispose, isSimulationEnabled, error} = useTokenDisposal(token)
+  const {dispose, isPending, isSuccess, isSimulating, canDispose, isSimulationEnabled, isGlobalFailure, error} =
+    useTokenDisposal(token)
   const hasTriggeredRef = useRef(false)
   const hasReportedRef = useRef(false)
 
@@ -231,9 +234,15 @@ function DisposalExecutor({
   useEffect(() => {
     // Report any terminal outcome (success or error), even when no write was
     // triggered — a failed preflight is a terminal result that must advance the
-    // batch, otherwise a reverting token deadlocks the disposal flow.
+    // batch, otherwise a reverting token deadlocks the disposal flow. A global
+    // failure (disconnect, unsupported network) halts the batch instead, since
+    // it applies to every remaining token and not just this one.
     if (!hasReportedRef.current && (isSuccess || error != null)) {
       hasReportedRef.current = true
+      if (error != null && isGlobalFailure) {
+        onGlobalFailure(error.message)
+        return
+      }
       onComplete({
         address: token.address,
         success: isSuccess && error == null,
@@ -242,7 +251,7 @@ function DisposalExecutor({
         error: error?.message,
       })
     }
-  }, [isSuccess, error, token.address, token.name, token.symbol, onComplete])
+  }, [isSuccess, error, isGlobalFailure, token.address, token.name, token.symbol, onComplete, onGlobalFailure])
 
   const status =
     error == null ? (isSuccess ? 'success' : isPending ? 'writing' : isSimulating ? 'simulating' : 'queued') : 'failed'
@@ -269,6 +278,7 @@ export function DisposalFlow() {
   const [selectedAddresses, setSelectedAddresses] = useState<Address[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState<DisposalResult[]>([])
+  const [haltReason, setHaltReason] = useState<string | null>(null)
 
   const {tokens: discoveredTokens} = useTokenDiscovery({enabled: true})
   const {tokens: unwantedTokens} = useUnwantedTokens(discoveredTokens)
@@ -302,6 +312,7 @@ export function DisposalFlow() {
   const startDisposal = () => {
     setCurrentIndex(0)
     setResults([])
+    setHaltReason(null)
     setStep('dispose')
   }
 
@@ -313,6 +324,11 @@ export function DisposalFlow() {
     } else {
       setStep('results')
     }
+  }
+
+  const handleGlobalFailure = (message: string) => {
+    setHaltReason(message)
+    setStep('results')
   }
 
   if (step === 'select') {
@@ -351,7 +367,12 @@ export function DisposalFlow() {
           </p>
         </div>
 
-        <DisposalExecutor key={tokenToDispose.address} token={tokenToDispose} onComplete={handleDisposalComplete} />
+        <DisposalExecutor
+          key={tokenToDispose.address}
+          token={tokenToDispose}
+          onComplete={handleDisposalComplete}
+          onGlobalFailure={handleGlobalFailure}
+        />
 
         <div className="mt-8">
           <h3 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">Transaction Status</h3>
@@ -363,6 +384,7 @@ export function DisposalFlow() {
 
   const successCount = results.filter(r => r.success).length
   const failCount = results.length - successCount
+  const unattemptedCount = selectedTokens.length - results.length
 
   return (
     <div className="space-y-6">
@@ -373,6 +395,17 @@ export function DisposalFlow() {
           {failCount > 0 && <span className="text-red-500 ml-1">{failCount} failed.</span>}
         </p>
       </div>
+
+      {haltReason !== null && (
+        <section role="alert" className="rounded-xl border border-error/30 bg-error/10 p-4">
+          <p className="font-semibold text-foreground">Disposal halted: {haltReason}</p>
+          {unattemptedCount > 0 && (
+            <p className="mt-1 text-sm text-foreground/80">
+              {unattemptedCount} token{unattemptedCount === 1 ? '' : 's'} not attempted.
+            </p>
+          )}
+        </section>
+      )}
 
       <Card className="p-0 overflow-hidden">
         <ul className="divide-y divide-gray-100">
@@ -407,6 +440,7 @@ export function DisposalFlow() {
         <Button
           onClick={() => {
             setSelectedAddresses([])
+            setHaltReason(null)
             setStep('select')
           }}
         >
