@@ -2,9 +2,7 @@ import type {Page} from '@playwright/test'
 import type {Address} from 'viem'
 import {Buffer} from 'node:buffer'
 import {randomUUID} from 'node:crypto'
-import {createPublicClient, http} from 'viem'
 import {generatePrivateKey, privateKeyToAccount} from 'viem/accounts'
-import {sepolia} from 'viem/chains'
 
 export const SEPOLIA_CHAIN_ID_HEX = '0xaa36a7'
 
@@ -27,11 +25,8 @@ export interface WalletProviderOptions {
   readonly rejectSendTransactionTo?: readonly Address[]
 }
 
-export type BalanceGuardResult = {readonly status: 'zero'} | {readonly status: 'unverifiable'; readonly reason: string}
-
 export interface SyntheticWallet {
   readonly address: Address
-  readonly balanceGuard: BalanceGuardResult
 }
 
 interface BrowserWalletProvider {
@@ -58,51 +53,12 @@ interface BrowserWalletConfig {
 }
 
 /**
- * Generates a fresh Sepolia account in memory and returns only its address.
- * The private key never leaves this function: it is used once to derive the
- * address and then goes out of scope. There is no parameter or environment
- * variable that accepts a supplied key, and the key is never logged, stored,
- * or passed into the browser context.
+ * Generates a fresh account per call; the key is never persisted or funded,
+ * so no balance check is needed.
  */
 export function createEphemeralAddress(): Address {
   const privateKey = generatePrivateKey()
   return privateKeyToAccount(privateKey).address
-}
-
-async function fetchSepoliaBalance(address: Address): Promise<bigint> {
-  const client = createPublicClient({chain: sepolia, transport: http()})
-  return client.getBalance({address})
-}
-
-/**
- * Verifies the derived account holds no Sepolia balance before the run
- * proceeds. Fails closed: an affirmatively nonzero balance throws and aborts
- * the run. When the balance cannot be determined (no RPC reachable from the
- * test environment, rate limiting, etc.) the guard returns an `unverifiable`
- * result rather than silently treating the account as safe — callers must
- * surface that result.
- */
-export async function guardZeroBalance(
-  address: Address,
-  fetchBalance: (address: Address) => Promise<bigint> = fetchSepoliaBalance,
-): Promise<BalanceGuardResult> {
-  let balance: bigint
-  try {
-    balance = await fetchBalance(address)
-  } catch (error) {
-    return {
-      status: 'unverifiable',
-      reason: error instanceof Error ? error.message : String(error),
-    }
-  }
-
-  if (balance !== 0n) {
-    throw new Error(
-      `Synthetic wallet ${address} has a nonzero Sepolia balance (${balance.toString()} wei). Refusing to run — a funded ephemeral account means something is wrong.`,
-    )
-  }
-
-  return {status: 'zero'}
 }
 
 /**
@@ -206,22 +162,14 @@ function browserInit(config: BrowserWalletConfig): void {
 
 /**
  * Installs the synthetic EIP-6963 wallet into the page before any app script
- * runs. Generates a fresh ephemeral account, runs the zero-balance guard, and
- * registers the in-browser provider. Call before `page.goto`.
+ * runs. Generates a fresh ephemeral account and registers the in-browser
+ * provider. Call before `page.goto`.
  */
 export async function installSyntheticWallet(
   page: Page,
   options: WalletProviderOptions = {},
 ): Promise<SyntheticWallet> {
   const address = createEphemeralAddress()
-  const balanceGuard = await guardZeroBalance(address)
-
-  if (balanceGuard.status === 'unverifiable') {
-    console.warn(
-      `[e2e wallet] Could not verify the Sepolia balance for ${address}: ${balanceGuard.reason}. ` +
-        'Proceeding without the zero-balance guarantee for this run.',
-    )
-  }
 
   await page.addInitScript(browserInit, {
     address,
@@ -234,7 +182,7 @@ export async function installSyntheticWallet(
     name: WALLET_NAME,
   })
 
-  return {address, balanceGuard}
+  return {address}
 }
 
 export async function getRecordedRequests(page: Page): Promise<RecordedRequest[]> {

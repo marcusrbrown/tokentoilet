@@ -2,7 +2,6 @@ import {expect, test} from '@playwright/test'
 import {
   createEphemeralAddress,
   getRecordedRequests,
-  guardZeroBalance,
   installSyntheticWallet,
   invokeProviderRequest,
   timeProviderRequest,
@@ -63,26 +62,5 @@ test.describe('createEphemeralAddress', () => {
     const second = createEphemeralAddress()
     expect(first).not.toBe(second)
     expect(first).toMatch(/^0x[0-9a-fA-F]{40}$/)
-  })
-})
-
-test.describe('guardZeroBalance', () => {
-  test('resolves zero status when the balance is confirmed zero', async () => {
-    const address = createEphemeralAddress()
-    const result = await guardZeroBalance(address, async () => 0n)
-    expect(result).toEqual({status: 'zero'})
-  })
-
-  test('aborts with a clear message when the balance is nonzero', async () => {
-    const address = createEphemeralAddress()
-    await expect(guardZeroBalance(address, async () => 1n)).rejects.toThrow(/nonzero Sepolia balance/)
-  })
-
-  test('reports unverifiable rather than silently passing when the balance cannot be fetched', async () => {
-    const address = createEphemeralAddress()
-    const result = await guardZeroBalance(address, async () => {
-      throw new Error('network unreachable')
-    })
-    expect(result).toEqual({status: 'unverifiable', reason: 'network unreachable'})
   })
 })
