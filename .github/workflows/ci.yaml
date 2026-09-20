@@ -64,11 +64,65 @@ jobs:
           path: coverage/
           retention-days: 7
 
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    env:
+      # Dummy public values, not secrets: the suite stubs all network traffic
+      # (see e2e/fixtures/network-stubs.ts), so this project ID never reaches
+      # Reown. Overriding the workflow-level SKIP_ENV_VALIDATION keeps env
+      # validation active for this job, proving the app boots with a valid
+      # configuration -- a code path production always runs. Production
+      # credentials stay out of this destructive-flow harness.
+      SKIP_ENV_VALIDATION: ''
+      NEXT_PUBLIC_APP_URL: https://e2e-ci.invalid
+      NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: deaddeaddeaddeaddeaddeaddeaddead
+      NEXT_PUBLIC_ALCHEMY_API_KEY: e2e-ci-dummy-key
+    steps:
+      - name: ⤵️ Checkout Branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Setup Project
+        uses: ./.github/actions/setup
+
+      - name: Validate E2E Production Boundary
+        run: pnpm run validate:e2e-boundary
+
+      - name: Resolve Playwright Version
+        id: playwright-version
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright Browsers
+        id: playwright-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+          path: ~/.cache/ms-playwright
+
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Playwright System Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
+
+      - name: Run E2E Tests
+        run: pnpm test:e2e
+
+      - name: Upload Playwright Report
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
   # Build Jobs
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    needs: [lint, test, e2e]
     steps:
       - name: ⤵️ Checkout Branch
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
