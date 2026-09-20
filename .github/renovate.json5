@@ -10,6 +10,14 @@
       automerge: true,
       schedule: ['before 7am on the first day of the month'],
     },
+    {
+      // 1.56.0+ breaks the Turbopack build via statically imported optional `@x402/*`
+      // peers. The pin is enforced in `pnpm-workspace.yaml`. Revisit once Coinbase
+      // makes those imports dynamic or drops the static requirement.
+      description: 'Do not propose `@coinbase/cdp-sdk` updates past the pinned version.',
+      matchPackageNames: ['@coinbase/cdp-sdk'],
+      enabled: false,
+    },
   ],
   postUpgradeTasks: {
     commands: ['pnpm install', 'pnpm run fix'],
