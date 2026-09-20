@@ -11,7 +11,7 @@ import consola from 'consola'
 
 const APP_SOURCE_DIRS = ['app', 'components', 'hooks', 'lib']
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx'])
-const IMPORT_SPECIFIER_PATTERN = /(?:\bimport\s|\bfrom\s|\brequire\()\s*['"]([^'"]+)['"]/g
+const IMPORT_SPECIFIER_PATTERN = /(?:\bimport\s|\bfrom\s|\brequire\(|\bimport\()\s*['"]([^'"]+)['"]/g
 
 interface Violation {
   file: string
