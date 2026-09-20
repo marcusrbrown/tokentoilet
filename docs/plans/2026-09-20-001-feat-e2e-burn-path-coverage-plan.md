@@ -35,6 +35,7 @@ Requirement IDs refer to the origin document.
 - On-chain settlement. No local chain, no real receipts, no post-burn balance verification.
 - Real wallet software, WalletConnect relay behavior, live Sepolia transactions from CI.
 - Cross-browser coverage, sharding, visual regression.
+- **Value-dependent confirmation branches.** `hooks/use-token-filtering.ts:304` is the only production call site of `categorizeToken` and passes `undefined` for metadata, so `priceUSD` and therefore `estimatedValueUSD` are always undefined and `TokenValueClass` is always `UNKNOWN`. Every token demands typed confirmation, the confirm step's per-token value always reads "Value unknown", and the threshold logic in `requiresTypedConfirmation` is dead code that unit tests reach only by passing metadata directly. The behavior fails safe. The suite does not cover branches production cannot reach; the inert pricing path is tracked separately.
 - **Mid-batch wallet disconnect behavior is asserted only at the sentinel level.** Research found that a disconnect mid-batch cascades: each remaining token fails instantly and auto-advances. Tests assert only what survives a fix — no double-burn, no transaction after disconnect — so the defect is not ratified as a specification. The cascade itself is filed separately.
 
 ### Deferred to Separate Tasks
@@ -377,7 +378,7 @@ Running two Playwright suites concurrently against the same port either collides
 
 **Approach:**
 - Assert confirm is disabled until acknowledgement, and until typed confirmation matches exactly where required.
-- Cover the **checkbox-only path**: a batch of solely low-value tokens requires no typed input by design. Assert the input is absent and confirm enables on acknowledgement alone.
+- The **checkbox-only path is unreachable in production and is not tested.** See Scope Boundaries — estimated value is never populated, so typed confirmation is always required. Asserting that path would require fabricating state the app cannot produce.
 - Cover exact-match strictness: lowercase and surrounding whitespace must not satisfy it.
 - Assert confirm-step safety content: permanence warning present, burn address rendered in full, per-token contract address and value-or-unknown shown.
 - Assert escape paths: cancelling returns to selection and clears gate state; the results reset returns to a usable selection state.
@@ -389,7 +390,7 @@ Selection-limit behavior (zero selected, batch cap) belongs to Unit 5, which alr
 - Happy path: all gates satisfied enables confirm.
 - Edge case: acknowledgement alone, with typed confirmation required, leaves confirm disabled and produces no transaction.
 - Edge case: `burn` lowercase and `" BURN "` padded both leave confirm disabled.
-- Edge case: batch of only low-value tokens shows no typed input and confirms on the checkbox alone.
+- Edge case: typed confirmation is demanded for every token, because estimated value is never populated. Assert this rather than a checkbox-only path.
 - Edge case: changing selection count after typing invalidates the previously-correct phrase.
 - Happy path: cancelling from confirm returns to selection with gate state cleared.
 

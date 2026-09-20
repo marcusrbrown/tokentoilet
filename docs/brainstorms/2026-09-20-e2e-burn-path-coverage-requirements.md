@@ -104,6 +104,8 @@ A passing run does not rule out these defect classes. Each requires settlement-l
 
 Real-wallet behavior is a separate gap: the injected provider proves the app's connector and discovery code path works against a synthetic wallet, not that MetaMask, WalletConnect, or any specific wallet behaves correctly.
 
+Value-dependent behavior is inert and therefore uncovered. `categorizeToken` is called with `undefined` metadata at its only production call site, so `estimatedValueUSD` is never populated and `TokenValueClass` is always `UNKNOWN`. Every token demands typed confirmation, per-token value always renders "Value unknown", and the value threshold in `requiresTypedConfirmation` never executes. R9's gate coverage reflects what production actually does rather than what the threshold logic suggests.
+
 ---
 
 ## Scope Boundaries
