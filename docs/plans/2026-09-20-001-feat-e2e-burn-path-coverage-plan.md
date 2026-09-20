@@ -442,13 +442,13 @@ Two related honesty defects surfaced alongside it and are also deferred: `select
 **Approach:**
 - Decode each recorded `eth_sendTransaction` with viem's ABI utilities.
 - Assert function is ERC-20 `transfer`, recipient is `BURN_ADDRESS`, amount equals the token's full raw balance, and `to` is the intended contract.
-- Assert chain is Sepolia on every outbound transaction.
+- `eth_sendTransaction` params carry no `chainId` under EIP-1193 — the chain is implicit in the provider connection, not observable on the transaction itself. Assert instead that the synthetic wallet provider only ever reported Sepolia (`eth_chainId` responses equal `0xaa36a7`) and that no `wallet_switchEthereumChain` or `wallet_addEthereumChain` request occurred.
 - Assert exactly one transaction per selected token, submitted sequentially, with no unselected contract present.
 - State the expected recipient literally in the test. Do **not** import `BURN_ADDRESS` from the application — that would move both sides of the assertion together and let a mutated constant pass.
 
 **Test scenarios:**
 - Happy path: three tokens with distinct balances produce three correctly-decoded transfers in order.
-- Happy path: every outbound transaction carries chain 11155111.
+- Happy path: the provider only ever reports Sepolia and no chain switch occurs across the run.
 - Edge case: a token deselected before confirming produces no transaction.
 - Edge case: a single-token burn produces exactly one transaction.
 - Edge case: zero tokens selected leaves the advance control disabled.

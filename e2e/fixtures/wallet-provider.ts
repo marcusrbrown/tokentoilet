@@ -18,6 +18,7 @@ export interface RecordedRequest {
   readonly method: string
   readonly params: unknown
   readonly timestamp: number
+  readonly result?: unknown
 }
 
 export interface WalletProviderOptions {
@@ -129,8 +130,13 @@ function browserInit(config: BrowserWalletConfig): void {
 
   async function request(args: {method: string; params?: unknown}): Promise<unknown> {
     const log = w.__e2eWalletRequestLog
+    const entry: {method: string; params: unknown; timestamp: number; result?: unknown} = {
+      method: args.method,
+      params: args.params ?? null,
+      timestamp: Date.now(),
+    }
     if (log) {
-      log.push({method: args.method, params: args.params ?? null, timestamp: Date.now()})
+      log.push(entry)
     }
 
     const delays = w.__e2eWalletDelays
@@ -141,10 +147,15 @@ function browserInit(config: BrowserWalletConfig): void {
 
     switch (args.method) {
       case 'eth_accounts':
-      case 'eth_requestAccounts':
-        return [config.address]
-      case 'eth_chainId':
+      case 'eth_requestAccounts': {
+        const result = [config.address]
+        entry.result = result
+        return result
+      }
+      case 'eth_chainId': {
+        entry.result = config.chainIdHex
         return config.chainIdHex
+      }
       case 'eth_sendTransaction': {
         const params = args.params as {to?: string}[] | undefined
         const target = params?.[0]?.to
@@ -156,7 +167,9 @@ function browserInit(config: BrowserWalletConfig): void {
           error.code = 4001
           throw error
         }
-        return randomHash()
+        const result = randomHash()
+        entry.result = result
+        return result
       }
       default: {
         const error = new Error(`Unsupported RPC method: ${args.method}`) as Error & {code: number}

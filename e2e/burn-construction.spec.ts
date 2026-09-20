@@ -12,7 +12,7 @@ import {
   SPOOFED_BURNABLE_TOKEN,
   type TokenFixture,
 } from './fixtures/tokens'
-import {getRecordedRequests, installSyntheticWallet} from './fixtures/wallet-provider'
+import {getRecordedRequests, installSyntheticWallet, SEPOLIA_CHAIN_ID_HEX} from './fixtures/wallet-provider'
 import {decodeAllBurnTransfers} from './helpers/decode-transaction'
 import {
   acknowledgeAndTypeConfirmation,
@@ -61,8 +61,11 @@ test.describe('burn transaction construction', () => {
     })
 
     // Every outbound transaction happens on the wallet's only configured
-    // chain (Sepolia): no chain switch was ever requested or possible.
-    expect(requests.some(r => r.method === 'eth_chainId')).toBe(true)
+    // chain (Sepolia): the provider only ever reported Sepolia, and no chain
+    // switch was ever requested or possible.
+    const chainIdRequests = requests.filter(r => r.method === 'eth_chainId')
+    expect(chainIdRequests.length).toBeGreaterThan(0)
+    expect(chainIdRequests.every(r => r.result === SEPOLIA_CHAIN_ID_HEX)).toBe(true)
     expect(
       requests.some(r => r.method === 'wallet_switchEthereumChain' || r.method === 'wallet_addEthereumChain'),
     ).toBe(false)
