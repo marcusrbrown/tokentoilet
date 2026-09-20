@@ -64,3 +64,8 @@ export async function acknowledgeAndTypeConfirmation(page: Page, tokenCount: num
 export async function confirmBurn(page: Page): Promise<void> {
   await dispatchClick(page.getByRole('button', {name: 'Confirm Burn'}))
 }
+
+/** Clicks the header wallet button, which disconnects when already connected. */
+export async function disconnectWallet(page: Page, address: Address): Promise<void> {
+  await dispatchClick(page.getByRole('button', {name: contractLabel(address)}))
+}
