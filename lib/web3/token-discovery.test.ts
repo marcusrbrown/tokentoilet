@@ -980,3 +980,98 @@ describe('regression — adaptive metadata fill beyond first page (#1560)', () =
     expect(result.truncated).toBe(false)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Regression: maxMetadataRequests is an authoritative ceiling, never raised
+// by metadataFetchBudget (PR review finding)
+// ---------------------------------------------------------------------------
+
+describe('regression — maxMetadataRequests ceiling is authoritative', () => {
+  it('never exceeds maxMetadataRequests even when metadataFetchBudget is configured far larger', async () => {
+    // The reviewer's exact scenario: a page size dwarfing the ceiling must not
+    // raise the ceiling. Far more balances than the ceiling to prove the loop
+    // stops there rather than draining toward the (huge) page size.
+    const allBalances = Array.from({length: 5000}, (_, i) => ({
+      contractAddress: `0x4${i.toString(16).padStart(39, '0')}` satisfies Address,
+      balance: SPAM_BALANCE,
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockImplementation(async (_client: unknown, addresses: Address[]) => {
+      const map = new Map<Address, {name: string; symbol: string; decimals: number}>()
+      for (const address of addresses) map.set(address, {...SPAM_META})
+      return map
+    })
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      metadataFetchBudget: 1_000_000,
+      maxMetadataRequests: 1_000,
+    })
+
+    const totalAddressesFetched = mockFetchAlchemyTokenMetadataBatch.mock.calls.reduce(
+      (sum, call) => sum + call[1].length,
+      0,
+    )
+    expect(totalAddressesFetched).toBeLessThanOrEqual(1_000)
+    expect(totalAddressesFetched).toBe(1_000)
+    expect(result.contractsChecked).toBe(1_000)
+  })
+
+  it.each([
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['zero', 0],
+    ['negative', -1],
+  ])('falls back to the default maxMetadataRequests when configured as %s', async (_label, invalidValue) => {
+    const allBalances = Array.from({length: 2000}, (_, i) => ({
+      contractAddress: `0x5${i.toString(16).padStart(39, '0')}` satisfies Address,
+      balance: SPAM_BALANCE,
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockImplementation(async (_client: unknown, addresses: Address[]) => {
+      const map = new Map<Address, {name: string; symbol: string; decimals: number}>()
+      for (const address of addresses) map.set(address, {...SPAM_META})
+      return map
+    })
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxMetadataRequests: invalidValue,
+    })
+
+    // Falls back to the documented default (1000), not NaN/Infinity/unbounded.
+    expect(result.contractsChecked).toBe(1000)
+    const totalAddressesFetched = mockFetchAlchemyTokenMetadataBatch.mock.calls.reduce(
+      (sum, call) => sum + call[1].length,
+      0,
+    )
+    expect(totalAddressesFetched).toBe(1000)
+  })
+
+  it.each([
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['zero', 0],
+    ['negative', -1],
+  ])('falls back to the default metadataFetchBudget when configured as %s', async (_label, invalidValue) => {
+    const allBalances = Array.from({length: 500}, (_, i) => ({
+      contractAddress: `0x6${i.toString(16).padStart(39, '0')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap(
+        allBalances.map((b, i) => ({address: b.contractAddress, name: `Token ${i}`, symbol: `TK${i}`, decimals: 18})),
+      ),
+    )
+
+    await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      metadataFetchBudget: invalidValue,
+    })
+
+    // Falls back to the documented default page size (300), not NaN/Infinity/[].
+    const calledAddresses = mockFetchAlchemyTokenMetadataBatch.mock.calls[0]?.[1]
+    expect(calledAddresses).toHaveLength(300)
+  })
+})

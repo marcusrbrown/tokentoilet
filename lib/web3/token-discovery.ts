@@ -88,16 +88,22 @@ export interface TokenDiscoveryConfig {
    * Metadata-fetch page size: how many balance-threshold-passing tokens get
    * metadata fetched and spam-filtered per page while adaptively filling
    * toward `maxTokensPerChain` (#1521, #1560). Floored at `maxTokensPerChain`
-   * regardless of the configured value. A wallet whose threshold-passing
-   * balances fit in one page issues exactly one metadata batch call, same as
-   * before adaptive fill existed.
+   * and capped at `maxMetadataRequests` — the ceiling is authoritative and is
+   * never raised to accommodate a larger page. A wallet whose
+   * threshold-passing balances fit in one page issues exactly one metadata
+   * batch call, same as before adaptive fill existed. Must be a finite
+   * positive integer; any other value (NaN, Infinity, zero, negative,
+   * non-integer) falls back to the documented default.
    */
   metadataFetchBudget?: number
   /**
    * Hard ceiling on total metadata requests per chain across all adaptive
    * pages (#1560). Bounds the fill loop so a wallet flooded with spam can't
-   * drive unbounded Alchemy requests from the browser. Floored at
-   * `metadataFetchBudget` so at least one page always runs.
+   * drive unbounded Alchemy requests from the browser. Authoritative — never
+   * raised by `metadataFetchBudget` or any other value; the page size is
+   * clamped to this ceiling instead. Must be a finite positive integer; any
+   * other value (NaN, Infinity, zero, negative, non-integer) falls back to
+   * the documented default.
    */
   maxMetadataRequests?: number
   /** Minimum balance threshold (in wei) to include token */
@@ -184,6 +190,17 @@ export const DEFAULT_TOKEN_DISCOVERY_CONFIG: Required<Omit<TokenDiscoveryConfig,
   batchSize: 20,
 }
 
+/**
+ * Validate a caller-supplied request-count config field. These are public,
+ * exported fields — callers can pass anything. A count only makes sense as a
+ * finite positive integer; NaN, Infinity, zero, negative, and non-integer
+ * values fall back to `fallback` rather than propagating into Math.max/slice
+ * (which silently produce NaN, negative, or unbounded results).
+ */
+function normalizeRequestCount(value: number, fallback: number): number {
+  return Number.isInteger(value) && value > 0 ? value : fallback
+}
+
 // ---------------------------------------------------------------------------
 // discoverUserTokens (entry point)
 // ---------------------------------------------------------------------------
@@ -223,8 +240,14 @@ export async function discoverUserTokens(
     ...DEFAULT_TOKEN_DISCOVERY_CONFIG,
     ...discoveryConfig,
     maxTokensPerChain: discoveryConfig.maxTokensPerChain ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.maxTokensPerChain,
-    metadataFetchBudget: discoveryConfig.metadataFetchBudget ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.metadataFetchBudget,
-    maxMetadataRequests: discoveryConfig.maxMetadataRequests ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.maxMetadataRequests,
+    metadataFetchBudget: normalizeRequestCount(
+      discoveryConfig.metadataFetchBudget ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.metadataFetchBudget,
+      DEFAULT_TOKEN_DISCOVERY_CONFIG.metadataFetchBudget,
+    ),
+    maxMetadataRequests: normalizeRequestCount(
+      discoveryConfig.maxMetadataRequests ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.maxMetadataRequests,
+      DEFAULT_TOKEN_DISCOVERY_CONFIG.maxMetadataRequests,
+    ),
   }
   const tokens: DiscoveredToken[] = []
   const errors: TokenDiscoveryError[] = []
@@ -385,8 +408,16 @@ async function discoverChainTokens(
   // the threshold-passing balances are exhausted, or the hard ceiling on
   // total metadata requests is reached. A wallet whose threshold-passing set
   // fits in one page behaves exactly as before — one metadata batch call.
-  const pageSize = Math.max(discoveryConfig.metadataFetchBudget, discoveryConfig.maxTokensPerChain)
-  const requestCeiling = Math.max(discoveryConfig.maxMetadataRequests, pageSize)
+  //
+  // The ceiling is authoritative: it bounds the page size, never the other
+  // way around. A page larger than the ceiling is clamped down to exactly
+  // the ceiling, which still guarantees at least one page runs without ever
+  // letting metadataFetchBudget raise the hard request bound.
+  const requestCeiling = discoveryConfig.maxMetadataRequests
+  const pageSize = Math.min(
+    Math.max(discoveryConfig.metadataFetchBudget, discoveryConfig.maxTokensPerChain),
+    requestCeiling,
+  )
 
   const legitimateTokens: DiscoveredToken[] = []
   let consideredCount = 0
