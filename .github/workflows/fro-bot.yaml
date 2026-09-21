@@ -147,7 +147,10 @@ env:
     If the smallest safe fix is not clearly minimal and reversible (e.g.,
     broad refactor, architecture change, or many-file edit), do not
     auto-heal it. Open or update an issue and record it under "Tasks for
-    Agents" with enough detail for any agent to act on cold.
+    Agents" with enough detail for any agent to act on cold. Deferring a
+    task grants it no additional authority: it still requires any approval
+    or trust check it would have needed if attempted now. Deferring must
+    never become a way to launder scope past the checks in this prompt.
 
     DEPENDENCY OWNERSHIP
     Renovate owns routine dependency/version bumps (configured via
@@ -352,29 +355,76 @@ env:
     per-agent subsections.
 
     OUTPUT — DAILY ROTATING REPORT ISSUE
-    Maintain exactly one open daily report. Follow this order deterministically
-    so the run is idempotent even if it overlaps another run:
-    1. Search open issues whose exact title is
-       "Daily Autohealing Report — YYYY-MM-DD (UTC)" for today (today's UTC
-       date).
-    2. If one or more exist, pick the LOWEST issue number as canonical and
-       reuse it (edit its body in place). If none exist, create it.
-    3. Close every OTHER open issue that YOU authored whose title starts
-       with "Daily Autohealing Report" — older dates, any same-day
-       duplicates that are not the canonical one, and the legacy undated
-       "Daily Autohealing Report" title — each with a one-line closing
-       comment linking the canonical report. Verify authorship before
-       closing: a human-filed issue whose title happens to start with that
-       prefix (for example, one reporting a problem with the report itself)
-       must never be closed.
-    There must be exactly one open daily report when the run finishes. Never
-    close the canonical issue you just selected.
+    Freeze one UTC date at the start of this run ("today's date") and use
+    that same value for every title, comparison, and body section for the
+    rest of the run, even if the run straddles midnight UTC.
+
+    An issue is an ELIGIBLE REPORT only if ALL of the following hold:
+    - it exists in this repository (never adopt or close issues in other
+      repositories),
+    - it is an issue, not a pull request,
+    - it was authored by this workflow's own reporting identity (the
+      `fro-bot` account backing FRO_BOT_PAT) — never adopt or close an
+      issue authored by anyone else, bot or human, even if the title
+      matches,
+    - its title exactly matches either the dated grammar
+      "Daily Autohealing Report — YYYY-MM-DD (UTC)" for some date, or is
+      exactly the legacy undated title "Daily Autohealing Report" (the
+      only enumerated special case). A prefix match is NOT sufficient: a
+      bot-authored issue titled "Daily Autohealing Report loses deferred
+      tasks" is not an eligible report, because this workflow can also
+      open diagnostic issues with similar-looking titles.
+
+    If an issue's identity or provenance is uncertain — authorship cannot
+    be confirmed, or a title collision cannot be resolved with confidence
+    (for example a human-filed issue that happens to use the exact dated
+    title) — leave it untouched: do not adopt it as canonical and do not
+    close it. Report the conflict under "Needs Human Attention" instead.
+
+    Precedence: authorization wins over the "exactly one open" goal below.
+    Only reconcile eligible reports. Never broaden eligibility — treating a
+    non-matching title or a non-`fro-bot` author as close enough — just to
+    force the count to one. Leaving an ambiguous or foreign-owned issue
+    open is the correct outcome, not a bug.
+
+    Follow this order deterministically so the run is idempotent even if it
+    overlaps another run:
+    1. Enumerate ALL eligible reports by paginating the full open-issues
+       listing to the end. GitHub issue listings paginate; a partial page
+       cannot establish that no report exists or that every duplicate was
+       found.
+    2. Among eligible reports whose title exactly matches today's frozen
+       dated title, pick the LOWEST issue number as canonical and reuse it
+       (edit its body in place). If none exist, create a new issue with
+       today's exact dated title.
+    3. Write the canonical body, then verify the write was actually
+       published (re-read the issue and confirm the body committed) before
+       doing anything else. If publication cannot be verified, STOP: close
+       nothing this run, leave every other eligible report intact, and log
+       the failure under "Needs Human Attention". A failed run must never
+       destroy the only surviving report.
+    4. Only after verified publication, close every OTHER eligible report
+       — older dates, same-day duplicates that are not the canonical one,
+       and the legacy undated title — each with a one-line closing comment
+       linking the canonical report (the sole exception to the
+       no-issue-comments rule below). Never close a report dated LATER
+       than today's frozen date: a run straddling midnight, or a delayed
+       previous-day run, must not retire a newer report than itself. Never
+       close the canonical issue you just selected.
+
+    There must be exactly one open daily report when the run finishes,
+    UNLESS step 3 halted the run for an unverified publication or steps
+    1-2 left an ambiguous/foreign-owned issue open per the precedence rule
+    above — both are correct outcomes, not violations of this goal.
 
     The report REPLACES the previous body each day — do not prepend or
     archive old sections. Name the previous report's issue number near the
-    top of the new body (the issue this run closed, or the previously
-    reused issue's prior date if no issue was closed), or write "None" if
-    there is no previous report.
+    top of the new body: the issue number this run closed as predecessor,
+    or — on a same-day rerun that closes nothing because the canonical
+    issue already existed — preserve whatever predecessor reference is
+    already present in that issue's current body rather than overwriting
+    it with "None". Write "None" only when there is genuinely no known
+    predecessor.
 
     The issue body MUST use this structure (write "None" for empty sections
     and do not emit empty tables — write "None" directly under the heading
@@ -471,6 +521,11 @@ env:
       comment on PRs when a fix was pushed.
     - Never modify secrets, org settings, environments, or branch
       protection.
+    - DO NOT comment on individual issues or PRs unless category 1 fixed a
+      failing PR (then ONLY post the fix-summary comment on that PR), or
+      this run closes a superseded daily-report issue under the OUTPUT
+      section above (then ONLY post the one-line retirement comment
+      linking the canonical report).
     - Never make checks pass by disabling tests, deleting failing
       assertions, lowering coverage/performance budgets, weakening
       lint/type rules, or editing workflows/configuration only to suppress
