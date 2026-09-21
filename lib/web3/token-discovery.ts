@@ -111,9 +111,10 @@ export interface TokenDiscoveryResult {
   /** Total number of chains scanned */
   chainsScanned: number
   /**
-   * Total number of tokens enumerated.
-   * Field name preserved for contract stability; meaning changed from
-   * "contracts polled" to "tokens enumerated" by the Alchemy path.
+   * Total number of balances enumerated and metadata-fetched, before spam
+   * filtering and the display cap. Field name preserved for contract
+   * stability; meaning changed from "contracts polled" to "balances
+   * enumerated" by the Alchemy path.
    */
   contractsChecked: number
   /** True when the cap or metadata budget omitted any balance-threshold-passing token, on any chain. */
@@ -408,7 +409,7 @@ async function discoverChainTokens(
   return {
     tokens,
     errors: [],
-    contractsChecked: tokens.length,
+    contractsChecked: budgetedBalances.length,
     truncatedTokenCount,
   }
 }

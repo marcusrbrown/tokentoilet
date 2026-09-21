@@ -250,7 +250,9 @@ describe('edge case — many-token wallet (multi-page)', () => {
     })
 
     expect(result.tokens).toHaveLength(50)
-    expect(result.contractsChecked).toBe(50)
+    // contractsChecked = balances enumerated and metadata-fetched (200), not
+    // the post-cap survivor count (50).
+    expect(result.contractsChecked).toBe(200)
   })
 })
 
@@ -739,6 +741,10 @@ describe('regression — spam filtered before cap (#1521)', () => {
     // Nothing legitimate was omitted — spam correctly absorbed the difference.
     expect(result.truncated).toBe(false)
     expect(result.truncatedTokenCount).toBe(0)
+    // contractsChecked = balances enumerated and metadata-fetched (5), not
+    // survivors after spam filtering + cap (2). Pins the semantics documented
+    // on TokenDiscoveryResult.contractsChecked.
+    expect(result.contractsChecked).toBe(5)
   })
 
   it('reports truncatedTokenCount when legitimate tokens exceed maxTokensPerChain after spam filtering', async () => {
