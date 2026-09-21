@@ -601,16 +601,19 @@ jobs:
       - name: Refuse fork PR heads from comment triggers
         # issue_comment carries no pull_request payload, so the job-level
         # fork guard cannot see comment-triggered PR-head checkouts.
+        id: refuse-fork-heads
         if: github.event_name == 'issue_comment' && github.event.issue.pull_request
         env:
           GH_TOKEN: ${{ secrets.FRO_BOT_PAT }}
         run: |
           pr_number="${{ github.event.issue.number }}"
-          is_fork=$(gh api "repos/${{ github.repository }}/pulls/${pr_number}" --jq '.head.repo.fork // "unknown"')
+          pr_json=$(gh api "repos/${{ github.repository }}/pulls/${pr_number}")
+          is_fork=$(printf '%s' "$pr_json" | jq -r '.head.repo.fork // "unknown"')
           if [ "$is_fork" = "true" ]; then
             echo "::error::Refusing to check out fork PR head from comment trigger (PR #${pr_number}, fork=${is_fork})."
             exit 1
           fi
+          echo "head-sha=$(printf '%s' "$pr_json" | jq -r '.head.sha')" >> "$GITHUB_OUTPUT"
 
       - name: Detect Sunday UTC for category 7 cadence
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -671,6 +674,14 @@ jobs:
           opencode-config: ${{ secrets.OPENCODE_CONFIG }}
           prompt: ${{ env.PROMPT }}
           timeout: 0
+          # Empty on schedule/autoheal; PR head SHA on pull_request/PR-comment events.
+          trusted-head-sha: >-
+            ${{
+              (github.event_name == 'pull_request' && github.event.pull_request.head.sha)
+              || (github.event_name == 'pull_request_review_comment' && github.event.pull_request.head.sha)
+              || (github.event_name == 'issue_comment' && github.event.issue.pull_request && steps.refuse-fork-heads.outputs.head-sha)
+              || ''
+            }}
           # Unset defaults to working-dir, which forbids push/PR.
           output-mode: >-
             ${{
