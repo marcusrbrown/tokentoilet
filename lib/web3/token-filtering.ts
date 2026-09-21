@@ -586,7 +586,7 @@ function calculateConfidenceScore(
   }
 
   // Clear spam indicators increase confidence
-  if (spamScore > 70) {
+  if (spamScore > DEFAULT_SPAM_SCORE_THRESHOLD) {
     confidence += 10
   }
 
@@ -765,7 +765,7 @@ function compareTokens(
  * Use this in all components instead of duplicating the condition.
  */
 export function isSuspectedSpam(token: CategorizedToken): boolean {
-  return token.category === TokenCategory.SPAM || token.spamScore > 70
+  return token.category === TokenCategory.SPAM || token.spamScore > DEFAULT_SPAM_SCORE_THRESHOLD
 }
 
 /**
