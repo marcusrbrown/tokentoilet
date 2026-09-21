@@ -20,16 +20,14 @@
 
 import type {Address} from 'viem'
 import type {Config} from 'wagmi'
-
 import type {SupportedChainId} from '../../hooks/use-wallet'
-
 import {createPublicClient, erc20Abi, http} from 'viem'
 import {mainnet, sepolia} from 'viem/chains'
 import {readContracts} from 'wagmi/actions'
-
 import {getAlchemyEndpoint, isAlchemyConfigured} from './alchemy-endpoints'
 import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances, isAlchemyAuthError} from './alchemy-token-api'
 import {sanitizeTokenDisplay} from './display-sanitization'
+import {calculateBaseSpamScore, DEFAULT_SPAM_SCORE_THRESHOLD} from './token-spam-heuristics'
 
 // ---------------------------------------------------------------------------
 // Chain id → viem chain object map
@@ -86,6 +84,14 @@ export interface TokenDiscoveryConfig {
   chainIds: SupportedChainId[]
   /** Maximum number of tokens to discover per chain */
   maxTokensPerChain?: number
+  /**
+   * Per-chain metadata-fetch budget: how many balance-threshold-passing
+   * tokens get metadata fetched and spam-filtered before truncating to
+   * `maxTokensPerChain`. Widening this catches more spam ahead of the
+   * display cap at the cost of more metadata requests (#1521). Floored at
+   * `maxTokensPerChain` regardless of the configured value.
+   */
+  metadataFetchBudget?: number
   /** Minimum balance threshold (in wei) to include token */
   minBalanceThreshold?: bigint
   /** Enable batch processing for better performance */
@@ -110,6 +116,15 @@ export interface TokenDiscoveryResult {
    * "contracts polled" to "tokens enumerated" by the Alchemy path.
    */
   contractsChecked: number
+  /** True when the cap or metadata budget omitted any balance-threshold-passing token, on any chain. */
+  truncated: boolean
+  /**
+   * Count of balance-threshold-passing tokens omitted from `tokens` across
+   * all chains — spam-filtered survivors beyond `maxTokensPerChain`, plus
+   * tokens never metadata-fetched because they fell outside
+   * `metadataFetchBudget` (status unknown, counted conservatively).
+   */
+  truncatedTokenCount: number
 }
 
 /**
@@ -152,6 +167,7 @@ export interface TokenDiscoveryError {
  */
 export const DEFAULT_TOKEN_DISCOVERY_CONFIG: Required<Omit<TokenDiscoveryConfig, 'chainIds'>> = {
   maxTokensPerChain: 100,
+  metadataFetchBudget: 300, // 3x maxTokensPerChain — wide enough to absorb spam ahead of the cap
   minBalanceThreshold: BigInt(0), // Include all tokens with any balance
   enableBatching: true,
   batchSize: 20,
@@ -188,6 +204,7 @@ export async function discoverUserTokens(
   const tokens: DiscoveredToken[] = []
   const errors: TokenDiscoveryError[] = []
   let contractsChecked = 0
+  let truncatedTokenCount = 0
 
   for (const chainId of mergedConfig.chainIds) {
     // Distinguish "key absent" (all chains affected) from "chain unmapped"
@@ -205,6 +222,8 @@ export async function discoverUserTokens(
         errors,
         chainsScanned: mergedConfig.chainIds.length,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
     }
 
@@ -224,6 +243,7 @@ export async function discoverUserTokens(
     tokens.push(...chainResult.tokens)
     errors.push(...chainResult.errors)
     contractsChecked += chainResult.contractsChecked
+    truncatedTokenCount += chainResult.truncatedTokenCount
   }
 
   return {
@@ -231,6 +251,8 @@ export async function discoverUserTokens(
     errors,
     chainsScanned: mergedConfig.chainIds.length,
     contractsChecked,
+    truncated: truncatedTokenCount > 0,
+    truncatedTokenCount,
   }
 }
 
@@ -253,7 +275,12 @@ async function discoverChainTokens(
   chainId: SupportedChainId,
   alchemyEndpoint: string,
   discoveryConfig: Required<Omit<TokenDiscoveryConfig, 'chainIds'>>,
-): Promise<{tokens: DiscoveredToken[]; errors: TokenDiscoveryError[]; contractsChecked: number}> {
+): Promise<{
+  tokens: DiscoveredToken[]
+  errors: TokenDiscoveryError[]
+  contractsChecked: number
+  truncatedTokenCount: number
+}> {
   const chain = CHAIN_MAP[chainId]
   if (chain === undefined) {
     return {
@@ -266,6 +293,7 @@ async function discoverChainTokens(
         },
       ],
       contractsChecked: 0,
+      truncatedTokenCount: 0,
     }
   }
 
@@ -298,6 +326,7 @@ async function discoverChainTokens(
           },
         ],
         contractsChecked: 0,
+        truncatedTokenCount: 0,
       }
     }
     return {
@@ -311,6 +340,7 @@ async function discoverChainTokens(
         },
       ],
       contractsChecked: 0,
+      truncatedTokenCount: 0,
     }
   }
 
@@ -320,24 +350,28 @@ async function discoverChainTokens(
   // default callers keep every non-zero balance.
   const thresholdBalances = balances.filter(b => b.balance >= discoveryConfig.minBalanceThreshold)
 
-  // Apply per-chain token cap.
-  const cappedBalances = thresholdBalances.slice(0, discoveryConfig.maxTokensPerChain)
+  // Widen the pre-cap set for metadata fetch + spam filtering (#1521): the
+  // display cap must apply after spam is removed, not before, or junk tokens
+  // consume the cap ahead of real holdings. Floor at maxTokensPerChain so
+  // filtering can never yield fewer results than an unfiltered cap would.
+  const metadataBudget = Math.max(discoveryConfig.metadataFetchBudget, discoveryConfig.maxTokensPerChain)
+  const budgetedBalances = thresholdBalances.slice(0, metadataBudget)
 
-  // Fetch metadata for all enumerated tokens (best-effort, never throws).
-  const addresses = cappedBalances.map(b => b.contractAddress)
+  // Fetch metadata for the widened set (best-effort, never throws).
+  const addresses = budgetedBalances.map(b => b.contractAddress)
   const metadataMap = await fetchAlchemyTokenMetadataBatch(client, addresses)
 
   // Map balance + metadata → DiscoveredToken, applying sanitization at this
   // boundary so all downstream render sites (list, disposal, approval) receive
   // already-sanitized name/symbol values (R7).
-  const tokens: DiscoveredToken[] = []
-  for (const entry of cappedBalances) {
+  const candidates: DiscoveredToken[] = []
+  for (const entry of budgetedBalances) {
     const meta = metadataMap.get(entry.contractAddress)
     const rawName = meta?.name ?? ''
     const rawSymbol = meta?.symbol ?? 'UNKNOWN'
     const decimals = meta?.decimals ?? 18
 
-    tokens.push({
+    candidates.push({
       address: entry.contractAddress,
       name: sanitizeTokenDisplay(rawName),
       symbol: sanitizeTokenDisplay(rawSymbol),
@@ -348,10 +382,24 @@ async function discoverChainTokens(
     })
   }
 
+  // Spam filtering runs on the widened, metadata-complete set — before the
+  // display cap — so junk tokens don't consume slots real holdings need.
+  // Shares heuristics and threshold with token-filtering.ts's SPAM category.
+  const legitimateTokens = candidates.filter(token => calculateBaseSpamScore(token) < DEFAULT_SPAM_SCORE_THRESHOLD)
+  const tokens = legitimateTokens.slice(0, discoveryConfig.maxTokensPerChain)
+
+  // Tokens omitted from the result despite meeting minBalanceThreshold: known
+  // spam survivors beyond the cap, plus balances never metadata-fetched
+  // because they fell outside metadataBudget (unknown status — counted
+  // conservatively so truncation is never silently underreported).
+  const truncatedTokenCount =
+    legitimateTokens.length - tokens.length + (thresholdBalances.length - budgetedBalances.length)
+
   return {
     tokens,
     errors: [],
-    contractsChecked: cappedBalances.length,
+    contractsChecked: tokens.length,
+    truncatedTokenCount,
   }
 }
 

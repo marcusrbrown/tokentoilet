@@ -333,6 +333,8 @@ describe('Token Discovery Workflow E2E Tests', () => {
       discoveryErrors: [],
       chainsScanned: 1,
       contractsChecked: 0,
+      truncated: false,
+      truncatedTokenCount: 0,
       refetch: vi.fn(),
       refresh: vi.fn(),
     })

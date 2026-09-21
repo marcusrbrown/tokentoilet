@@ -159,6 +159,8 @@ describe('TokenList', () => {
       discoveryErrors: [],
       chainsScanned: 1,
       contractsChecked: 0,
+      truncated: false,
+      truncatedTokenCount: 0,
       refetch: vi.fn(),
       refresh: vi.fn(),
     })
@@ -194,6 +196,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -214,6 +218,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 1,
         contractsChecked: 1,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -254,6 +260,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'AUTH_MISSING', chainId: 11155111, message: 'API key missing'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -277,6 +285,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'Alchemy request failed'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: mockRefetch,
         refresh: vi.fn(),
       })
@@ -300,6 +310,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'Could not scan wallet on chain 11155111'}],
         chainsScanned: 1,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -323,6 +335,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'Alchemy request failed'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: mockRefetch,
         refresh: vi.fn(),
       })
@@ -348,6 +362,8 @@ describe('TokenList', () => {
         ],
         chainsScanned: 2,
         contractsChecked: 1,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -371,6 +387,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 1,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -399,6 +417,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'AUTH_MISSING', chainId: 11155111, message: 'key missing'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -418,6 +438,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'api error'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -446,6 +468,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 1,
         contractsChecked: tokens.length,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -489,6 +513,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 1,
         contractsChecked: 1,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -548,6 +574,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: mockRefetch,
         refresh: vi.fn(),
       })
@@ -572,6 +600,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: mockRefetch,
         refresh: vi.fn(),
       })

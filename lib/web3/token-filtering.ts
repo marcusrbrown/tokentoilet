@@ -3,8 +3,8 @@ import type {Address} from 'viem'
 import type {SupportedChainId} from '../../hooks/use-wallet'
 import type {DiscoveredToken} from './token-discovery'
 import type {EnhancedTokenMetadata} from './token-metadata'
-import {isConfusableTokenName} from './display-sanitization'
 import {TokenRiskScore} from './token-metadata'
+import {calculateBaseSpamScore, DEFAULT_SPAM_SCORE_THRESHOLD} from './token-spam-heuristics'
 import {quickSecurityCheck, TokenSecurityRisk, type TokenSecurityValidation} from './token-validation'
 
 /**
@@ -249,7 +249,7 @@ export const DEFAULT_CATEGORIZATION_PREFERENCES: TokenCategorizationPreferences 
     enabled: true,
     aggressiveness: 'medium',
     autoMarkAsSpam: false, // Let user decide
-    spamScoreThreshold: 70,
+    spamScoreThreshold: DEFAULT_SPAM_SCORE_THRESHOLD,
   },
 
   riskTolerance: {
@@ -275,25 +275,11 @@ export const DEFAULT_CATEGORIZATION_PREFERENCES: TokenCategorizationPreferences 
 }
 
 /**
- * Known spam/scam patterns for token detection
+ * Known spam/scam patterns for token detection.
+ * Re-exported from token-spam-heuristics.ts, the single source of truth
+ * shared with token-discovery.ts (#1521).
  */
-export const SPAM_PATTERNS = {
-  /** Common spam token name patterns */
-  namePatterns: [
-    /free.*claim/i,
-    /visit.*to.*claim/i,
-    /^\d+\$?\s*(?:usdt|usdc|eth|btc|usd)/i,
-    /reward|bonus|prize/i,
-    /airdrop/i,
-    /\b(?:www|http|\.com|\.org)\b/i,
-  ],
-
-  /** Suspicious symbol patterns */
-  symbolPatterns: [/^\d+$/, /\$\d+/, /^(visit|claim|free|bonus)$/i],
-
-  /** High-risk decimal counts (unusual for legitimate tokens) */
-  suspiciousDecimals: [0, 1, 2, 25, 26, 27, 28, 29, 30],
-}
+export {SPAM_PATTERNS} from './token-spam-heuristics'
 
 /**
  * Well-known valuable token addresses for quick classification
@@ -349,7 +335,9 @@ export function parseTokenId(tokenId: string): {address: Address; chainId: Suppo
 }
 
 /**
- * Calculate spam score for a token based on various heuristics
+ * Calculate spam score for a token based on various heuristics.
+ * Base signals (name/symbol/decimals/balance) live in token-spam-heuristics.ts,
+ * shared with token-discovery.ts's pre-cap filtering pass (#1521).
  */
 export function calculateSpamScore(token: {
   name: string
@@ -359,33 +347,7 @@ export function calculateSpamScore(token: {
   isVerified?: boolean
   riskScore?: TokenRiskScore
 }): number {
-  let spamScore = 0
-
-  // Check name patterns
-  for (const pattern of SPAM_PATTERNS.namePatterns) {
-    if (pattern.test(token.name)) {
-      spamScore += 25
-      break
-    }
-  }
-
-  // Check symbol patterns
-  for (const pattern of SPAM_PATTERNS.symbolPatterns) {
-    if (pattern.test(token.symbol)) {
-      spamScore += 20
-      break
-    }
-  }
-
-  // Check for mixed-script / confusable name or symbol (homoglyph phishing signal)
-  if (isConfusableTokenName(token.name) || isConfusableTokenName(token.symbol)) {
-    spamScore += 20
-  }
-
-  // Check suspicious decimals
-  if (SPAM_PATTERNS.suspiciousDecimals.includes(token.decimals)) {
-    spamScore += 15
-  }
+  let spamScore = calculateBaseSpamScore(token)
 
   // Check if unverified
   if (token.isVerified === false) {
@@ -397,11 +359,6 @@ export function calculateSpamScore(token: {
     spamScore += 30
   } else if (token.riskScore === TokenRiskScore.MEDIUM) {
     spamScore += 15
-  }
-
-  // Huge balance can indicate spam airdrop
-  if (token.balance > BigInt('999999999999999999999999')) {
-    spamScore += 20
   }
 
   return Math.min(spamScore, 100)

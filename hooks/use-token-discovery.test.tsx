@@ -90,6 +90,8 @@ describe('useTokenDiscovery', () => {
         errors: [],
         chainsScanned: 2,
         contractsChecked: 20,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -151,6 +153,8 @@ describe('useTokenDiscovery', () => {
         errors: [],
         chainsScanned: 1,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -173,6 +177,8 @@ describe('useTokenDiscovery', () => {
         errors: [],
         chainsScanned: 1,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -195,6 +201,8 @@ describe('useTokenDiscovery', () => {
         errors: [],
         chainsScanned: 1,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -225,6 +233,8 @@ describe('useTokenDiscovery', () => {
         ],
         chainsScanned: 2,
         contractsChecked: 20,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -263,6 +273,8 @@ describe('useTokenDiscovery', () => {
         errors: [],
         chainsScanned: 2,
         contractsChecked: 20,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -283,6 +295,8 @@ describe('useTokenDiscovery', () => {
         errors: [],
         chainsScanned: 2,
         contractsChecked: 20,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -305,6 +319,8 @@ describe('useTokenDiscovery', () => {
         errors: [],
         chainsScanned: 2,
         contractsChecked: 20,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -324,6 +340,8 @@ describe('useTokenDiscovery', () => {
         errors: [],
         chainsScanned: 2,
         contractsChecked: 20,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -378,6 +396,8 @@ describe('useChainTokenDiscovery', () => {
       errors: [],
       chainsScanned: 1,
       contractsChecked: 10,
+      truncated: false,
+      truncatedTokenCount: 0,
     }
 
     vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -438,6 +458,8 @@ describe('useTokenExists', () => {
       errors: [],
       chainsScanned: 1,
       contractsChecked: 1,
+      truncated: false,
+      truncatedTokenCount: 0,
     }
 
     vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -458,6 +480,8 @@ describe('useTokenExists', () => {
       errors: [],
       chainsScanned: 1,
       contractsChecked: 1,
+      truncated: false,
+      truncatedTokenCount: 0,
     }
 
     vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -487,6 +511,8 @@ describe('useTokenExists', () => {
       errors: [],
       chainsScanned: 1,
       contractsChecked: 1,
+      truncated: false,
+      truncatedTokenCount: 0,
     }
 
     vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -542,6 +568,8 @@ describe('useNonZeroTokens', () => {
       errors: [],
       chainsScanned: 1,
       contractsChecked: 10,
+      truncated: false,
+      truncatedTokenCount: 0,
     }
 
     vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -609,6 +637,8 @@ describe('useTokensByBalance', () => {
       errors: [],
       chainsScanned: 1,
       contractsChecked: 20,
+      truncated: false,
+      truncatedTokenCount: 0,
     }
 
     vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -676,6 +706,8 @@ describe('useTokensByChain', () => {
       errors: [],
       chainsScanned: 2,
       contractsChecked: 20,
+      truncated: false,
+      truncatedTokenCount: 0,
     }
 
     vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -710,6 +742,8 @@ describe('useTokensByChain', () => {
       errors: [],
       chainsScanned: 1,
       contractsChecked: 10,
+      truncated: false,
+      truncatedTokenCount: 0,
     }
 
     vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)

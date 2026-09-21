@@ -150,6 +150,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 100,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -169,6 +171,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 500,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -188,6 +192,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 1000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -207,6 +213,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 2000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -226,6 +234,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 5000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -247,6 +257,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 1000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -267,6 +279,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 1,
         contractsChecked: 1000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -285,6 +299,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 2000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -306,6 +322,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 500,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -328,6 +346,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 1000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -350,6 +370,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 2000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -374,6 +396,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 1000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -394,6 +418,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 2000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -417,6 +443,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 1000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -443,6 +471,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 500,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -471,6 +501,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 1000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -497,6 +529,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 1000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -525,6 +559,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 1000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
@@ -547,6 +583,8 @@ describe('Token Discovery Performance Benchmarks', () => {
         errors: [],
         chainsScanned: 3,
         contractsChecked: 2000,
+        truncated: false,
+        truncatedTokenCount: 0,
       }
 
       vi.mocked(discoverUserTokens).mockResolvedValue(mockResult)
