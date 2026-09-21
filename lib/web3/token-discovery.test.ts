@@ -250,7 +250,9 @@ describe('edge case — many-token wallet (multi-page)', () => {
     })
 
     expect(result.tokens).toHaveLength(50)
-    expect(result.contractsChecked).toBe(50)
+    // contractsChecked = balances enumerated and metadata-fetched (200), not
+    // the post-cap survivor count (50).
+    expect(result.contractsChecked).toBe(200)
   })
 })
 
@@ -688,5 +690,388 @@ describe('regression — client construction path', () => {
     // We can't inspect the http() return value directly, but we can verify
     // the call happened with a transport argument.
     expect(callArg).toHaveProperty('transport')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regression: two-tier budget — spam filtered before cap (#1521)
+// ---------------------------------------------------------------------------
+
+const SPAM_ADDRESS_1: Address = '0x1111111111111111111111111111111111111a'
+const SPAM_ADDRESS_2: Address = '0x2222222222222222222222222222222222222b'
+const SPAM_ADDRESS_3: Address = '0x3333333333333333333333333333333333333c'
+const LEGIT_ADDRESS_A: Address = '0x4444444444444444444444444444444444444d'
+const LEGIT_ADDRESS_B: Address = '0x5555555555555555555555555555555555555e'
+
+// Scores >= 70 (the categorizeToken SPAM threshold) via namePatterns (+25,
+// "bonus"), symbolPatterns (+20, "CLAIM"), suspiciousDecimals (+15, 0), and
+// the huge-balance heuristic (+20) — 80 total. Mirrors token-filtering.ts's
+// own heuristics; this test does not change them.
+const SPAM_META = {name: 'Airdrop Bonus', symbol: 'CLAIM', decimals: 0}
+const SPAM_BALANCE = BigInt('2000000000000000000000000') // 2e24, over the 999999999999999999999999 threshold
+
+describe('regression — spam filtered before cap (#1521)', () => {
+  it('keeps legitimate tokens when spam tokens precede them in Alchemy order', async () => {
+    // Alchemy order: 3 spam tokens first, then 2 legitimate ones — the exact
+    // shape of the defect (cap consumed by junk before filtering could run).
+    mockFetchWalletTokenBalances.mockResolvedValue([
+      {contractAddress: SPAM_ADDRESS_1, balance: SPAM_BALANCE},
+      {contractAddress: SPAM_ADDRESS_2, balance: SPAM_BALANCE},
+      {contractAddress: SPAM_ADDRESS_3, balance: SPAM_BALANCE},
+      {contractAddress: LEGIT_ADDRESS_A, balance: BigInt(1_000_000)},
+      {contractAddress: LEGIT_ADDRESS_B, balance: BigInt(500_000)},
+    ])
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap([
+        {address: SPAM_ADDRESS_1, ...SPAM_META},
+        {address: SPAM_ADDRESS_2, ...SPAM_META},
+        {address: SPAM_ADDRESS_3, ...SPAM_META},
+        {address: LEGIT_ADDRESS_A, name: 'USD Coin', symbol: 'USDC', decimals: 6},
+        {address: LEGIT_ADDRESS_B, name: 'Dai Stablecoin', symbol: 'DAI', decimals: 18},
+      ]),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxTokensPerChain: 2,
+    })
+
+    expect(result.tokens).toHaveLength(2)
+    expect(result.tokens.map(t => t.symbol).sort()).toEqual(['DAI', 'USDC'])
+    // Nothing legitimate was omitted — spam correctly absorbed the difference.
+    expect(result.truncated).toBe(false)
+    expect(result.truncatedTokenCount).toBe(0)
+    // contractsChecked = balances enumerated and metadata-fetched (5), not
+    // survivors after spam filtering + cap (2). Pins the semantics documented
+    // on TokenDiscoveryResult.contractsChecked.
+    expect(result.contractsChecked).toBe(5)
+  })
+
+  it('reports truncatedTokenCount when legitimate tokens exceed maxTokensPerChain after spam filtering', async () => {
+    const legitBalances = Array.from({length: 5}, (_, i) => ({
+      contractAddress: `0x${(i + 1).toString(16).padStart(40, '6')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(legitBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap(
+        legitBalances.map((b, i) => ({address: b.contractAddress, name: `Token ${i}`, symbol: `TK${i}`, decimals: 18})),
+      ),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxTokensPerChain: 3,
+    })
+
+    expect(result.tokens).toHaveLength(3)
+    expect(result.truncated).toBe(true)
+    expect(result.truncatedTokenCount).toBe(2)
+  })
+
+  it('applies minBalanceThreshold before the metadata budget and cap, even with spam present', async () => {
+    mockFetchWalletTokenBalances.mockResolvedValue([
+      {contractAddress: SPAM_ADDRESS_1, balance: BigInt(5)}, // below threshold
+      {contractAddress: LEGIT_ADDRESS_A, balance: BigInt(100)},
+    ])
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap([
+        {address: SPAM_ADDRESS_1, ...SPAM_META},
+        {address: LEGIT_ADDRESS_A, name: 'USD Coin', symbol: 'USDC', decimals: 6},
+      ]),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      minBalanceThreshold: BigInt(50),
+    })
+
+    expect(result.tokens).toHaveLength(1)
+    expect(result.tokens[0]?.address).toBe(LEGIT_ADDRESS_A)
+    // The below-threshold entry was never considered; not counted as truncation.
+    expect(result.truncated).toBe(false)
+    expect(result.truncatedTokenCount).toBe(0)
+    // Metadata was only fetched for the address that passed the threshold.
+    const calledAddresses = mockFetchAlchemyTokenMetadataBatch.mock.calls[0]?.[1]
+    expect(calledAddresses).toEqual([LEGIT_ADDRESS_A])
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regression: metadata fetch budget bounds request volume (#1521)
+// ---------------------------------------------------------------------------
+
+describe('regression — metadata fetch budget bounds', () => {
+  it('caps metadata requests at the default budget (3x maxTokensPerChain) for very large wallets', async () => {
+    const allBalances = Array.from({length: 1000}, (_, i) => ({
+      contractAddress: `0x${i.toString(16).padStart(40, '0')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(new Map())
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxTokensPerChain: 100,
+    })
+
+    expect(mockFetchAlchemyTokenMetadataBatch).toHaveBeenCalledOnce()
+    const calledAddresses = mockFetchAlchemyTokenMetadataBatch.mock.calls[0]?.[1]
+    expect(calledAddresses).toHaveLength(300) // DEFAULT_TOKEN_DISCOVERY_CONFIG.metadataFetchBudget
+    expect(result.tokens).toHaveLength(100)
+    expect(result.truncated).toBe(true)
+    // 200 known-legitimate overflow beyond the cap + 700 never budget-considered.
+    expect(result.truncatedTokenCount).toBe(900)
+  })
+
+  it('honors an explicit metadataFetchBudget override', async () => {
+    const allBalances = Array.from({length: 1000}, (_, i) => ({
+      contractAddress: `0x${i.toString(16).padStart(40, '0')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(new Map())
+
+    await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxTokensPerChain: 100,
+      metadataFetchBudget: 500,
+    })
+
+    const calledAddresses = mockFetchAlchemyTokenMetadataBatch.mock.calls[0]?.[1]
+    expect(calledAddresses).toHaveLength(500)
+  })
+
+  it('floors metadataFetchBudget at maxTokensPerChain when configured lower', async () => {
+    const allBalances = Array.from({length: 60}, (_, i) => ({
+      contractAddress: `0x${i.toString(16).padStart(40, '0')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap(
+        allBalances.map((b, i) => ({address: b.contractAddress, name: `Token ${i}`, symbol: `TK${i}`, decimals: 18})),
+      ),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxTokensPerChain: 50,
+      metadataFetchBudget: 10, // below the cap — must be floored to 50
+    })
+
+    const calledAddresses = mockFetchAlchemyTokenMetadataBatch.mock.calls[0]?.[1]
+    expect(calledAddresses).toHaveLength(50)
+    expect(result.tokens).toHaveLength(50)
+    expect(result.truncatedTokenCount).toBe(10) // 60 balances - 50 considered/shown
+  })
+
+  it('returns tokens when metadataFetchBudget is explicitly undefined (hook config-merge exposure)', async () => {
+    // Mirrors useTokenDiscovery's merge order — {...DEFAULT_TOKEN_DISCOVERY_CONFIG, ...options} —
+    // where a caller-supplied `metadataFetchBudget: undefined` overrides the default at the spread
+    // boundary. Without normalization, Math.max(undefined, n) is NaN and slice(0, NaN) is [].
+    const allBalances = Array.from({length: 10}, (_, i) => ({
+      contractAddress: `0x${i.toString(16).padStart(40, '0')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap(
+        allBalances.map((b, i) => ({address: b.contractAddress, name: `Token ${i}`, symbol: `TK${i}`, decimals: 18})),
+      ),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxTokensPerChain: 100,
+      metadataFetchBudget: undefined,
+    })
+
+    expect(result.tokens).toHaveLength(10)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regression: adaptive fill reaches legitimate tokens beyond the first page (#1560)
+// ---------------------------------------------------------------------------
+
+describe('regression — adaptive metadata fill beyond first page (#1560)', () => {
+  it('surfaces a legitimate token sitting beyond the first metadata page', async () => {
+    // 350 spam balances (more than the default 300-item page) followed by one
+    // legitimate holding at index 350. A fixed single-page slice would never
+    // metadata-fetch it; adaptive fill must keep paging until it's reached.
+    const spamBalances = Array.from({length: 350}, (_, i) => ({
+      contractAddress: `0x1${i.toString(16).padStart(39, '0')}` satisfies Address,
+      balance: SPAM_BALANCE,
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue([
+      ...spamBalances,
+      {contractAddress: LEGIT_ADDRESS_A, balance: BigInt(1_000_000)},
+    ])
+    mockFetchAlchemyTokenMetadataBatch.mockImplementation(async (_client: unknown, addresses: Address[]) => {
+      const map = new Map<Address, {name: string; symbol: string; decimals: number}>()
+      for (const address of addresses) {
+        if (address === LEGIT_ADDRESS_A) {
+          map.set(address, {name: 'USD Coin', symbol: 'USDC', decimals: 6})
+        } else {
+          map.set(address, {...SPAM_META})
+        }
+      }
+      return map
+    })
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
+
+    expect(result.tokens).toHaveLength(1)
+    expect(result.tokens[0]?.address).toBe(LEGIT_ADDRESS_A)
+    expect(result.tokens[0]?.symbol).toBe('USDC')
+    // Reached via a second page — proves the loop kept going past index 300.
+    expect(mockFetchAlchemyTokenMetadataBatch.mock.calls.length).toBeGreaterThan(1)
+    expect(result.contractsChecked).toBe(351)
+  })
+
+  it('bounds total metadata requests at maxMetadataRequests when balances never satisfy the cap', async () => {
+    // 2000 spam-only balances, legitimateTokens never reaches maxTokensPerChain,
+    // so the loop would page forever without a hard ceiling.
+    const allBalances = Array.from({length: 2000}, (_, i) => ({
+      contractAddress: `0x2${i.toString(16).padStart(39, '0')}` satisfies Address,
+      balance: SPAM_BALANCE,
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockImplementation(async (_client: unknown, addresses: Address[]) => {
+      const map = new Map<Address, {name: string; symbol: string; decimals: number}>()
+      for (const address of addresses) map.set(address, {...SPAM_META})
+      return map
+    })
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxMetadataRequests: 500,
+    })
+
+    const totalAddressesFetched = mockFetchAlchemyTokenMetadataBatch.mock.calls.reduce(
+      (sum, call) => sum + call[1].length,
+      0,
+    )
+    expect(totalAddressesFetched).toBe(500) // hard ceiling, not 2000
+    expect(result.tokens).toHaveLength(0)
+    expect(result.contractsChecked).toBe(500)
+    expect(result.truncated).toBe(true)
+    // 500 considered (all spam, 0 legitimate) + 1500 never considered.
+    expect(result.truncatedTokenCount).toBe(1500)
+  })
+
+  it('issues exactly one metadata request for a small wallet within the first page', async () => {
+    const allBalances = Array.from({length: 10}, (_, i) => ({
+      contractAddress: `0x3${i.toString(16).padStart(39, '0')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap(
+        allBalances.map((b, i) => ({address: b.contractAddress, name: `Token ${i}`, symbol: `TK${i}`, decimals: 18})),
+      ),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {chainIds: [SEPOLIA_CHAIN_ID]})
+
+    expect(mockFetchAlchemyTokenMetadataBatch).toHaveBeenCalledOnce()
+    expect(result.tokens).toHaveLength(10)
+    expect(result.truncated).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Regression: maxMetadataRequests is an authoritative ceiling, never raised
+// by metadataFetchBudget (PR review finding)
+// ---------------------------------------------------------------------------
+
+describe('regression — maxMetadataRequests ceiling is authoritative', () => {
+  it('never exceeds maxMetadataRequests even when metadataFetchBudget is configured far larger', async () => {
+    // The reviewer's exact scenario: a page size dwarfing the ceiling must not
+    // raise the ceiling. Far more balances than the ceiling to prove the loop
+    // stops there rather than draining toward the (huge) page size.
+    const allBalances = Array.from({length: 5000}, (_, i) => ({
+      contractAddress: `0x4${i.toString(16).padStart(39, '0')}` satisfies Address,
+      balance: SPAM_BALANCE,
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockImplementation(async (_client: unknown, addresses: Address[]) => {
+      const map = new Map<Address, {name: string; symbol: string; decimals: number}>()
+      for (const address of addresses) map.set(address, {...SPAM_META})
+      return map
+    })
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      metadataFetchBudget: 1_000_000,
+      maxMetadataRequests: 1_000,
+    })
+
+    const totalAddressesFetched = mockFetchAlchemyTokenMetadataBatch.mock.calls.reduce(
+      (sum, call) => sum + call[1].length,
+      0,
+    )
+    expect(totalAddressesFetched).toBeLessThanOrEqual(1_000)
+    expect(totalAddressesFetched).toBe(1_000)
+    expect(result.contractsChecked).toBe(1_000)
+  })
+
+  it.each([
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['zero', 0],
+    ['negative', -1],
+  ])('falls back to the default maxMetadataRequests when configured as %s', async (_label, invalidValue) => {
+    const allBalances = Array.from({length: 2000}, (_, i) => ({
+      contractAddress: `0x5${i.toString(16).padStart(39, '0')}` satisfies Address,
+      balance: SPAM_BALANCE,
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockImplementation(async (_client: unknown, addresses: Address[]) => {
+      const map = new Map<Address, {name: string; symbol: string; decimals: number}>()
+      for (const address of addresses) map.set(address, {...SPAM_META})
+      return map
+    })
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxMetadataRequests: invalidValue,
+    })
+
+    // Falls back to the documented default (1000), not NaN/Infinity/unbounded.
+    expect(result.contractsChecked).toBe(1000)
+    const totalAddressesFetched = mockFetchAlchemyTokenMetadataBatch.mock.calls.reduce(
+      (sum, call) => sum + call[1].length,
+      0,
+    )
+    expect(totalAddressesFetched).toBe(1000)
+  })
+
+  it.each([
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['zero', 0],
+    ['negative', -1],
+  ])('falls back to the default metadataFetchBudget when configured as %s', async (_label, invalidValue) => {
+    const allBalances = Array.from({length: 500}, (_, i) => ({
+      contractAddress: `0x6${i.toString(16).padStart(39, '0')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap(
+        allBalances.map((b, i) => ({address: b.contractAddress, name: `Token ${i}`, symbol: `TK${i}`, decimals: 18})),
+      ),
+    )
+
+    await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      metadataFetchBudget: invalidValue,
+    })
+
+    // Falls back to the documented default page size (300), not NaN/Infinity/[].
+    const calledAddresses = mockFetchAlchemyTokenMetadataBatch.mock.calls[0]?.[1]
+    expect(calledAddresses).toHaveLength(300)
   })
 })

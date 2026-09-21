@@ -46,6 +46,10 @@ export interface UseTokenDiscoveryReturn {
   chainsScanned: number
   /** Number of contracts that were checked */
   contractsChecked: number
+  /** True when the cap or metadata budget omitted any qualifying token, on any chain */
+  truncated: boolean
+  /** Count of qualifying tokens omitted from `tokens` across all chains */
+  truncatedTokenCount: number
   /** Refetch function */
   refetch: () => void
   /** Force refresh (bypasses cache) */
@@ -102,6 +106,8 @@ export function useTokenDiscovery(options: UseTokenDiscoveryOptions = {}): UseTo
     address,
     discoveryConfig.chainIds,
     discoveryConfig.maxTokensPerChain,
+    discoveryConfig.metadataFetchBudget,
+    discoveryConfig.maxMetadataRequests,
     discoveryConfig.minBalanceThreshold?.toString(),
     discoveryConfig.enableBatching,
     discoveryConfig.batchSize,
@@ -141,6 +147,8 @@ export function useTokenDiscovery(options: UseTokenDiscoveryOptions = {}): UseTo
     discoveryErrors: query.data?.errors ?? [],
     chainsScanned: query.data?.chainsScanned ?? 0,
     contractsChecked: query.data?.contractsChecked ?? 0,
+    truncated: query.data?.truncated ?? false,
+    truncatedTokenCount: query.data?.truncatedTokenCount ?? 0,
     refetch: () => {
       query.refetch().catch(() => {
         // Ignore refetch errors - they will be handled by the query state

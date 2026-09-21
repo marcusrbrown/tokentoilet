@@ -159,6 +159,8 @@ describe('TokenList', () => {
       discoveryErrors: [],
       chainsScanned: 1,
       contractsChecked: 0,
+      truncated: false,
+      truncatedTokenCount: 0,
       refetch: vi.fn(),
       refresh: vi.fn(),
     })
@@ -183,6 +185,213 @@ describe('TokenList', () => {
     })
   })
 
+  describe('Discovery truncation disclosure', () => {
+    it('tells the user when a small number of tokens are not shown', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [createMockDiscoveredToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        truncated: true,
+        truncatedTokenCount: 12,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [createMockCategorizedToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent(
+        'This list is incomplete — 12 more tokens were not loaded.',
+      )
+    })
+
+    it('uses singular wording when exactly one token was not loaded', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [createMockDiscoveredToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        truncated: true,
+        truncatedTokenCount: 1,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [createMockCategorizedToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent(
+        'This list is incomplete — 1 more token was not loaded.',
+      )
+    })
+
+    it('formats a large number of unshown tokens for scanning', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [createMockDiscoveredToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        truncated: true,
+        truncatedTokenCount: 450,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [createMockCategorizedToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent(
+        '450 more tokens were not loaded',
+      )
+    })
+
+    it('does not render a disclosure when discovery was not truncated', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [createMockDiscoveredToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        truncated: false,
+        truncatedTokenCount: 0,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [createMockCategorizedToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.queryByRole('note', {name: 'Token discovery notice'})).not.toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('renders the disclosure on the empty-success path when discovery was truncated', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 0,
+        truncated: true,
+        truncatedTokenCount: 12,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 0,
+        filteredTokens: 0,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 0,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent(
+        'This list is incomplete — 12 more tokens were not loaded.',
+      )
+      expect(screen.queryByText(/scan completed successfully/i)).not.toBeInTheDocument()
+    })
+  })
+
   describe('Loading States', () => {
     it('renders loading skeleton when discovering tokens', () => {
       mockUseTokenDiscovery.mockReturnValue({
@@ -194,6 +403,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -214,6 +425,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 1,
         contractsChecked: 1,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -254,6 +467,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'AUTH_MISSING', chainId: 11155111, message: 'API key missing'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -277,6 +492,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'Alchemy request failed'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: mockRefetch,
         refresh: vi.fn(),
       })
@@ -300,6 +517,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'Could not scan wallet on chain 11155111'}],
         chainsScanned: 1,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -323,6 +542,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'Alchemy request failed'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: mockRefetch,
         refresh: vi.fn(),
       })
@@ -348,6 +569,8 @@ describe('TokenList', () => {
         ],
         chainsScanned: 2,
         contractsChecked: 1,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -371,6 +594,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 1,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -399,6 +624,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'AUTH_MISSING', chainId: 11155111, message: 'key missing'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -418,6 +645,8 @@ describe('TokenList', () => {
         discoveryErrors: [{type: 'API_ERROR', chainId: 11155111, message: 'api error'}],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -446,6 +675,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 1,
         contractsChecked: tokens.length,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -489,6 +720,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 1,
         contractsChecked: 1,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: vi.fn(),
         refresh: vi.fn(),
       })
@@ -548,6 +781,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: mockRefetch,
         refresh: vi.fn(),
       })
@@ -572,6 +807,8 @@ describe('TokenList', () => {
         discoveryErrors: [],
         chainsScanned: 0,
         contractsChecked: 0,
+        truncated: false,
+        truncatedTokenCount: 0,
         refetch: mockRefetch,
         refresh: vi.fn(),
       })
