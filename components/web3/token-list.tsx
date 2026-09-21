@@ -573,8 +573,11 @@ export function TokenList({
             >
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
               <p>
-                Token discovery is capped, so {truncatedTokenCount.toLocaleString()} tokens are not shown. Their status
-                is unknown.
+                This list is incomplete —{' '}
+                {truncatedTokenCount === 1
+                  ? '1 more token was'
+                  : `${truncatedTokenCount.toLocaleString()} more tokens were`}{' '}
+                not loaded.
               </p>
             </div>
           )}

@@ -223,7 +223,48 @@ describe('TokenList', () => {
       render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
 
       expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent(
-        'Token discovery is capped, so 12 tokens are not shown. Their status is unknown.',
+        'This list is incomplete — 12 more tokens were not loaded.',
+      )
+    })
+
+    it('uses singular wording when exactly one token was not loaded', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [createMockDiscoveredToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        truncated: true,
+        truncatedTokenCount: 1,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [createMockCategorizedToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent(
+        'This list is incomplete — 1 more token was not loaded.',
       )
     })
 
@@ -263,7 +304,9 @@ describe('TokenList', () => {
 
       render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
 
-      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent('450 tokens are not shown')
+      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent(
+        '450 more tokens were not loaded',
+      )
     })
 
     it('does not render a disclosure when discovery was not truncated', () => {
