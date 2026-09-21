@@ -85,13 +85,21 @@ export interface TokenDiscoveryConfig {
   /** Maximum number of tokens to discover per chain */
   maxTokensPerChain?: number
   /**
-   * Per-chain metadata-fetch budget: how many balance-threshold-passing
-   * tokens get metadata fetched and spam-filtered before truncating to
-   * `maxTokensPerChain`. Widening this catches more spam ahead of the
-   * display cap at the cost of more metadata requests (#1521). Floored at
-   * `maxTokensPerChain` regardless of the configured value.
+   * Metadata-fetch page size: how many balance-threshold-passing tokens get
+   * metadata fetched and spam-filtered per page while adaptively filling
+   * toward `maxTokensPerChain` (#1521, #1560). Floored at `maxTokensPerChain`
+   * regardless of the configured value. A wallet whose threshold-passing
+   * balances fit in one page issues exactly one metadata batch call, same as
+   * before adaptive fill existed.
    */
   metadataFetchBudget?: number
+  /**
+   * Hard ceiling on total metadata requests per chain across all adaptive
+   * pages (#1560). Bounds the fill loop so a wallet flooded with spam can't
+   * drive unbounded Alchemy requests from the browser. Floored at
+   * `metadataFetchBudget` so at least one page always runs.
+   */
+  maxMetadataRequests?: number
   /** Minimum balance threshold (in wei) to include token */
   minBalanceThreshold?: bigint
   /** Enable batch processing for better performance */
@@ -117,13 +125,14 @@ export interface TokenDiscoveryResult {
    * enumerated" by the Alchemy path.
    */
   contractsChecked: number
-  /** True when the cap or metadata budget omitted any balance-threshold-passing token, on any chain. */
+  /** True when the cap or metadata request ceiling omitted any balance-threshold-passing token, on any chain. */
   truncated: boolean
   /**
    * Count of balance-threshold-passing tokens omitted from `tokens` across
    * all chains — spam-filtered survivors beyond `maxTokensPerChain`, plus
-   * tokens never metadata-fetched because they fell outside
-   * `metadataFetchBudget` (status unknown, counted conservatively).
+   * tokens never metadata-fetched because the adaptive fill stopped at
+   * `maxMetadataRequests` before considering them (status unknown, counted
+   * conservatively).
    */
   truncatedTokenCount: number
 }
@@ -168,7 +177,8 @@ export interface TokenDiscoveryError {
  */
 export const DEFAULT_TOKEN_DISCOVERY_CONFIG: Required<Omit<TokenDiscoveryConfig, 'chainIds'>> = {
   maxTokensPerChain: 100,
-  metadataFetchBudget: 300, // 3x maxTokensPerChain — wide enough to absorb spam ahead of the cap
+  metadataFetchBudget: 300, // page size — 3x maxTokensPerChain, absorbs spam ahead of the cap in one page for typical wallets
+  maxMetadataRequests: 1000, // hard ceiling — ~3.3 pages; bounds worst-case browser-side Alchemy requests
   minBalanceThreshold: BigInt(0), // Include all tokens with any balance
   enableBatching: true,
   batchSize: 20,
@@ -187,7 +197,10 @@ export const DEFAULT_TOKEN_DISCOVERY_CONFIG: Required<Omit<TokenDiscoveryConfig,
  * 2. Build a per-chain viem public client pointed at the Alchemy endpoint.
  * 3. Enumerate all non-zero ERC-20 balances via `fetchWalletTokenBalances`.
  *    On failure → push `API_ERROR` (explicit, not silent empty).
- * 4. Fetch metadata for all enumerated tokens via `fetchAlchemyTokenMetadataBatch`.
+ * 4. Adaptively fetch metadata in bounded pages via
+ *    `fetchAlchemyTokenMetadataBatch`, until enough legitimate tokens are
+ *    found, threshold-passing balances are exhausted, or the per-chain
+ *    request ceiling is reached (#1560).
  * 5. Map each balance+metadata pair to a `DiscoveredToken`, applying
  *    `sanitizeTokenDisplay()` to name and symbol at this boundary (R7).
  *
@@ -211,6 +224,7 @@ export async function discoverUserTokens(
     ...discoveryConfig,
     maxTokensPerChain: discoveryConfig.maxTokensPerChain ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.maxTokensPerChain,
     metadataFetchBudget: discoveryConfig.metadataFetchBudget ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.metadataFetchBudget,
+    maxMetadataRequests: discoveryConfig.maxMetadataRequests ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.maxMetadataRequests,
   }
   const tokens: DiscoveredToken[] = []
   const errors: TokenDiscoveryError[] = []
@@ -276,7 +290,10 @@ export async function discoverUserTokens(
  *
  * Builds a viem public client from the Alchemy endpoint, calls
  * `fetchWalletTokenBalances` (throws on RPC failure → mapped to API_ERROR),
- * then `fetchAlchemyTokenMetadataBatch` (best-effort, never throws).
+ * then adaptively fetches metadata via `fetchAlchemyTokenMetadataBatch`
+ * (best-effort per token, never throws) in bounded pages until
+ * `maxTokensPerChain` legitimate tokens are found, threshold-passing
+ * balances run out, or `maxMetadataRequests` is hit (#1560).
  *
  * Sanitizes name and symbol via `sanitizeTokenDisplay` when constructing each
  * `DiscoveredToken` (R7 — discovery-boundary sanitization).
@@ -361,55 +378,72 @@ async function discoverChainTokens(
   // default callers keep every non-zero balance.
   const thresholdBalances = balances.filter(b => b.balance >= discoveryConfig.minBalanceThreshold)
 
-  // Widen the pre-cap set for metadata fetch + spam filtering (#1521): the
-  // display cap must apply after spam is removed, not before, or junk tokens
-  // consume the cap ahead of real holdings. Floor at maxTokensPerChain so
-  // filtering can never yield fewer results than an unfiltered cap would.
-  const metadataBudget = Math.max(discoveryConfig.metadataFetchBudget, discoveryConfig.maxTokensPerChain)
-  const budgetedBalances = thresholdBalances.slice(0, metadataBudget)
+  // Adaptive fill (#1560): Alchemy returns balances in pagination order with
+  // no ranking, so a legitimate holding past a fixed index would never get
+  // metadata under a single fixed-size slice. Instead, fetch metadata in
+  // bounded pages and keep going until enough legitimate tokens are found,
+  // the threshold-passing balances are exhausted, or the hard ceiling on
+  // total metadata requests is reached. A wallet whose threshold-passing set
+  // fits in one page behaves exactly as before — one metadata batch call.
+  const pageSize = Math.max(discoveryConfig.metadataFetchBudget, discoveryConfig.maxTokensPerChain)
+  const requestCeiling = Math.max(discoveryConfig.maxMetadataRequests, pageSize)
 
-  // Fetch metadata for the widened set (best-effort, never throws).
-  const addresses = budgetedBalances.map(b => b.contractAddress)
-  const metadataMap = await fetchAlchemyTokenMetadataBatch(client, addresses)
+  const legitimateTokens: DiscoveredToken[] = []
+  let consideredCount = 0
 
-  // Map balance + metadata → DiscoveredToken, applying sanitization at this
-  // boundary so all downstream render sites (list, disposal, approval) receive
-  // already-sanitized name/symbol values (R7).
-  const candidates: DiscoveredToken[] = []
-  for (const entry of budgetedBalances) {
-    const meta = metadataMap.get(entry.contractAddress)
-    const rawName = meta?.name ?? ''
-    const rawSymbol = meta?.symbol ?? 'UNKNOWN'
-    const decimals = meta?.decimals ?? 18
+  while (
+    consideredCount < thresholdBalances.length &&
+    legitimateTokens.length < discoveryConfig.maxTokensPerChain &&
+    consideredCount < requestCeiling
+  ) {
+    const pageEnd = Math.min(consideredCount + pageSize, thresholdBalances.length, requestCeiling)
+    const page = thresholdBalances.slice(consideredCount, pageEnd)
+    consideredCount = pageEnd
 
-    candidates.push({
-      address: entry.contractAddress,
-      name: sanitizeTokenDisplay(rawName),
-      symbol: sanitizeTokenDisplay(rawSymbol),
-      decimals,
-      balance: entry.balance,
-      chainId,
-      formattedBalance: formatTokenBalance(entry.balance, decimals),
-    })
+    // Fetch metadata for this page (best-effort, never throws).
+    const addresses = page.map(b => b.contractAddress)
+    const metadataMap = await fetchAlchemyTokenMetadataBatch(client, addresses)
+
+    // Map balance + metadata → DiscoveredToken, applying sanitization at this
+    // boundary so all downstream render sites (list, disposal, approval)
+    // receive already-sanitized name/symbol values (R7). Spam filtering runs
+    // per page — before the display cap — so junk tokens don't consume slots
+    // real holdings need. Shares heuristics and threshold with
+    // token-filtering.ts's SPAM category.
+    for (const entry of page) {
+      const meta = metadataMap.get(entry.contractAddress)
+      const rawName = meta?.name ?? ''
+      const rawSymbol = meta?.symbol ?? 'UNKNOWN'
+      const decimals = meta?.decimals ?? 18
+
+      const candidate: DiscoveredToken = {
+        address: entry.contractAddress,
+        name: sanitizeTokenDisplay(rawName),
+        symbol: sanitizeTokenDisplay(rawSymbol),
+        decimals,
+        balance: entry.balance,
+        chainId,
+        formattedBalance: formatTokenBalance(entry.balance, decimals),
+      }
+
+      if (calculateBaseSpamScore(candidate) < DEFAULT_SPAM_SCORE_THRESHOLD) {
+        legitimateTokens.push(candidate)
+      }
+    }
   }
 
-  // Spam filtering runs on the widened, metadata-complete set — before the
-  // display cap — so junk tokens don't consume slots real holdings need.
-  // Shares heuristics and threshold with token-filtering.ts's SPAM category.
-  const legitimateTokens = candidates.filter(token => calculateBaseSpamScore(token) < DEFAULT_SPAM_SCORE_THRESHOLD)
   const tokens = legitimateTokens.slice(0, discoveryConfig.maxTokensPerChain)
 
   // Tokens omitted from the result despite meeting minBalanceThreshold: known
   // spam survivors beyond the cap, plus balances never metadata-fetched
-  // because they fell outside metadataBudget (unknown status — counted
-  // conservatively so truncation is never silently underreported).
-  const truncatedTokenCount =
-    legitimateTokens.length - tokens.length + (thresholdBalances.length - budgetedBalances.length)
+  // because the fill loop stopped before reaching them (unknown status —
+  // counted conservatively so truncation is never silently underreported).
+  const truncatedTokenCount = legitimateTokens.length - tokens.length + (thresholdBalances.length - consideredCount)
 
   return {
     tokens,
     errors: [],
-    contractsChecked: budgetedBalances.length,
+    contractsChecked: consideredCount,
     truncatedTokenCount,
   }
 }

@@ -107,6 +107,7 @@ export function useTokenDiscovery(options: UseTokenDiscoveryOptions = {}): UseTo
     discoveryConfig.chainIds,
     discoveryConfig.maxTokensPerChain,
     discoveryConfig.metadataFetchBudget,
+    discoveryConfig.maxMetadataRequests,
     discoveryConfig.minBalanceThreshold?.toString(),
     discoveryConfig.enableBatching,
     discoveryConfig.batchSize,
