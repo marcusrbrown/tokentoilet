@@ -358,11 +358,14 @@ env:
        date).
     2. If one or more exist, pick the LOWEST issue number as canonical and
        reuse it (edit its body in place). If none exist, create it.
-    3. Close every OTHER open issue whose title starts with "Daily
-       Autohealing Report" — older dates, any same-day duplicates that are
-       not the canonical one, and the legacy undated "Daily Autohealing
-       Report" title — each with a one-line closing comment linking the
-       canonical report.
+    3. Close every OTHER open issue that YOU authored whose title starts
+       with "Daily Autohealing Report" — older dates, any same-day
+       duplicates that are not the canonical one, and the legacy undated
+       "Daily Autohealing Report" title — each with a one-line closing
+       comment linking the canonical report. Verify authorship before
+       closing: a human-filed issue whose title happens to start with that
+       prefix (for example, one reporting a problem with the report itself)
+       must never be closed.
     There must be exactly one open daily report when the run finishes. Never
     close the canonical issue you just selected.
 
