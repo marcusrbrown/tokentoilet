@@ -13,8 +13,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, review_requested]
   schedule:
-    # Daily at 03:30 UTC — staggered off other repos in the portfolio
-    # so the Anthropic rate-limit doesn't crowd the same minute every day.
+    # Staggered off other portfolio repos to spread rate-limit load.
     - cron: '30 3 * * *'
   workflow_dispatch:
     inputs:
@@ -600,10 +599,8 @@ jobs:
       )
     steps:
       - name: Refuse fork PR heads from comment triggers
-        # issue_comment events carry no pull_request payload, so the
-        # job-level fork guard does not see comment-triggered checkouts
-        # of PR heads. Resolve the PR via the API and refuse fork heads
-        # before any code from that ref runs.
+        # issue_comment carries no pull_request payload, so the job-level
+        # fork guard cannot see comment-triggered PR-head checkouts.
         if: github.event_name == 'issue_comment' && github.event.issue.pull_request
         env:
           GH_TOKEN: ${{ secrets.FRO_BOT_PAT }}
@@ -634,9 +631,7 @@ jobs:
               || github.event.pull_request.head.sha
               || ''
             }}
-          # FRO_BOT_PAT scope: contents/issues/pull-requests/discussions
-          # write permissions, scoped to this repo only. No org/admin/
-          # secrets scopes.
+          # FRO_BOT_PAT: write on contents/issues/PRs/discussions, this repo only.
           token: ${{ secrets.FRO_BOT_PAT }}
           persist-credentials: false
 
@@ -649,9 +644,9 @@ jobs:
           FRO_BOT_PAT: ${{ secrets.FRO_BOT_PAT }}
         run: |
           set -euo pipefail
-          # Gated to schedule/autoheal only: fro-bot/agent fails closed on an
-          # on-disk extraheader for comment/mention runs. Written on disk, not
-          # env, since the action scrubs its child environment.
+          # Schedule/autoheal only: the agent fails closed on an on-disk
+          # extraheader for comment runs. On disk, not env — the action
+          # scrubs its child environment.
           auth="$(printf '%s' "x-access-token:${FRO_BOT_PAT}" | base64 | tr -d '\n')"
           echo "::add-mask::${auth}"
           git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth}"
@@ -676,8 +671,7 @@ jobs:
           opencode-config: ${{ secrets.OPENCODE_CONFIG }}
           prompt: ${{ env.PROMPT }}
           timeout: 0
-          # Unset defaults to working-dir, which forbids push/PR. Gated to match
-          # the credential step above.
+          # Unset defaults to working-dir, which forbids push/PR.
           output-mode: >-
             ${{
               (github.event_name == 'schedule'
