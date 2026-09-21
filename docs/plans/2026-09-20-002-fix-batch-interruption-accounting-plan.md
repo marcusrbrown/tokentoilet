@@ -225,8 +225,10 @@ flowchart LR
 
 **Approach:**
 - Hook facade over the singleton, mirroring `hooks/use-transaction-queue.ts`.
-- Subscribe to the queue's confirmed and failed callbacks; map a queue transaction to its entry by hash.
-- Confirmed requires the queue's success status. A reverted receipt maps to failed with its reason.
+- Subscribe to the queue and map a transaction to its entry by hash.
+- **Do not subscribe only to the confirmed and failed callbacks.** `TransactionStatus` in `lib/web3/transaction-queue.ts` has six values — `pending`, `confirmed`, `failed`, `cancelled`, `replaced`, `timeout` — but only `status === 'failed'` emits `TRANSACTION_FAILED`. A transaction that times out is set to `timeout` and emits `TRANSACTION_UPDATED` only, so `onTransactionFailed` never fires for it. An entry left waiting on those callbacks would sit at submitted permanently, never reach a terminal status, block the retention cleanup in Unit 6, and present indefinitely as pending — exactly the dishonest reporting this work exists to remove.
+- Observe `TRANSACTION_UPDATED` as well, and map **every** terminal queue status explicitly. `timeout` is reachable today. `cancelled` and `replaced` are declared in the type union but never assigned by the current queue; handle them rather than assuming they stay unreachable, since a future queue change would otherwise reintroduce the stuck-at-submitted defect silently.
+- Confirmed requires the queue's success status. A reverted receipt maps to failed with its reason. A timed-out transaction is neither — map it to unresolved, which already carries the right meaning: submitted, outcome unknown.
 - Derive counts from the entries themselves. Never compute a count by subtracting completed from total — that cannot distinguish in-flight from never-started, which is the specific defect this work removes.
 
 **Patterns to follow:**
@@ -237,9 +239,11 @@ flowchart LR
 - Happy path: counts by status derive from entries and sum to the record size.
 - Edge case: a queue event for an unknown hash is ignored.
 - Error path: a reverted receipt maps to failed, never confirmed.
+- Error path: a transaction reaching `timeout` moves its entry to unresolved. Drive this through the queue's real timeout path, not a simulated failed callback — the point is that no failed callback arrives.
+- Edge case: every value in `TransactionStatus` maps to a defined entry status, so a new queue status cannot leave an entry stuck at submitted.
 - Integration: a token submitted before a reload is confirmed by the queue afterward and the record reflects it.
 
-**Verification:** Status counts always sum to the record size, and no count is derived by subtraction.
+**Verification:** Status counts always sum to the record size, no count is derived by subtraction, and no queue status can leave an entry non-terminal forever.
 
 ---
 
@@ -297,6 +301,7 @@ flowchart LR
 - The page checks for a record before the connection branch. When one exists and the wallet is disconnected or the chain unsupported, render the summary rather than the connect or switch-network prompt.
 - Reconnect or switch-network controls appear inline, alongside a way to discard.
 - No resume control. Discarding returns to selection, where remaining tokens are chosen normally.
+- **Gate the contents before rendering them.** The summary shows a wallet address and a holdings snapshot, and its primary case is a disconnected wallet — where there is no connected account to compare against, so the account-mismatch check in Unit 6 cannot fire. Without a gate here, the next person to open the browser sees the previous user's balances. The existence of an interrupted batch may be announced unconditionally; addresses and balances require an explicit reveal unless the recorded account is currently connected.
 
 **Design direction — this is the most sensitive screen in the app and must not be left to invention:**
 - Each of the five statuses needs distinct, plain language. Reviewers rated the prior draft 3/10 here. Specify the label and one-line explanation for each before building: what a confirmed burn says, what a submitted-but-unconfirmed burn says, what a failed burn says, what an unresolved burn says, and what an untouched token says.
@@ -316,6 +321,8 @@ flowchart LR
 - Happy path: each of the five statuses renders distinctly.
 - Edge case: an unsupported chain shows the summary with a switch-network control.
 - Edge case: a submitted entry shows a pending-receipt state, not a terminal one.
+- Edge case: with no wallet connected, the summary reports that an interrupted batch exists without displaying addresses or balances until explicitly revealed.
+- Edge case: with the recorded account connected, contents display without an extra step.
 - Edge case: discarding with an unresolved entry requires explicit confirmation.
 - Edge case: discarding clears the record and returns to selection.
 - Accessibility: the summary is announced, status updates do not flood assistive technology, and every control has an accessible name.
@@ -367,7 +374,8 @@ flowchart LR
 - A record whose entries all reached a terminal status is cleared when the user leaves the results view.
 - A stored record older than its maximum age is discarded on read. Follow the age-bounding precedent in `hooks/use-wallet-persistence.ts`.
 - This is data minimization, not correctness. The record holds a wallet address and a holdings snapshot; it should not persist indefinitely. Because the record no longer drives execution, staleness is a privacy question rather than a safety one.
-- On reconnect with an account other than the one recorded, do not display the prior account's holdings. Retain the record but require explicit action to reveal it, so a shared browser does not expose one user's balances to the next.
+- On reconnect with an account other than the one recorded, do not display the prior account's holdings. Retain the record but require explicit action to reveal it.
+- This is the same control Unit 4 applies to the disconnected case, which is the more common one — a disconnected browser has no account to mismatch against. Unit 4 owns the gate and must ship it; this unit covers only the reconnected-as-someone-else path. Neither is sufficient alone.
 
 **Test scenarios:**
 - Happy path: a fully terminal record is cleared on leaving results.
