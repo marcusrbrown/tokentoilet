@@ -1075,3 +1075,121 @@ describe('regression — maxMetadataRequests ceiling is authoritative', () => {
     expect(calledAddresses).toHaveLength(300)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Regression: multi-chain aggregation — truncated / truncatedTokenCount /
+// contractsChecked summed across chains, not just carried from one chain.
+// Every truncation test above passes only [SEPOLIA_CHAIN_ID]; these exercise
+// the accumulation in discoverUserTokens's per-chain loop.
+// ---------------------------------------------------------------------------
+
+const MAINNET_CHAIN_ID = 1
+
+describe('regression — multi-chain truncation and contractsChecked aggregation', () => {
+  it('sums contractsChecked and truncatedTokenCount when only one of two chains truncates', async () => {
+    // Chain A (Sepolia): 5 legitimate balances, cap of 3 — truncates by 2.
+    const chainABalances = Array.from({length: 5}, (_, i) => ({
+      contractAddress: `0x7${i.toString(16).padStart(39, 'a')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    // Chain B (Mainnet): 2 legitimate balances, well under the cap — no truncation.
+    const chainBBalances = Array.from({length: 2}, (_, i) => ({
+      contractAddress: `0x8${i.toString(16).padStart(39, 'b')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+
+    mockFetchWalletTokenBalances.mockResolvedValueOnce(chainABalances).mockResolvedValueOnce(chainBBalances)
+    mockFetchAlchemyTokenMetadataBatch
+      .mockResolvedValueOnce(
+        makeMetadataMap(
+          chainABalances.map((b, i) => ({address: b.contractAddress, name: `A${i}`, symbol: `A${i}`, decimals: 18})),
+        ),
+      )
+      .mockResolvedValueOnce(
+        makeMetadataMap(
+          chainBBalances.map((b, i) => ({address: b.contractAddress, name: `B${i}`, symbol: `B${i}`, decimals: 18})),
+        ),
+      )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID, MAINNET_CHAIN_ID],
+      maxTokensPerChain: 3,
+    })
+
+    expect(result.chainsScanned).toBe(2)
+    // 3 survivors from chain A + 2 from chain B.
+    expect(result.tokens).toHaveLength(5)
+    // 5 enumerated on chain A + 2 on chain B.
+    expect(result.contractsChecked).toBe(7)
+    // Only chain A truncates (5 legit - 3 cap = 2); chain B contributes 0.
+    expect(result.truncatedTokenCount).toBe(2)
+    expect(result.truncated).toBe(true)
+  })
+
+  it('sums truncatedTokenCount across chains when both chains truncate', async () => {
+    const chainABalances = Array.from({length: 5}, (_, i) => ({
+      contractAddress: `0x9${i.toString(16).padStart(39, 'a')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    const chainBBalances = Array.from({length: 4}, (_, i) => ({
+      contractAddress: `0xa${i.toString(16).padStart(39, 'b')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+
+    mockFetchWalletTokenBalances.mockResolvedValueOnce(chainABalances).mockResolvedValueOnce(chainBBalances)
+    mockFetchAlchemyTokenMetadataBatch
+      .mockResolvedValueOnce(
+        makeMetadataMap(
+          chainABalances.map((b, i) => ({address: b.contractAddress, name: `A${i}`, symbol: `A${i}`, decimals: 18})),
+        ),
+      )
+      .mockResolvedValueOnce(
+        makeMetadataMap(
+          chainBBalances.map((b, i) => ({address: b.contractAddress, name: `B${i}`, symbol: `B${i}`, decimals: 18})),
+        ),
+      )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID, MAINNET_CHAIN_ID],
+      maxTokensPerChain: 3,
+    })
+
+    expect(result.tokens).toHaveLength(6) // 3 + 3
+    expect(result.contractsChecked).toBe(9) // 5 + 4
+    expect(result.truncatedTokenCount).toBe(3) // (5-3) + (4-3)
+    expect(result.truncated).toBe(true)
+  })
+
+  it('reports truncated false when neither chain truncates', async () => {
+    const chainABalances = Array.from({length: 2}, (_, i) => ({
+      contractAddress: `0xb${i.toString(16).padStart(39, 'a')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    const chainBBalances = Array.from({length: 2}, (_, i) => ({
+      contractAddress: `0xc${i.toString(16).padStart(39, 'b')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+
+    mockFetchWalletTokenBalances.mockResolvedValueOnce(chainABalances).mockResolvedValueOnce(chainBBalances)
+    mockFetchAlchemyTokenMetadataBatch
+      .mockResolvedValueOnce(
+        makeMetadataMap(
+          chainABalances.map((b, i) => ({address: b.contractAddress, name: `A${i}`, symbol: `A${i}`, decimals: 18})),
+        ),
+      )
+      .mockResolvedValueOnce(
+        makeMetadataMap(
+          chainBBalances.map((b, i) => ({address: b.contractAddress, name: `B${i}`, symbol: `B${i}`, decimals: 18})),
+        ),
+      )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID, MAINNET_CHAIN_ID],
+    })
+
+    expect(result.tokens).toHaveLength(4)
+    expect(result.contractsChecked).toBe(4)
+    expect(result.truncatedTokenCount).toBe(0)
+    expect(result.truncated).toBe(false)
+  })
+})
