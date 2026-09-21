@@ -18,11 +18,17 @@ on:
     - cron: '30 3 * * *'
   workflow_dispatch:
     inputs:
+      mode:
+        description: Operation mode
+        type: choice
+        options:
+          - review
+          - autoheal
+        default: autoheal
       prompt:
-        description: >-
-          Custom prompt for Fro Bot. Leave empty to run the daily autohealing
-          schedule prompt on demand.
+        description: Custom prompt for review mode
         required: false
+        default: ''
 
 permissions:
   contents: read
@@ -34,7 +40,7 @@ concurrency:
       github.event.pull_request.number ||
       github.event.discussion.number ||
       (github.event_name == 'schedule' && 'scheduled-maintenance') ||
-      (github.event_name == 'workflow_dispatch' && !github.event.inputs.prompt && 'scheduled-maintenance') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'autoheal' && 'scheduled-maintenance') ||
       github.run_id
     }}
   cancel-in-progress: false
@@ -637,6 +643,29 @@ jobs:
       - name: Setup project
         uses: ./.github/actions/setup
 
+      - name: Enable authenticated git push for autoheal fixes
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'autoheal')
+        env:
+          FRO_BOT_PAT: ${{ secrets.FRO_BOT_PAT }}
+        run: |
+          set -euo pipefail
+          # Checkout uses persist-credentials: false so the PAT is never written
+          # into .git/config on the fork-PR-head comment path. This step runs
+          # ONLY for schedule and dispatched autoheal runs, which check out a
+          # repository-controlled ref (never a fork head) and actually open
+          # autoheal fix branches. Review-mode dispatch and PR-review runs are
+          # excluded — they never push. Write the credential on disk (not via
+          # env or gh helper) because fro-bot/agent scrubs its child
+          # environment, so GH_TOKEN/GITHUB_TOKEN never reach the model's shell.
+          #
+          # This is intentionally NOT enabled for issue_comment / mention runs:
+          # fro-bot/agent classifies those as credential-withheld and FAILS
+          # CLOSED if it finds an on-disk http.*.extraheader, so writing one
+          # there would break the agent instead of enabling push.
+          auth="$(printf '%s' "x-access-token:${FRO_BOT_PAT}" | base64 | tr -d '\n')"
+          echo "::add-mask::${auth}"
+          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth}"
+
       - name: Run Fro Bot
         uses: fro-bot/agent@43023e5b9755fe307c03ede1067cc182564d30e3 # v0.113.2
         env:
@@ -644,8 +673,8 @@ jobs:
           IS_SUNDAY_UTC: ${{ env.IS_SUNDAY_UTC || 'false' }}
           PROMPT: >-
             ${{
-              (github.event_name == 'workflow_dispatch' && github.event.inputs.prompt)
-              || ((github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !github.event.inputs.prompt)) && env.SCHEDULE_PROMPT)
+              ((github.event_name == 'schedule') || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'autoheal')) && env.SCHEDULE_PROMPT
+              || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'review' && github.event.inputs.prompt)
               || (github.event_name == 'pull_request' && env.PR_REVIEW_PROMPT)
               || ''
             }}
@@ -657,3 +686,15 @@ jobs:
           opencode-config: ${{ secrets.OPENCODE_CONFIG }}
           prompt: ${{ env.PROMPT }}
           timeout: 0
+          # Unset resolves to working-dir, whose preamble forbids branch/commit/
+          # push/PR and hands delivery to a caller that does not exist in a
+          # scheduled run — so autoheal edits were being silently discarded.
+          # Gated to the same runs as the push credential above; review-mode
+          # dispatch and PR-review runs stay working-dir and never push.
+          output-mode: >-
+            ${{
+              (github.event_name == 'schedule'
+                || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'autoheal'))
+              && 'branch-pr'
+              || 'working-dir'
+            }}
