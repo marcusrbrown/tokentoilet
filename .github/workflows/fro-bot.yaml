@@ -125,10 +125,12 @@ env:
     Do not omit any heading.
 
   SCHEDULE_PROMPT: |
-    Perform daily repository autohealing for Token Toilet — a Web3 DeFi
+    Perform the daily Fro Bot pass for Token Toilet — a Web3 DeFi
     application built with Next.js 16 + React 19 + TypeScript 6 + Wagmi v2
     + Reown AppKit + Tailwind CSS v4 + Vitest + Storybook, deployed to Vercel.
-    Read AGENTS.md for full project conventions before making changes.
+    This single run does BOTH proactive oversight (detect and report) AND
+    reactive autohealing (fix what is safe). Read AGENTS.md for full project
+    conventions before making changes.
 
     EXECUTION MODEL
     Analyze all categories independently, but perform write actions serially.
@@ -143,8 +145,8 @@ env:
     SCOPE CAP
     If the smallest safe fix is not clearly minimal and reversible (e.g.,
     broad refactor, architecture change, or many-file edit), do not
-    auto-heal it. Open or update an issue and log it under "Needs Human
-    Attention".
+    auto-heal it. Open or update an issue and record it under "Tasks for
+    Agents" with enough detail for any agent to act on cold.
 
     DEPENDENCY OWNERSHIP
     Renovate owns routine dependency/version bumps (configured via
@@ -162,7 +164,7 @@ env:
     - mrbro-bot[bot]
     - fro-bot
 
-    1. ERRORED PRs
+    1. ERRORED PRs — REMEDIATION-CAPABLE
        Find open PRs with failing CI checks. Skip dependency/security update
        PRs here; handle them only in category 2.
        Only fix PRs whose head branch is in this repository, writable by
@@ -185,7 +187,7 @@ env:
           an errored PR. If the failing run appears caused by the Fro Bot
           workflow, skip the PR and log it under "Needs Human Attention".
 
-    2. SECURITY
+    2. SECURITY — REMEDIATION-CAPABLE
        Review Dependabot/Renovate alerts and open PRs for vulnerable deps.
        - If a security update PR exists but has conflicts or failures,
          fix and push to that PR branch.
@@ -206,7 +208,7 @@ env:
        - Verify that `.env.example` or `.env.local.example` files do not
          contain real values, only placeholder templates.
 
-    3. CODE QUALITY & REPO HYGIENE
+    3. CODE QUALITY & REPO HYGIENE — REPORT-ONLY
        This category is primarily report-only. Focus on things only a
        code-aware agent can catch:
        - Run `pnpm build` (Next.js production build). Report any type
@@ -253,7 +255,7 @@ env:
          structure and project conventions. If drift is found, open an
          issue (not a PR) describing the drift.
 
-    4. DEVELOPER EXPERIENCE
+    4. DEVELOPER EXPERIENCE — REMEDIATION-CAPABLE
        Ensure consistent linting, formatting, and static analysis.
        Run `pnpm lint`; fix any failures, including convention violations
        found in category 3.
@@ -262,7 +264,7 @@ env:
        Use a clear conventional-commit title like
        `chore(lint): apply auto-fixes from autohealing run`.
 
-    5. QUALITY GATES VERIFICATION
+    5. QUALITY GATES VERIFICATION — REPORT + DELEGATES FIXES TO CATEGORY 4
        Verify the project's quality gates pass on the default branch:
        a. `pnpm lint` — 0 errors
        b. `pnpm exec tsc --noEmit` — type check passes
@@ -279,7 +281,7 @@ env:
        - If the fix is complex, open an issue with diagnosis and
          recommended approach.
 
-    6. CROSS-PROJECT INTELLIGENCE (INBOUND ONLY)
+    6. CROSS-PROJECT INTELLIGENCE (INBOUND ONLY) — REPORT-ONLY
        Survey Marcus's other repos for patterns, tooling, and conventions
        that could improve THIS repo. The goal is inbound intelligence —
        what can we learn from the portfolio to make Token Toilet better?
@@ -315,11 +317,11 @@ env:
        - NEVER modify other repositories. Observation only.
        - NEVER open PRs, issues, or comments in other repositories.
        - NEVER clone or check out other repositories.
-       - All findings go into the perpetual summary issue in THIS
-         repository only.
+       - All findings go into the daily report issue in THIS repository
+         only.
        - If a `gh` query fails for a repo, skip it and note why.
 
-    7. UPSTREAM MODERNIZATION WATCH (SUNDAYS UTC ONLY)
+    7. UPSTREAM MODERNIZATION WATCH (SUNDAYS UTC ONLY) — REPORT-ONLY
        On Sundays UTC, review release notes for pinned upstreams:
        - `fro-bot/agent` used by .github/workflows/fro-bot.yaml
        - `actions/checkout` used by .github/workflows/fro-bot.yaml
@@ -331,28 +333,64 @@ env:
 
        Identify new hardening or observability features worth adopting.
        Do not bump versions or modify workflows in this category. Document
-       findings in the perpetual issue.
+       findings in the daily report.
 
        Cadence: this category runs only when the IS_SUNDAY_UTC environment
        variable is 'true' (Sunday UTC, as detected by the workflow's
        preflight). Before doing any category 7 work, read this variable.
        On other days, skip entirely and omit the corresponding section
-       from the daily summary.
+       from the daily report.
 
-    SINGLE ISSUE MANAGEMENT
-    Manage a SINGLE perpetual issue titled "Daily Autohealing Report".
+    AGENT NOTES (instead of per-agent follow-up tasks)
+    Do NOT create follow-up tasks addressed to a specific agent (no "for Fro
+    Bot", "for Copilot", or similar items). When work is deferred, write the
+    note so any LLM agent can pick it up cold: the exact file paths, the root
+    cause, the smallest safe fix, any constraints or "do not retry" warnings,
+    and how to verify. Collect all deferred, actionable work in the "Tasks
+    for Agents" section of the daily report — do not split it into
+    per-agent subsections.
 
-    Finding the perpetual issue:
-    1. Search for an open issue titled "Daily Autohealing Report" (exact match).
-    2. If found, use that issue for all updates.
-    3. If not found, create a new issue with that exact title.
+    OUTPUT — DAILY ROTATING REPORT ISSUE
+    Maintain exactly one open daily report. Follow this order deterministically
+    so the run is idempotent even if it overlaps another run:
+    1. Search open issues whose exact title is
+       "Daily Autohealing Report — YYYY-MM-DD (UTC)" for today (today's UTC
+       date).
+    2. If one or more exist, pick the LOWEST issue number as canonical and
+       reuse it (edit its body in place). If none exist, create it.
+    3. Close every OTHER open issue whose title starts with "Daily
+       Autohealing Report" — older dates, any same-day duplicates that are
+       not the canonical one, and the legacy undated "Daily Autohealing
+       Report" title — each with a one-line closing comment linking the
+       canonical report.
+    There must be exactly one open daily report when the run finishes. Never
+    close the canonical issue you just selected.
 
-    Updating the issue:
-    PREPEND a new dated section to the TOP of the issue body. Newest
-    update is always first. If a section has no rows, do not emit an
-    empty table — write "None." directly under that heading.
+    The report REPLACES the previous body each day — do not prepend or
+    archive old sections. Name the previous report's issue number near the
+    top of the new body (the issue this run closed, or the previously
+    reused issue's prior date if no issue was closed), or write "None" if
+    there is no previous report.
 
-    ## Update — YYYY-MM-DD (UTC)
+    The issue body MUST use this structure (write "None" for empty sections
+    and do not emit empty tables — write "None" directly under the heading
+    instead). Omit the Upstream Modernization Watch section entirely on
+    non-Sundays:
+
+    ## Daily Autohealing Report — YYYY-MM-DD (UTC)
+
+    **Previous report:** #N (or None)
+
+    ### Run Summary
+    | Category | Status | Notes |
+    | --- | --- | --- |
+    | Errored PRs | ✅/⚠️/❌ | ... |
+    | Security | ✅/⚠️/❌ | ... |
+    | Code Quality & Repo Hygiene | ✅/⚠️/❌ | ... |
+    | Developer Experience | ✅/⚠️/❌ | ... |
+    | Quality Gates | ✅/⚠️/❌ | ... |
+    | Cross-Project Intelligence | ✅/⚠️/❌ | ... |
+    | Upstream Modernization Watch | ✅/⚠️/❌ | ... |
 
     ### Errored PRs
     | PR | Failure | Fix | Status |
@@ -398,22 +436,18 @@ env:
 
     ### Upstream Modernization Watch
     [Sunday-only section. On Sundays UTC, include findings or write "Scan
-    clean" if no actionable items. On other days, omit this entire
-    section from the daily update.]
+    clean" if no actionable items. On other days, omit this entire section
+    from the daily report.]
+
+    ### Tasks for Agents
+    [Actionable-but-deferred work only, written so any agent can pick it up
+    cold: exact file paths, root cause, smallest safe fix, any constraints
+    or "do not retry" warnings, and how to verify. No per-agent ownership —
+    never address an item "for Fro Bot" or "for Copilot".]
 
     ### Needs Human Attention
-    - [items that could not be auto-fixed, with context]
-
-    Rules for the perpetual issue:
-    - DO NOT create new daily issues. Always update the perpetual issue.
-    - DO NOT close the perpetual issue.
-    - ALWAYS prepend new updates to existing content (newest at top).
-    - When the issue body approaches 50,000 characters, archive older
-      updates by removing all but the 30 most recent daily sections, and
-      note the archival in a line like:
-      "_[Archived N older updates on YYYY-MM-DD]_"
-    - DO NOT comment on individual issues or PRs unless category 1 fixed
-      a failing PR (then ONLY post the fix-summary comment on that PR).
+    [Blocked, ambiguous, or security-sensitive items that require a human
+    decision.]
 
     Hard boundaries:
     - Never edit Marcus's first-person content (README intro, blog posts,
@@ -423,10 +457,14 @@ env:
     - Never push directly to the default branch. Direct pushes are allowed
       only to an existing non-default PR branch you are repairing under
       category 1 or category 2.
-    - Never merge PRs, submit reviews/approvals, close/reopen PRs or
-      issues, or modify branch protection. This workflow may only push
-      fixes, open/update PRs, open/update issues, and comment on PRs when
-      a fix was pushed.
+    - Never merge PRs, submit reviews/approvals, or modify branch
+      protection. The only exception to never closing an issue is closing
+      superseded "Daily Autohealing Report" issues it authored, exactly as
+      described in the OUTPUT section rotation above — never close or
+      reopen any other issue, and never close, reopen, or approve any PR.
+      This workflow may only push fixes, open/update PRs, open/update
+      issues, close superseded daily-report issues it authored, and
+      comment on PRs when a fix was pushed.
     - Never modify secrets, org settings, environments, or branch
       protection.
     - Never make checks pass by disabling tests, deleting failing
@@ -442,7 +480,8 @@ env:
     - Cross-project intelligence (category 6) MUST NOT modify other repos.
     - Upstream modernization watch (category 7) MUST NOT bump pinned
       versions (Renovate-owned) or modify upstream repositories.
-    - Do not create multiple summary issues.
+    - Do not leave more than one open daily report issue; the rotation in
+      the OUTPUT section above must always leave exactly one open.
 
     Project conventions (MUST follow for code changes):
     - TypeScript strict mode: no `any`, no `@ts-ignore`, no `@ts-expect-error`
