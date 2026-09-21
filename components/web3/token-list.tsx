@@ -387,8 +387,26 @@ export function TokenList({
             No disposable tokens found in this wallet
           </h3>
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Scan completed successfully. No tokens eligible for disposal were detected.
+            {truncated && truncatedTokenCount > 0
+              ? 'Scan was truncated before completion. No tokens eligible for disposal were detected within the scanned range.'
+              : 'Scan completed successfully. No tokens eligible for disposal were detected.'}
           </p>
+          {truncated && truncatedTokenCount > 0 && (
+            <div
+              role="note"
+              aria-label="Token discovery notice"
+              className="mt-4 flex items-start gap-2 rounded-lg border border-info/20 bg-info/5 px-3 py-2.5 text-left text-sm text-foreground"
+            >
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+              <p>
+                This list is incomplete —{' '}
+                {truncatedTokenCount === 1
+                  ? '1 more token was'
+                  : `${truncatedTokenCount.toLocaleString()} more tokens were`}{' '}
+                not loaded.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     )

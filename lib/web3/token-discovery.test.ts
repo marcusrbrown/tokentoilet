@@ -859,4 +859,28 @@ describe('regression — metadata fetch budget bounds', () => {
     expect(result.tokens).toHaveLength(50)
     expect(result.truncatedTokenCount).toBe(10) // 60 balances - 50 considered/shown
   })
+
+  it('returns tokens when metadataFetchBudget is explicitly undefined (hook config-merge exposure)', async () => {
+    // Mirrors useTokenDiscovery's merge order — {...DEFAULT_TOKEN_DISCOVERY_CONFIG, ...options} —
+    // where a caller-supplied `metadataFetchBudget: undefined` overrides the default at the spread
+    // boundary. Without normalization, Math.max(undefined, n) is NaN and slice(0, NaN) is [].
+    const allBalances = Array.from({length: 10}, (_, i) => ({
+      contractAddress: `0x${i.toString(16).padStart(40, '0')}` satisfies Address,
+      balance: BigInt(i + 1),
+    }))
+    mockFetchWalletTokenBalances.mockResolvedValue(allBalances)
+    mockFetchAlchemyTokenMetadataBatch.mockResolvedValue(
+      makeMetadataMap(
+        allBalances.map((b, i) => ({address: b.contractAddress, name: `Token ${i}`, symbol: `TK${i}`, decimals: 18})),
+      ),
+    )
+
+    const result = await discoverUserTokens(FAKE_CONFIG, USER_ADDRESS, {
+      chainIds: [SEPOLIA_CHAIN_ID],
+      maxTokensPerChain: 100,
+      metadataFetchBudget: undefined,
+    })
+
+    expect(result.tokens).toHaveLength(10)
+  })
 })

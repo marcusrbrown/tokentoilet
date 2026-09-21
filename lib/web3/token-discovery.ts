@@ -200,7 +200,17 @@ export async function discoverUserTokens(
   userAddress: Address,
   discoveryConfig: TokenDiscoveryConfig,
 ): Promise<TokenDiscoveryResult> {
-  const mergedConfig = {...DEFAULT_TOKEN_DISCOVERY_CONFIG, ...discoveryConfig}
+  // Spread order matters: a caller-supplied `undefined` for an optional field
+  // (e.g. a hook merging `{...defaults, ...options}` where `options` explicitly
+  // sets `metadataFetchBudget: undefined`) overrides the default at the spread
+  // boundary despite TS inferring a non-optional type. Normalize explicitly so
+  // downstream Math.max/slice never see NaN or an unbounded array.
+  const mergedConfig = {
+    ...DEFAULT_TOKEN_DISCOVERY_CONFIG,
+    ...discoveryConfig,
+    maxTokensPerChain: discoveryConfig.maxTokensPerChain ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.maxTokensPerChain,
+    metadataFetchBudget: discoveryConfig.metadataFetchBudget ?? DEFAULT_TOKEN_DISCOVERY_CONFIG.metadataFetchBudget,
+  }
   const tokens: DiscoveredToken[] = []
   const errors: TokenDiscoveryError[] = []
   let contractsChecked = 0

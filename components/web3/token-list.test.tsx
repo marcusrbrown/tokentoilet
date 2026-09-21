@@ -348,6 +348,48 @@ describe('TokenList', () => {
       expect(screen.queryByRole('note', {name: 'Token discovery notice'})).not.toBeInTheDocument()
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
+
+    it('renders the disclosure on the empty-success path when discovery was truncated', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 0,
+        truncated: true,
+        truncatedTokenCount: 12,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 0,
+        filteredTokens: 0,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 0,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent(
+        'This list is incomplete — 12 more tokens were not loaded.',
+      )
+      expect(screen.queryByText(/scan completed successfully/i)).not.toBeInTheDocument()
+    })
   })
 
   describe('Loading States', () => {
