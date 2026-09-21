@@ -185,6 +185,128 @@ describe('TokenList', () => {
     })
   })
 
+  describe('Discovery truncation disclosure', () => {
+    it('tells the user when a small number of tokens are not shown', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [createMockDiscoveredToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        truncated: true,
+        truncatedTokenCount: 12,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [createMockCategorizedToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent(
+        'Token discovery is capped, so 12 tokens are not shown. Their status is unknown.',
+      )
+    })
+
+    it('formats a large number of unshown tokens for scanning', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [createMockDiscoveredToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        truncated: true,
+        truncatedTokenCount: 450,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [createMockCategorizedToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.getByRole('note', {name: 'Token discovery notice'})).toHaveTextContent('450 tokens are not shown')
+    })
+
+    it('does not render a disclosure when discovery was not truncated', () => {
+      mockUseTokenDiscovery.mockReturnValue({
+        tokens: [createMockDiscoveredToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        discoveryErrors: [],
+        chainsScanned: 1,
+        contractsChecked: 1,
+        truncated: false,
+        truncatedTokenCount: 0,
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+      mockUseTokenFiltering.mockReturnValue({
+        tokens: [createMockCategorizedToken()],
+        isLoading: false,
+        error: null,
+        isFetching: false,
+        isSuccess: true,
+        totalTokens: 1,
+        filteredTokens: 1,
+        errors: [],
+        stats: {
+          categoryStats: {} as Record<TokenCategory, number>,
+          valueStats: {} as Record<TokenValueClass, number>,
+          totalValueUSD: 0,
+          totalTokens: 1,
+        },
+        refetch: vi.fn(),
+        refresh: vi.fn(),
+      })
+
+      render(<TokenList config={{enableVirtualScrolling: false}} />, {wrapper: createWrapper()})
+
+      expect(screen.queryByRole('note', {name: 'Token discovery notice'})).not.toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+  })
+
   describe('Loading States', () => {
     it('renders loading skeleton when discovering tokens', () => {
       mockUseTokenDiscovery.mockReturnValue({

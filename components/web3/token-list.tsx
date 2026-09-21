@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  Info,
   KeyRound,
   Loader2,
   RefreshCw,
@@ -161,6 +162,8 @@ export function TokenList({
     error: discoveryError,
     isSuccess: isDiscoverySuccess,
     discoveryErrors,
+    truncated,
+    truncatedTokenCount,
     refetch: refetchTokens,
   } = useTokenDiscovery({
     enabled: true,
@@ -561,6 +564,20 @@ export function TokenList({
               )}
             </div>
           </div>
+
+          {truncated && truncatedTokenCount > 0 && (
+            <div
+              role="note"
+              aria-label="Token discovery notice"
+              className="flex items-start gap-2 rounded-lg border border-info/20 bg-info/5 px-3 py-2.5 text-sm text-foreground"
+            >
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+              <p>
+                Token discovery is capped, so {truncatedTokenCount.toLocaleString()} tokens are not shown. Their status
+                is unknown.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
