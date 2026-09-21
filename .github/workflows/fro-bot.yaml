@@ -649,19 +649,9 @@ jobs:
           FRO_BOT_PAT: ${{ secrets.FRO_BOT_PAT }}
         run: |
           set -euo pipefail
-          # Checkout uses persist-credentials: false so the PAT is never written
-          # into .git/config on the fork-PR-head comment path. This step runs
-          # ONLY for schedule and dispatched autoheal runs, which check out a
-          # repository-controlled ref (never a fork head) and actually open
-          # autoheal fix branches. Review-mode dispatch and PR-review runs are
-          # excluded — they never push. Write the credential on disk (not via
-          # env or gh helper) because fro-bot/agent scrubs its child
-          # environment, so GH_TOKEN/GITHUB_TOKEN never reach the model's shell.
-          #
-          # This is intentionally NOT enabled for issue_comment / mention runs:
-          # fro-bot/agent classifies those as credential-withheld and FAILS
-          # CLOSED if it finds an on-disk http.*.extraheader, so writing one
-          # there would break the agent instead of enabling push.
+          # Gated to schedule/autoheal only: fro-bot/agent fails closed on an
+          # on-disk extraheader for comment/mention runs. Written on disk, not
+          # env, since the action scrubs its child environment.
           auth="$(printf '%s' "x-access-token:${FRO_BOT_PAT}" | base64 | tr -d '\n')"
           echo "::add-mask::${auth}"
           git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth}"
@@ -686,11 +676,8 @@ jobs:
           opencode-config: ${{ secrets.OPENCODE_CONFIG }}
           prompt: ${{ env.PROMPT }}
           timeout: 0
-          # Unset resolves to working-dir, whose preamble forbids branch/commit/
-          # push/PR and hands delivery to a caller that does not exist in a
-          # scheduled run — so autoheal edits were being silently discarded.
-          # Gated to the same runs as the push credential above; review-mode
-          # dispatch and PR-review runs stay working-dir and never push.
+          # Unset defaults to working-dir, which forbids push/PR. Gated to match
+          # the credential step above.
           output-mode: >-
             ${{
               (github.event_name == 'schedule'
