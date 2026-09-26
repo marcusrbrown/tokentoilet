@@ -54,7 +54,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
-    "@bfra.me/eslint-config": "0.52.2",
+    "@bfra.me/eslint-config": "0.54.0",
     "@bfra.me/prettier-config": "0.16.13",
     "@eslint-react/eslint-plugin": "5.20.2",
     "@next/bundle-analyzer": "16.3.6",

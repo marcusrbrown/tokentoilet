@@ -15,6 +15,7 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - '@bfra.me/prettier-config@0.16.10 || 0.16.11 || 0.16.13'
+  - '@bfra.me/eslint-config@0.54.0'
 
 # Kept for pnpm v10 compatibility; pnpm v11 uses allowBuilds above
 onlyBuiltDependencies:
