@@ -91,7 +91,7 @@ importers:
     devDependencies:
       '@bfra.me/eslint-config':
         specifier: 0.54.0
-        version: 0.54.0(4e366d693fe83f4fe6312526758b1ba5)
+        version: 0.54.0(604f95467ea6241f97a93bbb7a44b6f3)
       '@bfra.me/prettier-config':
         specifier: 0.16.13
         version: 0.16.13(prettier@3.9.9)
@@ -8387,7 +8387,7 @@ snapshots:
     optionalDependencies:
       chokidar: 5.0.0
 
-  '@bfra.me/eslint-config@0.54.0(4e366d693fe83f4fe6312526758b1ba5)':
+  '@bfra.me/eslint-config@0.54.0(604f95467ea6241f97a93bbb7a44b6f3)':
     dependencies:
       '@bfra.me/es': 0.1.0(chokidar@5.0.0)
       '@eslint-community/eslint-plugin-eslint-comments': 4.8.1(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))
@@ -8419,7 +8419,6 @@ snapshots:
       '@eslint-react/eslint-plugin': 5.21.0(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       '@next/eslint-plugin-next': 16.3.6(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))
       eslint-config-prettier: 10.1.8(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))
       eslint-plugin-prettier: 5.5.6(eslint-config-prettier@10.1.8(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.9)
       eslint-plugin-react-hooks: 7.1.1(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-react-refresh: 0.5.7(eslint@10.11.0(jiti@2.7.0)(supports-color@8.1.1))
