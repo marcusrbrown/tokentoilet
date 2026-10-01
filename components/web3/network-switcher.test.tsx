@@ -2,7 +2,8 @@ import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {CHAIN_INFO, NetworkSwitcher, SUPPORTED_CHAIN_IDS} from './network-switcher'
+import {NetworkSwitcher} from '@/components/web3/network-switcher'
+import {CHAIN_INFO, SUPPORTED_CHAIN_IDS} from '@/lib/web3/network-switcher-config'
 
 const mockSwitchToChain = vi.fn()
 const mockUseWallet = vi.fn()
