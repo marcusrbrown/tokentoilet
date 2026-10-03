@@ -1,9 +1,8 @@
 import type {VariantProps} from 'class-variance-authority'
 import {AlertCircle, Check, Copy, Eye, EyeOff, X} from 'lucide-react'
 import React, {useId, useMemo, useState} from 'react'
+import {inputVariants} from '@/components/ui/input-variants'
 import {cn, formatAddress, isValidAddress} from '@/lib/utils'
-
-import {inputVariants} from './input-variants'
 
 export interface InputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>, VariantProps<typeof inputVariants> {
