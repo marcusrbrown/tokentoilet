@@ -3,12 +3,11 @@
 import {cva, type VariantProps} from 'class-variance-authority'
 import {ChevronDown, Loader2, Zap} from 'lucide-react'
 import React, {useEffect, useRef, useState} from 'react'
+import {Badge} from '@/components/ui/badge'
+import {Button} from '@/components/ui/button'
 import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
 import {cn} from '@/lib/utils'
 import {DEFAULT_SUPPORTED_NETWORK_V1} from '@/lib/web3/chains'
-
-import {Badge} from './badge'
-import {Button} from './button'
 
 /**
  * NetworkBadge com                <button
