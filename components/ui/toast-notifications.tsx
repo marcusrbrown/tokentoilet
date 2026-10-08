@@ -1,6 +1,6 @@
 import toast, {type Toast} from 'react-hot-toast'
 
-import {CustomToast, type CustomToastProps} from './toast'
+import {CustomToast, type CustomToastProps} from '@/components/ui/toast'
 
 // NOTE: Uses hash-based routing as placeholder until block explorer integration is added
 const createExplorerAction = (txHash: string | undefined): CustomToastProps['action'] | undefined => {
