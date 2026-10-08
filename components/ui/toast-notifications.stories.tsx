@@ -1,7 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/react'
 import {Toaster} from 'react-hot-toast'
 
-import toastNotifications from './toast-notifications'
+import toastNotifications from '@/components/ui/toast-notifications'
 
 /**
  * Wrapper component to demonstrate toast notifications in Storybook.
