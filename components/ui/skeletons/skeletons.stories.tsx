@@ -10,7 +10,7 @@ import {
   TransactionQueueSkeleton,
   TransactionStatusSkeleton,
   WalletDashboardSkeleton,
-} from './index'
+} from '@/components/ui/skeletons'
 
 const meta: Meta = {
   title: 'Components/UI/Skeletons',
