@@ -1,7 +1,7 @@
 import {renderHook} from '@testing-library/react'
 import {describe, expect, it, vi} from 'vitest'
 
-import {useTransactionQueue} from './use-transaction-queue'
+import {useTransactionQueue} from '@/hooks/use-transaction-queue'
 
 // Mock the transaction queue module
 vi.mock('@/lib/web3/transaction-queue', () => {

@@ -1,17 +1,17 @@
 'use client'
 
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import {isDevelopment} from 'std-env'
+
+import type {SupportedChainId} from '@/hooks/use-wallet'
 import type {
   QueuedTransaction,
   TransactionQueueConfig,
   TransactionQueueEventListener,
   TransactionStatus,
   TransactionType,
-} from '../lib/web3/transaction-queue'
-import type {SupportedChainId} from './use-wallet'
-
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
-import {isDevelopment} from 'std-env'
-import {getTransactionQueue} from '../lib/web3/transaction-queue'
+} from '@/lib/web3/transaction-queue'
+import {getTransactionQueue} from '@/lib/web3/transaction-queue'
 
 // Hook return type
 export interface UseTransactionQueueReturn {
