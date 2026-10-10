@@ -1,13 +1,12 @@
 'use client'
 
 import {AlertCircle, ExternalLink, RefreshCw} from 'lucide-react'
+import {Badge} from '@/components/ui/badge'
+import {Button} from '@/components/ui/button'
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card'
 import {cn} from '@/lib/utils'
 import {getWalletErrorRecovery} from '@/lib/web3/wallet-error-detector'
 import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
-
-import {Badge} from '../ui/badge'
-import {Button} from '../ui/button'
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '../ui/card'
 
 interface WalletErrorRecoveryProps {
   error: WalletSpecificError
