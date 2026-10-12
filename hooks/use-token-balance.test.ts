@@ -3,7 +3,7 @@ import type {Config} from 'wagmi'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {getBalance, readContracts} from 'wagmi/actions'
 
-import {checkAllBalances, checkTokenBalance, DEFAULT_BALANCE_CONFIG} from '../lib/web3/token-balance'
+import {checkAllBalances, checkTokenBalance, DEFAULT_BALANCE_CONFIG} from '@/lib/web3/token-balance'
 
 // Mock wagmi/actions
 vi.mock('wagmi/actions', () => ({
