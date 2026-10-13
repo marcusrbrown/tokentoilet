@@ -6,7 +6,7 @@ import {useAppKit} from '@reown/appkit/react'
 import {useCallback, useMemo} from 'react'
 import {useAccount, useConnect, useConnections, useDisconnect, useSwitchAccount} from 'wagmi'
 
-import {useWallet} from './use-wallet'
+import {useWallet} from '@/hooks/use-wallet'
 
 export interface ConnectedWallet {
   /** Unique identifier for the wallet connection */
