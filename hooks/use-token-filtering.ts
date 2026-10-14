@@ -1,8 +1,9 @@
 'use client'
 
-import type {DiscoveredToken} from '../lib/web3/token-discovery'
 import {useQuery, useQueryClient} from '@tanstack/react-query'
 import {useCallback, useMemo, useState} from 'react'
+import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
+import type {DiscoveredToken} from '@/lib/web3/token-discovery'
 import {
   calculateTokenStats,
   categorizeToken,
@@ -18,8 +19,7 @@ import {
   type TokenFilteringConfig,
   type TokenFilteringResult,
   type TokenSortOptions,
-} from '../lib/web3/token-filtering'
-import {useWallet, type SupportedChainId} from './use-wallet'
+} from '@/lib/web3/token-filtering'
 
 /**
  * Hook configuration options for token filtering

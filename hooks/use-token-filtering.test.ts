@@ -1,17 +1,17 @@
 import type {Address} from 'viem'
-import type {DiscoveredToken} from '../lib/web3/token-discovery'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {renderHook, waitFor} from '@testing-library/react'
 import React from 'react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
 import {useAccount, useChainId} from 'wagmi'
-import {TokenCategory} from '../lib/web3/token-filtering'
 import {
   useTokenCategorizationPreferences,
   useTokenFavorites,
   useTokenFiltering,
   useTokenHiding,
-} from './use-token-filtering'
+} from '@/hooks/use-token-filtering'
+import type {DiscoveredToken} from '@/lib/web3/token-discovery'
+import {TokenCategory} from '@/lib/web3/token-filtering'
 
 // Mock wagmi hooks
 vi.mock('wagmi', () => ({
@@ -20,7 +20,7 @@ vi.mock('wagmi', () => ({
 }))
 
 // Mock useWallet hook
-vi.mock('./use-wallet', () => ({
+vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(() => ({
     address: '0x1234567890123456789012345678901234567890',
     isConnected: true,
