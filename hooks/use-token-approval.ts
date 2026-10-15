@@ -6,10 +6,9 @@ import {useCallback, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {erc20Abi, formatUnits} from 'viem'
 import {useAccount, useChainId, useEstimateGas, useReadContract, useWriteContract} from 'wagmi'
+import {useTransactionQueue} from '@/hooks/use-transaction-queue'
+import {useWallet} from '@/hooks/use-wallet'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
-
-import {useTransactionQueue} from './use-transaction-queue'
-import {useWallet} from './use-wallet'
 
 /**
  * Tracks approval state to prevent unnecessary transactions and provide user feedback
