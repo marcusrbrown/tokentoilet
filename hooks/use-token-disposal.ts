@@ -2,10 +2,9 @@ import {useCallback, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {erc20Abi, formatUnits, isAddress, zeroAddress} from 'viem'
 import {useAccount, useChainId, useSimulateContract, useWriteContract} from 'wagmi'
+import {useTransactionQueue} from '@/hooks/use-transaction-queue'
+import {useWallet} from '@/hooks/use-wallet'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
-
-import {useTransactionQueue} from './use-transaction-queue'
-import {useWallet} from './use-wallet'
 
 export const BURN_ADDRESS = '0x000000000000000000000000000000000000dEaD' as const
 

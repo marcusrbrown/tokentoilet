@@ -4,13 +4,12 @@ import toast from 'react-hot-toast'
 import {erc20Abi} from 'viem'
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest'
 import {useAccount, useChainId, useSimulateContract, useWriteContract} from 'wagmi'
+import {BURN_ADDRESS, useTokenDisposal} from '@/hooks/use-token-disposal'
+import {useTransactionQueue} from '@/hooks/use-transaction-queue'
+import {useWallet} from '@/hooks/use-wallet'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
-
-import {BURN_ADDRESS, useTokenDisposal} from './use-token-disposal'
-import {useTransactionQueue} from './use-transaction-queue'
-import {useWallet} from './use-wallet'
 
 vi.mock('wagmi', () => ({
   useAccount: vi.fn(),
@@ -19,11 +18,11 @@ vi.mock('wagmi', () => ({
   useSimulateContract: vi.fn(),
 }))
 
-vi.mock('./use-wallet', () => ({
+vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(),
 }))
 
-vi.mock('./use-transaction-queue', () => ({
+vi.mock('@/hooks/use-transaction-queue', () => ({
   useTransactionQueue: vi.fn(),
 }))
 
