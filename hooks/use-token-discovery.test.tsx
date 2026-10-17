@@ -5,7 +5,6 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {renderHook, waitFor} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {discoverUserTokens, type DiscoveredToken, type TokenDiscoveryResult} from '../lib/web3/token-discovery'
 import {
   useChainTokenDiscovery,
   useNonZeroTokens,
@@ -13,15 +12,16 @@ import {
   useTokenExists,
   useTokensByBalance,
   useTokensByChain,
-} from './use-token-discovery'
-import {useWallet} from './use-wallet'
+} from '@/hooks/use-token-discovery'
+import {useWallet} from '@/hooks/use-wallet'
+import {discoverUserTokens, type DiscoveredToken, type TokenDiscoveryResult} from '@/lib/web3/token-discovery'
 
 // Mock dependencies
 vi.mock('wagmi', () => ({
   useConfig: vi.fn(() => ({}) as Config),
 }))
 
-vi.mock('../lib/web3/token-discovery', () => ({
+vi.mock('@/lib/web3/token-discovery', () => ({
   discoverUserTokens: vi.fn(),
   DEFAULT_TOKEN_DISCOVERY_CONFIG: {
     maxTokensPerChain: 100,
@@ -31,7 +31,7 @@ vi.mock('../lib/web3/token-discovery', () => ({
   },
 }))
 
-vi.mock('./use-wallet', () => ({
+vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(),
 }))
 
