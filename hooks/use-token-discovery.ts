@@ -3,14 +3,14 @@
 import {useQuery} from '@tanstack/react-query'
 import {useConfig} from 'wagmi'
 
+import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
 import {
   DEFAULT_TOKEN_DISCOVERY_CONFIG,
   discoverUserTokens,
   type DiscoveredToken,
   type TokenDiscoveryConfig,
   type TokenDiscoveryResult,
-} from '../lib/web3/token-discovery'
-import {useWallet, type SupportedChainId} from './use-wallet'
+} from '@/lib/web3/token-discovery'
 
 /**
  * Hook configuration options for token discovery
