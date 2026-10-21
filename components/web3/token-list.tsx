@@ -22,13 +22,12 @@ import {Badge} from '@/components/ui/badge'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
 import {Skeleton} from '@/components/ui/skeleton'
+import {TokenListItem} from '@/components/web3/token-list-item'
 import {useTokenDiscovery} from '@/hooks/use-token-discovery'
 import {useTokenFiltering} from '@/hooks/use-token-filtering'
 import {cn} from '@/lib/utils'
 import type {CategorizedToken, TokenFilter, TokenSortOptions} from '@/lib/web3/token-filtering'
 import {isSuspectedSpam} from '@/lib/web3/token-filtering'
-
-import {TokenListItem} from './token-list-item'
 
 const tokenListVariants = cva(
   [
