@@ -10,7 +10,7 @@ import {
   TokenSecurityRisk,
   validateTokenSecurity,
   type TokenSecurityValidation,
-} from './token-validation'
+} from '@/lib/web3/token-validation'
 
 // Mock token addresses for testing
 const MOCK_ADDRESSES = {
