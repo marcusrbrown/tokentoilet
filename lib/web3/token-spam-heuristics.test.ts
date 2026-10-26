@@ -16,7 +16,7 @@
  */
 
 import {describe, expect, it} from 'vitest'
-import {calculateBaseSpamScore, DEFAULT_SPAM_SCORE_THRESHOLD} from './token-spam-heuristics'
+import {calculateBaseSpamScore, DEFAULT_SPAM_SCORE_THRESHOLD} from '@/lib/web3/token-spam-heuristics'
 
 // A balance safely below the huge-balance threshold (999999999999999999999999).
 const NORMAL_BALANCE = BigInt(1000)
