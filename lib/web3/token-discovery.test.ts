@@ -15,21 +15,21 @@ import type {Address} from 'viem'
 import {createPublicClient, HttpRequestError, InvalidRequestRpcError, RpcError} from 'viem'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {getAlchemyEndpoint, isAlchemyConfigured} from './alchemy-endpoints'
-import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances} from './alchemy-token-api'
-import {discoverUserTokens, formatTokenBalance, type TokenDiscoveryError} from './token-discovery'
+import {getAlchemyEndpoint, isAlchemyConfigured} from '@/lib/web3/alchemy-endpoints'
+import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances} from '@/lib/web3/alchemy-token-api'
+import {discoverUserTokens, formatTokenBalance, type TokenDiscoveryError} from '@/lib/web3/token-discovery'
 
 // vi.mock calls are hoisted by Vitest before module evaluation regardless of
 // their position in the file. Placing them after imports is the project
 // convention (see hooks/use-token-discovery.test.tsx).
-vi.mock('./alchemy-endpoints', () => ({
+vi.mock('@/lib/web3/alchemy-endpoints', () => ({
   [Symbol.toStringTag]: 'Module',
   getAlchemyEndpoint: vi.fn(),
   isAlchemyConfigured: vi.fn(),
 }))
 
-vi.mock('./alchemy-token-api', async importOriginal => {
-  const actual = await importOriginal<typeof import('./alchemy-token-api')>()
+vi.mock('@/lib/web3/alchemy-token-api', async importOriginal => {
+  const actual = await importOriginal<typeof import('@/lib/web3/alchemy-token-api')>()
   return {
     ...actual,
     fetchWalletTokenBalances: vi.fn(),
