@@ -7,7 +7,7 @@ import {
   TokenRiskScore,
   validateTokenMetadata,
   type EnhancedTokenMetadata,
-} from './token-metadata'
+} from '@/lib/web3/token-metadata'
 
 describe('token-metadata', () => {
   const testTokenAddress = '0x1234567890123456789012345678901234567890' as Address
