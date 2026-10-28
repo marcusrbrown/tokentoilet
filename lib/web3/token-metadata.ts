@@ -1,9 +1,8 @@
 import type {Address} from 'viem'
 import type {Config} from 'wagmi'
 
-import type {SupportedChainId} from '../../hooks/use-wallet'
-
-import {fetchTokenMetadata as fetchBasicMetadata} from './token-discovery'
+import type {SupportedChainId} from '@/hooks/use-wallet'
+import {fetchTokenMetadata as fetchBasicMetadata} from '@/lib/web3/token-discovery'
 
 /**
  * Token list format (Uniswap token list standard)
