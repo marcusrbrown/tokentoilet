@@ -5,8 +5,8 @@ import type {
   WalletProviderInfo,
   WalletSpecificError,
   WalletSpecificErrorCode,
-} from './wallet-error-types'
-import {WALLET_ERROR_PATTERNS} from './wallet-error-types'
+} from '@/lib/web3/wallet-error-types'
+import {WALLET_ERROR_PATTERNS} from '@/lib/web3/wallet-error-types'
 
 // Ethereum provider type definitions
 interface EthereumProvider extends Record<string, unknown> {
