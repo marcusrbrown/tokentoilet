@@ -1,7 +1,8 @@
 import type {Config} from 'wagmi'
-import type {SupportedChainId} from '../../hooks/use-wallet'
 import {erc20Abi, formatUnits, type Address} from 'viem'
 import {getBalance, readContracts} from 'wagmi/actions'
+
+import type {SupportedChainId} from '@/hooks/use-wallet'
 
 /**
  * Token balance information structure
