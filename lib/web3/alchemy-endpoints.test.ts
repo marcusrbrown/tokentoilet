@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {env} from '@/env'
-import {getAlchemyEndpoint} from './alchemy-endpoints'
+import {getAlchemyEndpoint} from '@/lib/web3/alchemy-endpoints'
 
 // Mock @/env before importing the module under test so we can control
 // NEXT_PUBLIC_ALCHEMY_API_KEY per test. vi.mock is hoisted above imports.
