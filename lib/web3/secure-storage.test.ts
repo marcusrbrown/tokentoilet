@@ -8,7 +8,7 @@ import {
   STORAGE_KEYS,
   walletStorage,
   type WalletConnectionData,
-} from './secure-storage'
+} from '@/lib/web3/secure-storage'
 
 describe('Secure Storage', () => {
   beforeEach(() => {
