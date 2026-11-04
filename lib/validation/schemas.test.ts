@@ -10,7 +10,7 @@ import {
   tokenTypeSchema,
   transactionHashSchema,
   walletConnectionSchema,
-} from './schemas'
+} from '@/lib/validation/schemas'
 
 describe('Validation Schemas', () => {
   describe('ethereumAddressSchema', () => {

@@ -10,7 +10,7 @@ import {
   resetTelemetryConfig,
   trackDynamicImport,
   withDynamicImportTracking,
-} from './dynamic-imports'
+} from '@/lib/telemetry/dynamic-imports'
 
 describe('Dynamic Import Telemetry', () => {
   beforeEach(() => {
