@@ -1,6 +1,6 @@
 import type {z} from 'zod'
 import {env} from 'std-env'
-import {zExitOrThrow, zPrintEnv} from '../z'
+import {zExitOrThrow, zPrintEnv} from '@/lib/z'
 
 export function validateBuildEnv<T extends z.ZodType>(
   schema: T,
