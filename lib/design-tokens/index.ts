@@ -15,7 +15,7 @@ import {
   pageTransitions,
   timingFunctions,
   web3Animations,
-} from './animations'
+} from '@/lib/design-tokens/animations'
 // Import all design token modules
 import {
   addressColors,
@@ -27,7 +27,7 @@ import {
   type SemanticColor,
   type VioletShade,
   type Web3State,
-} from './colors'
+} from '@/lib/design-tokens/colors'
 import {
   baseShadows,
   effectShadows,
@@ -36,8 +36,8 @@ import {
   interactionShadows,
   web3Shadows,
   type BaseShadow,
-} from './shadows'
-import {baseSpacing, glassSpacing, gridSpacing, sectionSpacing, web3Spacing, zIndex} from './spacing'
+} from '@/lib/design-tokens/shadows'
+import {baseSpacing, glassSpacing, gridSpacing, sectionSpacing, web3Spacing, zIndex} from '@/lib/design-tokens/spacing'
 import {
   componentTypography,
   fontFamilies,
@@ -46,14 +46,14 @@ import {
   headings,
   letterSpacing,
   web3Typography,
-} from './typography'
+} from '@/lib/design-tokens/typography'
 
-export {type AnimationToken, type Delay, type Duration, type TimingFunction} from './animations'
+export {type AnimationToken, type Delay, type Duration, type TimingFunction} from '@/lib/design-tokens/animations'
 // Re-export all design token modules and types
-export {type ColorToken, type SemanticColor, type VioletShade, type Web3State} from './colors'
-export {type BaseShadow, type ElevationLevel, type GlassShadow, type ShadowToken} from './shadows'
-export {type BaseSpacing, type GlassBlur, type GlassRadius, type SpacingToken} from './spacing'
-export {type FontSize, type FontWeight, type LetterSpacing, type TypographyToken} from './typography'
+export {type ColorToken, type SemanticColor, type VioletShade, type Web3State} from '@/lib/design-tokens/colors'
+export {type BaseShadow, type ElevationLevel, type GlassShadow, type ShadowToken} from '@/lib/design-tokens/shadows'
+export {type BaseSpacing, type GlassBlur, type GlassRadius, type SpacingToken} from '@/lib/design-tokens/spacing'
+export {type FontSize, type FontWeight, type LetterSpacing, type TypographyToken} from '@/lib/design-tokens/typography'
 
 // Re-export specific commonly used tokens for convenience
 export {
