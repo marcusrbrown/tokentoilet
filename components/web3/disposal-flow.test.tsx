@@ -2,9 +2,9 @@ import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
+import {DisposalFlow} from '@/components/web3/disposal-flow'
 import {useTokenDisposal} from '@/hooks/use-token-disposal'
 import {useUnwantedTokens} from '@/hooks/use-token-filtering'
-import {DisposalFlow} from './disposal-flow'
 
 const BURN_ADDRESS = '0x000000000000000000000000000000000000dEaD'
 
@@ -40,7 +40,7 @@ vi.mock('@/hooks/use-token-discovery', () => ({
 }))
 
 // Mock TokenList to simplify testing the flow without virtual scrolling complexity
-vi.mock('./token-list', () => ({
+vi.mock('@/components/web3/token-list', () => ({
   TokenList: ({
     selectedTokens,
     onTokenSelectionChange,
@@ -82,7 +82,7 @@ vi.mock('./token-list', () => ({
 }))
 
 // Mock TransactionQueue to simplify testing
-vi.mock('./transaction-queue', () => ({
+vi.mock('@/components/web3/transaction-queue', () => ({
   TransactionQueue: () => <div data-testid="mock-transaction-queue" />,
 }))
 
