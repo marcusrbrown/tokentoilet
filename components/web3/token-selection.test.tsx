@@ -4,11 +4,10 @@ import userEvent from '@testing-library/user-event'
 import React from 'react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
 import {useAccount, useChainId, type UseAccountReturnType} from 'wagmi'
+import {TokenSelection, type BatchOperation, type TokenSelectionProps} from '@/components/web3/token-selection'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
-
-import {TokenSelection, type BatchOperation, type TokenSelectionProps} from './token-selection'
 
 // Mock wagmi hooks
 vi.mock('wagmi', () => ({
