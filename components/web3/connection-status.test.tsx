@@ -1,8 +1,7 @@
 import {fireEvent, render, screen} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
+import {ConnectionStatus} from '@/components/web3/connection-status'
 import {useWallet} from '@/hooks/use-wallet'
-
-import {ConnectionStatus} from './connection-status'
 
 const mockConnect = vi.fn().mockResolvedValue(undefined)
 const mockDisconnect = vi.fn().mockResolvedValue(undefined)
