@@ -41,7 +41,7 @@ overrides:
   fast-uri@<3.1.6: '>=3.1.6'
   flatted@<=3.4.1: '>=3.4.2'
   form-data@>=4.0.0 <4.0.6: '>=4.0.6'
-  follow-redirects@<=1.15.11: '>=1.16.0'
+  follow-redirects@<1.16.2: '>=1.16.2'
   hono@<4.12.16: '>=4.12.16'
   js-yaml@<4.1.2 || >=5.0.0 <=5.2.1: '>=5.2.2'
   lodash-es@<=4.17.23: '>=4.18.0'
@@ -55,12 +55,17 @@ overrides:
   rollup@>=4.0.0 <4.59.0: '>=4.59.0'
   serialize-javascript@<7.0.5: '>=7.0.5'
   socket.io-parser@>=4.0.0 <4.2.6: '>=4.2.6'
+  source-map-js@<1.2.2: '>=1.2.2'
   storybook@>=10.0.0-beta.0 <10.2.10: '>=10.2.10'
   undici@>=7.23.0 <7.28.0: 7.30.0
   vite@>=7.1.0 <=7.1.10: '>=7.1.11'
   vite@>=8.0.0 <=8.0.4: '>=8.0.5'
   ws@>=8.0.0 <8.21.0: '>=8.21.0'
   yaml@>=2.0.0 <2.8.3: '>=2.8.3'
+  # GHSA-mrhx-c7xc-m3w5 has no zod 3.x patch. @reown/appkit-wallet (pins zod 3.22.4) and
+  # @coinbase/cdp-sdk (^3.25.76) are transitive consumers; forcing the first patched
+  # release crosses a major. Drop this once those packages ship zod 4.
+  zod@<4.6.6: 4.6.6
 
 peerDependencyRules:
   # Storybook 9.alpha addons work with Storybook 10 (no v10 addons released yet)
