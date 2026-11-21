@@ -2,7 +2,6 @@ import type {Address} from 'viem'
 import {fireEvent, render, screen} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
 import {useTokenMetadata} from '@/hooks/use-token-metadata'
-import {useWallet} from '@/hooks/use-wallet'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
@@ -11,10 +10,8 @@ import {TokenDetail} from './token-detail'
 
 // Mock hooks with simple returns
 vi.mock('@/hooks/use-token-metadata')
-vi.mock('@/hooks/use-wallet')
 
 const mockUseTokenMetadata = useTokenMetadata as MockedFunction<typeof useTokenMetadata>
-const mockUseWallet = useWallet as MockedFunction<typeof useWallet>
 
 // Mock UI components with consistent patterns - moved to avoid hoisting issues
 vi.mock('@/components/ui/badge', () => ({
@@ -136,41 +133,6 @@ describe('TokenDetail', () => {
 
     // Set up default mocks
     mockUseTokenMetadata.mockReturnValue(mockMetadataReturn)
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Test mock needs flexibility
-    mockUseWallet.mockReturnValue({
-      address: '0x1234567890123456789012345678901234567890' as const,
-      isConnected: true,
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      chainId: 1,
-      currentNetwork: {name: 'Ethereum', symbol: 'ETH'},
-      isCurrentChainSupported: true,
-      isSupportedChain: ((chainId: number) => chainId === 1) as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-      validateCurrentNetwork: vi.fn(() => null),
-      getUnsupportedNetworkError: vi.fn(() => null),
-      handleUnsupportedNetwork: vi.fn(),
-      switchToChain: vi.fn(),
-      isSwitchingChain: false,
-      switchChainError: null,
-      getSupportedChains: vi.fn(() => []),
-      classifyWalletError: vi.fn(),
-      getWalletErrorRecovery: vi.fn(),
-      persistence: {
-        isAvailable: true,
-        autoReconnect: true,
-        lastWalletId: null,
-        preferredChain: null,
-        lastConnectionData: null,
-        isRestoring: false,
-        error: null,
-        setAutoReconnect: vi.fn(),
-        setPreferredChain: vi.fn(),
-        clearStoredData: vi.fn(),
-        shouldRestore: vi.fn(() => false),
-        getConnectionAge: vi.fn(() => 0),
-      },
-    } as any)
   })
 
   describe('Basic Rendering', () => {
