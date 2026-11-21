@@ -20,14 +20,18 @@
 
 import type {Address} from 'viem'
 import type {Config} from 'wagmi'
-import type {SupportedChainId} from '../../hooks/use-wallet'
 import {createPublicClient, erc20Abi, http} from 'viem'
 import {mainnet, sepolia} from 'viem/chains'
 import {readContracts} from 'wagmi/actions'
-import {getAlchemyEndpoint, isAlchemyConfigured} from './alchemy-endpoints'
-import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances, isAlchemyAuthError} from './alchemy-token-api'
-import {sanitizeTokenDisplay} from './display-sanitization'
-import {calculateBaseSpamScore, DEFAULT_SPAM_SCORE_THRESHOLD} from './token-spam-heuristics'
+import type {SupportedChainId} from '@/hooks/use-wallet'
+import {getAlchemyEndpoint, isAlchemyConfigured} from '@/lib/web3/alchemy-endpoints'
+import {
+  fetchAlchemyTokenMetadataBatch,
+  fetchWalletTokenBalances,
+  isAlchemyAuthError,
+} from '@/lib/web3/alchemy-token-api'
+import {sanitizeTokenDisplay} from '@/lib/web3/display-sanitization'
+import {calculateBaseSpamScore, DEFAULT_SPAM_SCORE_THRESHOLD} from '@/lib/web3/token-spam-heuristics'
 
 // ---------------------------------------------------------------------------
 // Chain id → viem chain object map
