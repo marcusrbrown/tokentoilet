@@ -2,7 +2,7 @@ import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {describe, expect, it, vi} from 'vitest'
 
-import {Modal, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle} from './modal'
+import {Modal, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle} from '@/components/ui/modal'
 
 describe('Modal', () => {
   describe('Open/Closed State', () => {
