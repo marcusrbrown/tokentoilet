@@ -3,14 +3,14 @@ import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {DynamicImportErrorBoundary} from '../../dynamic-import-error-boundary'
+import {DynamicImportErrorBoundary} from '@/components/web3/dynamic-import-error-boundary'
 import {
   FallbackUI,
   TokenDetailFallback,
   TokenListFallback,
   TransactionQueueFallback,
   WalletDashboardFallback,
-} from '../../fallback-ui'
+} from '@/components/web3/fallback-ui'
 
 // Test component that throws errors
 function ThrowError({message}: {message: string}): never {

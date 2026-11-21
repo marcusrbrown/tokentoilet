@@ -2,8 +2,7 @@ import type {Meta, StoryObj} from '@storybook/react'
 
 import {useState} from 'react'
 import {Button} from '@/components/ui/button'
-
-import {DynamicImportErrorBoundary} from './dynamic-import-error-boundary'
+import {DynamicImportErrorBoundary} from '@/components/web3/dynamic-import-error-boundary'
 
 const meta: Meta<typeof DynamicImportErrorBoundary> = {
   title: 'Components/Web3/DynamicImportErrorBoundary',
