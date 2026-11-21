@@ -2,7 +2,7 @@ import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {describe, expect, it, vi} from 'vitest'
 
-import {Input} from './input'
+import {Input} from '@/components/ui/input'
 
 // Mock clipboard API
 const mockClipboard = {
