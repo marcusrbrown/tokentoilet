@@ -2,8 +2,7 @@ import {act, renderHook} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
 import {useAccount, useConnect, useConnections, useDisconnect, useSwitchAccount} from 'wagmi'
 import {useWallet} from '@/hooks/use-wallet'
-
-import {useWalletSwitcher} from './use-wallet-switcher'
+import {useWalletSwitcher} from '@/hooks/use-wallet-switcher'
 
 // Mock wagmi hooks
 vi.mock('wagmi', () => ({
