@@ -4,6 +4,7 @@ import type {Address} from 'viem'
 import {useQuery} from '@tanstack/react-query'
 import {useConfig} from 'wagmi'
 
+import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
 import {
   checkAllBalances,
   checkCrossChainBalances,
@@ -14,8 +15,7 @@ import {
   type BalanceCheckResult,
   type NativeBalance,
   type TokenBalance,
-} from '../lib/web3/token-balance'
-import {useWallet, type SupportedChainId} from './use-wallet'
+} from '@/lib/web3/token-balance'
 
 /**
  * Hook configuration options for token balance checking
