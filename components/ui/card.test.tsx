@@ -2,7 +2,7 @@ import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {describe, expect, it, vi} from 'vitest'
 
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from './card'
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card'
 
 describe('Card', () => {
   describe('Basic Rendering', () => {

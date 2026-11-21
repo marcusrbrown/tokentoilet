@@ -1,8 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/react'
 import {CreditCard, Wallet, Zap} from 'lucide-react'
-import {Badge} from './badge'
-import {Button} from './button'
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from './card'
+import {Badge} from '@/components/ui/badge'
+import {Button} from '@/components/ui/button'
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card'
 
 const meta: Meta<typeof Card> = {
   title: 'UI/Card',
