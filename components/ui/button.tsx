@@ -1,9 +1,8 @@
 import type {VariantProps} from 'class-variance-authority'
 import React from 'react'
 
+import {buttonVariants} from '@/components/ui/button-variants'
 import {cn} from '@/lib/utils'
-
-import {buttonVariants} from './button-variants'
 
 // Handle loading state spinner
 const LoadingSpinner = () => (
