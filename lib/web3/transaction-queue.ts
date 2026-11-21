@@ -1,10 +1,10 @@
 import type {Hash, TransactionReceipt} from 'viem'
-import type {SupportedChainId} from '../../hooks/use-wallet'
 
 import {isDevelopment} from 'std-env'
 import {waitForTransactionReceipt} from 'viem/actions'
 
-import {wagmiConfig} from './config'
+import type {SupportedChainId} from '@/hooks/use-wallet'
+import {wagmiConfig} from '@/lib/web3/config'
 
 // Transaction statuses for queue management
 export type TransactionStatus =
