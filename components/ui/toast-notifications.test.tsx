@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest'
 
-import toastNotifications from './toast-notifications'
+import toastNotifications from '@/components/ui/toast-notifications'
 
 // Use vi.hoisted so mock variables are available before vi.mock() is called
 const mockToastCustom = vi.hoisted(() => vi.fn().mockReturnValue('toast-id'))
