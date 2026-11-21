@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {defaultRateLimiter, rateLimit, RateLimitError, strictRateLimiter} from './rate-limit'
+import {defaultRateLimiter, rateLimit, RateLimitError, strictRateLimiter} from '@/lib/rate-limit'
 
 describe('Rate Limiting', () => {
   beforeEach(() => {
