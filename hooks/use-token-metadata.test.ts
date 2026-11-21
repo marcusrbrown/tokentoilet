@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest'
 
-import {TokenRiskScore, type EnhancedTokenMetadata} from '../lib/web3/token-metadata'
-import {filterTokenMetadata, getTokenMetadataStats} from './use-token-metadata'
+import {filterTokenMetadata, getTokenMetadataStats} from '@/hooks/use-token-metadata'
+import {TokenRiskScore, type EnhancedTokenMetadata} from '@/lib/web3/token-metadata'
 
 describe('use-token-metadata utils', () => {
   const mockTokens: EnhancedTokenMetadata[] = [

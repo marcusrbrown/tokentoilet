@@ -1,10 +1,10 @@
 'use client'
 
 import type {Address} from 'viem'
-import type {SupportedChainId} from './use-wallet'
 import {useQueries, useQuery} from '@tanstack/react-query'
 import {useConfig} from 'wagmi'
 
+import type {SupportedChainId} from '@/hooks/use-wallet'
 import {
   DEFAULT_METADATA_CONFIG,
   fetchBatchTokenMetadata,
@@ -15,7 +15,7 @@ import {
   type MetadataFetchResult,
   type TokenMetadataConfig,
   type TokenRiskScore,
-} from '../lib/web3/token-metadata'
+} from '@/lib/web3/token-metadata'
 
 /**
  * Hook configuration options for token metadata
