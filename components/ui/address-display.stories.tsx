@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react'
-import {AddressDisplay} from './address-display'
+import {AddressDisplay} from '@/components/ui/address-display'
 
 const meta: Meta<typeof AddressDisplay> = {
   title: 'UI/AddressDisplay',

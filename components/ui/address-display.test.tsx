@@ -1,7 +1,7 @@
 import {render, screen} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {AddressDisplay} from './address-display'
+import {AddressDisplay} from '@/components/ui/address-display'
 
 // Mock clipboard API
 const mockClipboard = {
