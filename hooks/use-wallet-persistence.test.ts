@@ -4,11 +4,9 @@
 
 import {renderHook, waitFor} from '@testing-library/react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
-
+import {useWalletPersistence} from '@/hooks/use-wallet-persistence'
 // Import the mocked module to get typed access
 import {walletStorage} from '@/lib/web3/secure-storage'
-
-import {useWalletPersistence} from './use-wallet-persistence'
 
 // Mock the secure storage module with inline factory
 vi.mock('@/lib/web3/secure-storage', () => ({
