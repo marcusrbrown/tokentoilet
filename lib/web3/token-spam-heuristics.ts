@@ -10,7 +10,7 @@
  * Weights and patterns here are the single source of truth for both.
  */
 
-import {isConfusableTokenName} from './display-sanitization'
+import {isConfusableTokenName} from '@/lib/web3/display-sanitization'
 
 /**
  * Known spam/scam patterns for token detection.
