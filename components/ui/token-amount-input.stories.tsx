@@ -1,7 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/react'
 import {useState} from 'react'
+import {TokenAmountInput} from '@/components/ui/token-amount-input'
 import type {TokenData} from '@/lib/token-utils'
-import {TokenAmountInput} from './token-amount-input'
 
 // Sample tokens for stories
 const SAMPLE_TOKENS: TokenData[] = [
