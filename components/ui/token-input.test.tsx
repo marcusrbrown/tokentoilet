@@ -2,9 +2,8 @@ import {fireEvent, render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import {describe, expect, it, vi} from 'vitest'
+import {TokenInput} from '@/components/ui/token-input'
 import type {TokenData} from '@/lib/token-utils'
-
-import {TokenInput} from './token-input'
 
 // Mock Next.js Image component
 vi.mock('next/image', () => ({
