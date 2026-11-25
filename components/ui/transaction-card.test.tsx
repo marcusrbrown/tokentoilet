@@ -2,7 +2,7 @@ import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {TransactionCard, TransactionList, type TransactionData} from './transaction-card'
+import {TransactionCard, TransactionList, type TransactionData} from '@/components/ui/transaction-card'
 
 // Mock clipboard API
 const mockWriteText = vi.fn().mockImplementation(async () => Promise.resolve())

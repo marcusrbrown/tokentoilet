@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react'
-import {TransactionCard, type TransactionData} from './transaction-card'
+import {TransactionCard, type TransactionData} from '@/components/ui/transaction-card'
 
 // Sample transaction data for stories
 const SAMPLE_TRANSACTIONS: TransactionData[] = [
