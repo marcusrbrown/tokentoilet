@@ -1,6 +1,5 @@
-import type {SupportedChainId} from '../../hooks/use-wallet'
-
 import {isAddress, type Address} from 'viem'
+import type {SupportedChainId} from '@/hooks/use-wallet'
 
 /**
  * Token security risk levels
