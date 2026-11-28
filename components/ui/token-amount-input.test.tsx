@@ -2,8 +2,8 @@ import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
+import {TokenAmountInput} from '@/components/ui/token-amount-input'
 import type {TokenData} from '@/lib/token-utils'
-import {TokenAmountInput} from './token-amount-input'
 
 // Mock dependencies
 vi.mock('@/hooks/use-wallet', () => ({
@@ -37,7 +37,7 @@ vi.mock('@/lib/token-utils', () => ({
 }))
 
 // Mock TokenInput component
-vi.mock('./token-input', () => ({
+vi.mock('@/components/ui/token-input', () => ({
   TokenInput: ({
     value,
     onAmountChange,
