@@ -17,7 +17,11 @@ import type {Address} from 'viem'
 import {HttpRequestError, InvalidRequestRpcError, RpcError} from 'viem'
 import {describe, expect, it, vi} from 'vitest'
 
-import {fetchAlchemyTokenMetadataBatch, fetchWalletTokenBalances, isAlchemyAuthError} from './alchemy-token-api'
+import {
+  fetchAlchemyTokenMetadataBatch,
+  fetchWalletTokenBalances,
+  isAlchemyAuthError,
+} from '@/lib/web3/alchemy-token-api'
 
 // ---------------------------------------------------------------------------
 // Helpers
