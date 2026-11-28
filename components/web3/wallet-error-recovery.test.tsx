@@ -1,8 +1,7 @@
 import {fireEvent, render, screen} from '@testing-library/react'
 import {describe, expect, it, vi} from 'vitest'
+import {WalletErrorRecovery} from '@/components/web3/wallet-error-recovery'
 import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
-
-import {WalletErrorRecovery} from './wallet-error-recovery'
 
 vi.mock('@/lib/web3/wallet-error-detector', () => ({
   getWalletErrorRecovery: vi.fn((error: WalletSpecificError) => {

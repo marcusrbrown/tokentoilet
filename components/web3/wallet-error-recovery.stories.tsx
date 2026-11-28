@@ -1,6 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react'
-
-import {WalletErrorRecovery} from './wallet-error-recovery'
+import {WalletErrorRecovery} from '@/components/web3/wallet-error-recovery'
 
 const meta: Meta<typeof WalletErrorRecovery> = {
   title: 'Web3/WalletErrorRecovery',
