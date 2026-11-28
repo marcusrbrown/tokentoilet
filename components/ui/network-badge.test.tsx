@@ -1,11 +1,9 @@
 import {render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {beforeEach, describe, expect, it, vi, type Mock} from 'vitest'
-
+import {NetworkBadge} from '@/components/ui/network-badge'
 // Import useWallet to get access to the mock
 import {useWallet} from '@/hooks/use-wallet'
-
-import {NetworkBadge} from './network-badge'
 
 // Mock the useWallet hook
 const mockSwitchToChain = vi.fn()
@@ -33,7 +31,7 @@ vi.mock('@/hooks/use-wallet', () => ({
 }))
 
 // Mock child components
-vi.mock('./badge', () => ({
+vi.mock('@/components/ui/badge', () => ({
   Badge: ({
     children,
     variant,
@@ -54,7 +52,7 @@ vi.mock('./badge', () => ({
   ),
 }))
 
-vi.mock('./button', () => ({
+vi.mock('@/components/ui/button', () => ({
   Button: ({
     children,
     onClick,
