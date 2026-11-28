@@ -1,7 +1,6 @@
 import {render, screen} from '@testing-library/react'
 import {describe, expect, it, vi} from 'vitest'
-
-import {ConnectionStatus} from './connection-status'
+import {ConnectionStatus} from '@/components/ui/connection-status'
 
 // Simple mock of the useWallet hook
 vi.mock('@/hooks/use-wallet', () => ({
@@ -31,11 +30,11 @@ vi.mock('lucide-react', () => ({
 }))
 
 // Mock UI components
-vi.mock('./badge', () => ({
+vi.mock('@/components/ui/badge', () => ({
   Badge: ({children}: {children: React.ReactNode}) => <div data-testid="badge">{children}</div>,
 }))
 
-vi.mock('./button', () => ({
+vi.mock('@/components/ui/button', () => ({
   Button: ({children}: {children: React.ReactNode}) => (
     <button type="button" data-testid="button">
       {children}
