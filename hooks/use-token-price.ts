@@ -3,8 +3,8 @@
 import type {Address} from 'viem'
 import {useQuery} from '@tanstack/react-query'
 import {useCallback, useMemo} from 'react'
+import {useWallet, type SupportedChainId} from '@/hooks/use-wallet'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
-import {useWallet, type SupportedChainId} from './use-wallet'
 
 /**
  * Platform identifiers for CoinGecko API
