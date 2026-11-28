@@ -5,7 +5,7 @@ import {
   PendingTransactionQueue,
   TransactionQueue,
   TransactionQueueSummary,
-} from './transaction-queue'
+} from '@/components/web3/transaction-queue'
 
 const meta: Meta<typeof TransactionQueue> = {
   title: 'Web3/TransactionQueue',
