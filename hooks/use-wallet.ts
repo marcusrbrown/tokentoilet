@@ -4,11 +4,10 @@ import {useAppKit} from '@reown/appkit/react'
 import {useCallback, useState} from 'react'
 import {isDevelopment} from 'std-env'
 import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
+import {useWalletPersistence} from '@/hooks/use-wallet-persistence'
 import {DEFAULT_SUPPORTED_NETWORK_V1, SUPPORTED_CHAIN_IDS_V1, SUPPORTED_NETWORK_INFO_V1} from '@/lib/web3/chains'
 import {classifyWalletError, getWalletErrorRecovery} from '@/lib/web3/wallet-error-detector'
 import type {WalletSpecificError} from '@/lib/web3/wallet-error-types'
-
-import {useWalletPersistence} from './use-wallet-persistence'
 
 // Supported chain IDs for network validation
 const SUPPORTED_CHAIN_IDS = SUPPORTED_CHAIN_IDS_V1
