@@ -4,13 +4,12 @@ import {renderHook, waitFor} from '@testing-library/react'
 import {erc20Abi} from 'viem'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {useAccount, useChainId, useEstimateGas, useReadContract, useWriteContract} from 'wagmi'
+import {useTokenApproval} from '@/hooks/use-token-approval'
+import {useTransactionQueue} from '@/hooks/use-transaction-queue'
+import {useWallet} from '@/hooks/use-wallet'
 import type {CategorizedToken} from '@/lib/web3/token-filtering'
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
-
-import {useTokenApproval} from './use-token-approval'
-import {useTransactionQueue} from './use-transaction-queue'
-import {useWallet} from './use-wallet'
 
 // Mock dependencies
 vi.mock('wagmi', () => ({
@@ -21,11 +20,11 @@ vi.mock('wagmi', () => ({
   useEstimateGas: vi.fn(),
 }))
 
-vi.mock('./use-wallet', () => ({
+vi.mock('@/hooks/use-wallet', () => ({
   useWallet: vi.fn(),
 }))
 
-vi.mock('./use-transaction-queue', () => ({
+vi.mock('@/hooks/use-transaction-queue', () => ({
   useTransactionQueue: vi.fn(),
 }))
 
