@@ -3,7 +3,12 @@ import {render, screen, waitFor} from '@testing-library/react'
 import {Suspense} from 'react'
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 
-import {DynamicTokenList, DynamicTransactionQueue, DynamicWalletDashboard, DynamicWalletSwitcher} from '../index'
+import {
+  DynamicTokenList,
+  DynamicTransactionQueue,
+  DynamicWalletDashboard,
+  DynamicWalletSwitcher,
+} from '@/components/web3/dynamic'
 
 // Mock wagmi hooks
 vi.mock('wagmi', () => ({
