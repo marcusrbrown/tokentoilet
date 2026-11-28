@@ -1,7 +1,7 @@
 'use client'
 
 import type {Meta, StoryObj} from '@storybook/react'
-import {ConnectionStatus} from './connection-status'
+import {ConnectionStatus} from '@/components/web3/connection-status'
 
 const meta: Meta<typeof ConnectionStatus> = {
   title: 'Web3/ConnectionStatus',
