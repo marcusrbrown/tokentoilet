@@ -2,14 +2,13 @@
 
 import {CheckCircle, Copy, ExternalLink, Wifi, X} from 'lucide-react'
 import {useEffect, useRef, useState} from 'react'
+import {Badge} from '@/components/ui/badge'
+import {Button} from '@/components/ui/button'
+import {Card} from '@/components/ui/card'
+import {Modal} from '@/components/ui/modal'
 import {useWallet} from '@/hooks/use-wallet'
 import {useWalletPersistence} from '@/hooks/use-wallet-persistence'
 import {cn} from '@/lib/utils'
-
-import {Badge} from '../ui/badge'
-import {Button} from '../ui/button'
-import {Card} from '../ui/card'
-import {Modal} from '../ui/modal'
 
 export interface WalletConnectionModalProps {
   open: boolean
