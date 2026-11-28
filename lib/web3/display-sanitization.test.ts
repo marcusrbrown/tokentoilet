@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 
-import {isConfusableTokenName, isSafeLogoUrl, sanitizeTokenDisplay} from './display-sanitization'
+import {isConfusableTokenName, isSafeLogoUrl, sanitizeTokenDisplay} from '@/lib/web3/display-sanitization'
 
 // ---------------------------------------------------------------------------
 // sanitizeTokenDisplay
