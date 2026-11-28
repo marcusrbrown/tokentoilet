@@ -5,13 +5,12 @@ import userEvent from '@testing-library/user-event'
 import React from 'react'
 import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
 import {useAccount, useChainId, type UseAccountReturnType} from 'wagmi'
+import {TokenList} from '@/components/web3/token-list'
 import {useTokenDiscovery} from '@/hooks/use-token-discovery'
 import {useTokenFiltering} from '@/hooks/use-token-filtering'
 import type {DiscoveredToken} from '@/lib/web3/token-discovery'
 import {TokenCategory, TokenValueClass} from '@/lib/web3/token-filtering'
 import {TokenRiskScore} from '@/lib/web3/token-metadata'
-
-import {TokenList} from './token-list'
 
 // Mock wagmi hooks
 vi.mock('wagmi', () => ({
