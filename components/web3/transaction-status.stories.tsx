@@ -1,7 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react'
+import {TransactionStatusCard} from '@/components/web3/transaction-status'
 import type {QueuedTransaction} from '@/lib/web3/transaction-queue'
-
-import {TransactionStatusCard} from './transaction-status'
 
 // Sample transaction data for stories
 const SAMPLE_TRANSACTIONS: QueuedTransaction[] = [

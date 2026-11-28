@@ -1,8 +1,7 @@
 import {render, screen} from '@testing-library/react'
 import {describe, expect, it} from 'vitest'
+import {TransactionStatusCard} from '@/components/web3/transaction-status'
 import type {QueuedTransaction} from '@/lib/web3/transaction-queue'
-
-import {TransactionStatusCard} from './transaction-status'
 
 describe('TransactionStatusCard', () => {
   const baseMockTransaction: QueuedTransaction = {
