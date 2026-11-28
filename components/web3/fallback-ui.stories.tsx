@@ -6,7 +6,7 @@ import {
   TokenListFallback,
   TransactionQueueFallback,
   WalletDashboardFallback,
-} from './fallback-ui'
+} from '@/components/web3/fallback-ui'
 
 const meta: Meta<typeof FallbackUI> = {
   title: 'Components/Web3/FallbackUI',
