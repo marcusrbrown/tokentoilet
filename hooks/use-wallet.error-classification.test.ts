@@ -1,5 +1,5 @@
 import {act, renderHook} from '@testing-library/react'
-import {beforeEach, describe, expect, it, vi, type MockedFunction} from 'vitest'
+import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {useAccount, useChainId, useDisconnect, useSwitchChain} from 'wagmi'
 
 import {useWallet} from '@/hooks/use-wallet'
@@ -28,10 +28,10 @@ vi.mock('@reown/appkit/networks', () => ({
   sepolia: {id: 11155111},
 }))
 
-const mockUseAccount = useAccount as MockedFunction<typeof useAccount>
-const mockUseChainId = useChainId as MockedFunction<typeof useChainId>
-const mockUseDisconnect = useDisconnect as MockedFunction<typeof useDisconnect>
-const mockUseSwitchChain = useSwitchChain as MockedFunction<typeof useSwitchChain>
+const mockUseAccount = vi.mocked(useAccount, {partial: true})
+const mockUseChainId = vi.mocked(useChainId)
+const mockUseDisconnect = vi.mocked(useDisconnect, {partial: true})
+const mockUseSwitchChain = vi.mocked(useSwitchChain, {partial: true})
 
 describe('useWallet - Enhanced Error Classification', () => {
   const mockDisconnect = vi.fn()
@@ -41,24 +41,21 @@ describe('useWallet - Enhanced Error Classification', () => {
     vi.clearAllMocks()
 
     // Reset all mocks to default successful state
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseAccount.mockReturnValue({
-      address: '0x1234567890123456789012345678901234567890' as `0x${string}`,
+      address: '0x1234567890123456789012345678901234567890',
       isConnected: true,
-    } as any)
+    })
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseDisconnect.mockReturnValue({
       disconnect: mockDisconnect,
-    } as any)
+    })
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockUseSwitchChain.mockReturnValue({
       switchChain: mockSwitchChain,
       switchChainAsync: mockSwitchChain,
       isPending: false,
       error: null,
-    } as any)
+    })
 
     mockUseChainId.mockReturnValue(11155111) // Default to Sepolia (only supported chain for MVP)
     mockOpen.mockResolvedValue(undefined) // Default successful open
