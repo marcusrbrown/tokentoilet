@@ -1,11 +1,11 @@
 import type {Address} from 'viem'
 
-import type {SupportedChainId} from '../../hooks/use-wallet'
-import type {DiscoveredToken} from './token-discovery'
-import type {EnhancedTokenMetadata} from './token-metadata'
-import {TokenRiskScore} from './token-metadata'
-import {calculateBaseSpamScore, DEFAULT_SPAM_SCORE_THRESHOLD} from './token-spam-heuristics'
-import {quickSecurityCheck, TokenSecurityRisk, type TokenSecurityValidation} from './token-validation'
+import type {SupportedChainId} from '@/hooks/use-wallet'
+import type {DiscoveredToken} from '@/lib/web3/token-discovery'
+import type {EnhancedTokenMetadata} from '@/lib/web3/token-metadata'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
+import {calculateBaseSpamScore, DEFAULT_SPAM_SCORE_THRESHOLD} from '@/lib/web3/token-spam-heuristics'
+import {quickSecurityCheck, TokenSecurityRisk, type TokenSecurityValidation} from '@/lib/web3/token-validation'
 
 /**
  * Token categorization for disposal workflow
@@ -279,7 +279,7 @@ export const DEFAULT_CATEGORIZATION_PREFERENCES: TokenCategorizationPreferences 
  * Re-exported from token-spam-heuristics.ts, the single source of truth
  * shared with token-discovery.ts (#1521).
  */
-export {SPAM_PATTERNS} from './token-spam-heuristics'
+export {SPAM_PATTERNS} from '@/lib/web3/token-spam-heuristics'
 
 /**
  * Well-known valuable token addresses for quick classification

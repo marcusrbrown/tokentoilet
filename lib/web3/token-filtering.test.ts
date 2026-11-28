@@ -1,7 +1,7 @@
 import type {Address} from 'viem'
-import type {DiscoveredToken} from './token-discovery'
-
 import {describe, expect, it} from 'vitest'
+
+import type {DiscoveredToken} from '@/lib/web3/token-discovery'
 import {
   autoCategorizeToken,
   calculateSpamScore,
@@ -21,8 +21,8 @@ import {
   type TokenCategorizationPreferences,
   type TokenFilter,
   type TokenSortOptions,
-} from './token-filtering'
-import {TokenRiskScore} from './token-metadata'
+} from '@/lib/web3/token-filtering'
+import {TokenRiskScore} from '@/lib/web3/token-metadata'
 
 // Mock data for testing
 const mockDiscoveredToken: DiscoveredToken = {
